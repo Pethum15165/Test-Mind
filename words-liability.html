@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>What Is a Liability? — MindWallet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="mindwallet.css"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0a0a0a; --bg2:#111111; --card:#181818; --card2:#222222;
+      --text:#f0f0f0; --text2:#c8c8c8; --muted:#888888;
+      --border:#282828; --border2:#383838;
+    }
+    body { font-family: 'DM Sans', sans-serif; background:var(--bg); color:var(--text); line-height: 1.7; }
+    .article-shell { max-width: 780px; margin: 0 auto; padding: 2.5rem 5% 5rem; }
+    .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.25rem; }
+    .breadcrumb a { color: #00d4ff; text-decoration: none; }
+    .article-title { font-family: 'Playfair Display', serif; font-size: clamp(1.9rem, 4vw, 2.8rem); color:var(--text); line-height:1.2; margin-bottom:0.75rem; }
+    .article-meta { display: flex; gap: 1.25rem; color: var(--muted); font-size: 0.82rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    p { font-size:0.97rem; color:var(--text2); line-height:1.8; margin-bottom: 1.1rem; }
+    p:last-child { margin-bottom: 0; }
+    strong { color: var(--text); }
+
+    .type-badge{display:inline-flex;align-items:center;gap:.4rem;padding:.35rem 1rem;border-radius:999px;background:rgba(90,180,255,.08);color:#5ab4ff;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;margin-bottom:1rem;}
+    .type-badge .dot{width:6px;height:6px;border-radius:50%;background:#5ab4ff;}
+    .word-hero{background:linear-gradient(135deg,#0d0d0d 0%,#1a1a1a 100%);border:1px solid rgba(0,212,255,.15);border-radius:16px;padding:2.5rem;margin:1.25rem 0 2.5rem;text-align:center;position:relative;overflow:hidden;}
+    .word-hero .wh-word{font-family:'Playfair Display',serif;font-size:clamp(2.5rem,6vw,4rem);color:#00d4ff;margin-bottom:.5rem;}
+    .word-hero .wh-phonetic{font-size:.85rem;color:rgba(255,255,255,.4);margin-bottom:1rem;letter-spacing:.05em;}
+    .word-hero .wh-meaning{font-size:1.1rem;color:var(--text);font-family:'Playfair Display',serif;font-style:italic;}
+    .word-hero .wh-tag{display:inline-block;margin-top:1rem;padding:.25rem .9rem;border-radius:999px;background:rgba(0,212,255,.1);border:1px solid rgba(0,212,255,.3);font-size:.75rem;color:#00d4ff;}
+    .section-heading{font-family:'Playfair Display',serif;font-size:1.3rem;color:var(--text);margin:2.25rem 0 .9rem;padding-left:.9rem;border-left:3px solid #00d4ff;}
+    .examples-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.25rem 0 1.5rem;}
+    .eg-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.1rem;text-align:center;transition:all .2s;}
+    .eg-card:hover{border-color:rgba(0,212,255,.4);}
+    .eg-card .eg-icon{font-size:1.8rem;margin-bottom:.4rem;}
+    .eg-card .eg-name{font-weight:600;font-size:.85rem;color:var(--text);margin-bottom:.2rem;}
+    .eg-card .eg-why{font-size:.75rem;color:var(--muted);}
+    .not-this{background:rgba(255,107,107,.08);border:1px solid rgba(255,107,107,.25);border-radius:10px;padding:1.25rem 1.5rem;margin:1.25rem 0 1.5rem;}
+    .not-this .nt-label{font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#ff6b6b;margin-bottom:.5rem;}
+    .not-this p{margin:0;font-size:.9rem;color:var(--text2);}
+    .compare-table{width:100%;border-collapse:collapse;margin:1rem 0 1.5rem;border-radius:10px;overflow:hidden;}
+    .compare-table thead tr{background:var(--card2);}
+    .compare-table th{padding:.8rem 1.1rem;text-align:left;font-size:.85rem;font-weight:500;color:#00d4ff;}
+    .compare-table td{padding:.8rem 1.1rem;border-bottom:1px solid var(--border);font-size:.88rem;background:var(--card);color:var(--text2);}
+    .compare-table tr:last-child td{border-bottom:none;}
+    .compare-table .pos td:first-child{color:#4ecdc4;font-weight:600;}
+    .compare-table .neg td:first-child{color:#ff6b6b;font-weight:600;}
+    .summary-box{background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.75rem 2rem;margin:1.5rem 0;}
+    .summary-box h3{font-family:'Playfair Display',serif;font-size:1.05rem;color:#00d4ff;margin-bottom:1rem;}
+    .summary-item{display:flex;gap:.6rem;margin-bottom:.5rem;align-items:flex-start;}
+    .s-dot{width:6px;height:6px;background:#00d4ff;border-radius:50%;flex-shrink:0;margin-top:8px;}
+    .summary-item p{font-size:.875rem;color:var(--text2);margin:0;}
+    .next-concept{display:flex;align-items:center;justify-content:space-between;background:var(--card);border:1px solid var(--border);border-radius:12px;padding:1.25rem 1.5rem;text-decoration:none;color:inherit;transition:all .2s;margin-top:2rem;}
+    .next-concept:hover{border-color:rgba(0,212,255,.4);transform:translateX(4px);}
+    .next-concept .nc-label{font-size:.72rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:#00d4ff;margin-bottom:.25rem;}
+    .next-concept h4{font-family:'Playfair Display',serif;font-size:1rem;color:var(--text);}
+    .next-concept .arrow{font-size:1.3rem;color:#00d4ff;}
+    .hero-photo{width:100%;max-height:360px;object-fit:cover;border-radius:14px;margin:1.25rem 0 .5rem;display:block;}
+    .photo-caption{font-size:.78rem;color:var(--muted);text-align:center;margin-bottom:2rem;font-style:italic;}
+    @media(max-width:600px){.examples-grid{grid-template-columns:1fr 1fr;}}
+  </style>
+</head>
+<body>
+<nav class="mw-nav">
+  <a class="nav-logo" href="index.html">MindWallet</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="content.html">Content</a></li>
+    <li><a href="learn.html" class="active">Learn</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <a href="learn.html" class="nav-cta">Start Learning</a>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+<div class="article-shell">
+  <div class="breadcrumb"><a href="index.html">Home</a> › <a href="learn.html">Learn</a> › <a href="learn.html#words">Financial Words</a></div>
+  <div class="type-badge"><span class="dot"></span> Financial Words</div>
+  <h1 class="article-title">What Is a Liability?</h1>
+  <div class="article-meta"><span>4 min read</span><span>·</span><span>Beginner</span></div>
+  <img src="https://images.pexels.com/photos/4386373/pexels-photo-4386373.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Liabilities are financial obligations — the money you owe to banks, creditors, or suppliers" class="hero-photo" loading="lazy"/>
+  <p class="photo-caption">📷 Liabilities are financial obligations — the money you owe to banks, creditors, or suppliers</p>
+
+  <div class="word-hero">
+    <div class="wh-word">Liability</div>
+    <div class="wh-phonetic">/ˌlaɪ.əˈbɪl.ɪ.ti/</div>
+    <div class="wh-meaning">Something you owe — a financial obligation or debt that must be repaid.</div>
+    <span class="wh-tag">noun · accounting & finance</span>
+  </div>
+  <div class="section-heading">📌 What It Means in Plain English</div>
+  <p>A liability is anything you owe money on. If you borrowed it, signed for it, or promised to pay it — it's a liability. Businesses track liabilities on their balance sheet. Individuals carry liabilities whenever they have loans, credit card balances, or unpaid bills. The goal of good financial health is to ensure your assets are always worth more than your liabilities.</p>
+  <div class="section-heading">💡 Real-Life Examples</div>
+  <div class="examples-grid">
+    <div class="eg-card"><div class="eg-icon">🏦</div><div class="eg-name">Bank Loan</div><div class="eg-why">Money borrowed — must be repaid with interest</div></div>
+    <div class="eg-card"><div class="eg-icon">💳</div><div class="eg-name">Credit Card Balance</div><div class="eg-why">Unpaid balance = liability until settled</div></div>
+    <div class="eg-card"><div class="eg-icon">🏠</div><div class="eg-name">Mortgage</div><div class="eg-why">Debt secured against a property asset</div></div>
+  </div>
+  <div class="not-this"><div class="nt-label">❌ Common Mistake</div><p>🚫 A liability is NOT always bad. A mortgage is a liability — but it also builds you an asset (your home). The problem is when liabilities exceed your assets.</p></div>
+  <div class="section-heading">📊 Comparison Table</div>
+  <table class="compare-table"><thead><tr><th>Type</th><th>Example</th><th>Risk Level</th></tr></thead><tbody><tr class="pos"><td>Short-term liability</td><td>Credit card bill due this month</td><td>Low if paid off</td></tr><tr class="neg"><td>Long-term liability</td><td>30-year mortgage</td><td>Moderate — builds asset</td></tr><tr class="neg"><td>High-interest liability</td><td>Payday loan at 300% APR</td><td>Very High</td></tr><tr class="pos"><td>Business liability</td><td>Invoice payment due to supplier</td><td>Normal — part of operations</td></tr></tbody></table>
+  <div class="section-heading">🧠 Why This Word Matters</div>
+  <p>Understanding liabilities changes how you see every debt you carry. A car loan is a liability secured against a depreciating asset — a bad deal in the long run. A business loan that generates more income than it costs is a productive liability. Knowing the difference between liabilities that drain wealth and those that build it is one of the most important financial skills you can develop.</p>
+  <div class="summary-box"><h3>⚡ Quick Summary</h3><div class="summary-item"><div class="s-dot"></div><p>Liability = something you owe to someone else</p></div><div class="summary-item"><div class="s-dot"></div><p>Common liabilities: loans, mortgages, credit card balances</p></div><div class="summary-item"><div class="s-dot"></div><p>Healthy finances = assets exceed liabilities</p></div><div class="summary-item"><div class="s-dot"></div><p>Not all liabilities are bad — productive debt builds wealth</p></div></div>
+  <a class="next-concept" href="words-net-worth.html">
+    <div><div class="nc-label">Read Next →</div><h4>What Is Net Worth?</h4></div>
+    <div class="arrow">→</div>
+  </a>
+</div>
+<footer class="mw-footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="footer-logo">MindWallet</span>
+      <p>Upgrade Your Mind. Build Your Future.</p>
+      <div class="footer-social">
+        <a href="#" class="social-icon" aria-label="YouTube"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 3.3.2 4.8 1.7 5 5 .1 1.3.1 1.6.1 4.9s0 3.6-.1 4.9c-.2 3.3-1.7 4.8-5 5-1.3.1-1.6.1-4.9.1s-3.6 0-4.9-.1c-3.3-.2-4.8-1.7-5-5C2 16.6 2 16.3 2 12s0-3.6.1-4.9c.2-3.3 1.7-4.8 5-5C8.4 2.2 8.8 2.2 12 2.2zM12 0C8.7 0 8.3 0 7.1.1 2.7.3.3 2.7.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9C.3 21.3 2.7 23.7 7.1 23.9 8.3 24 8.7 24 12 24s3.7 0 4.9-.1c4.4-.2 6.8-2.6 7-7C24 15.7 24 15.3 24 12s0-3.7-.1-4.9C23.7 2.7 21.3.3 16.9.1 15.7 0 15.3 0 12 0zm0 5.8a6.2 6.2 0 1 0 0 12.4A6.2 6.2 0 0 0 12 5.8zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.8a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M19.6 3.3A4.6 4.6 0 0 1 15.5 0h-3.4v16.4a2.7 2.7 0 0 1-2.7 2.5 2.7 2.7 0 0 1-2.7-2.7 2.7 2.7 0 0 1 2.7-2.7c.3 0 .5 0 .8.1V10a6.1 6.1 0 0 0-.8-.1 6.1 6.1 0 0 0-6.1 6.1 6.1 6.1 0 0 0 6.1 6.1 6.1 6.1 0 0 0 6.1-6.1V8.1A8 8 0 0 0 20 9.3V6a4.6 4.6 0 0 1-.4-.7z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M24 12.1C24 5.4 18.6 0 12 0S0 5.4 0 12.1C0 18.1 4.4 23.1 10.1 24v-8.4H7.1v-3.5h3V9.7c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.8v2.2h3.3l-.5 3.5H13.8V24C19.6 23.1 24 18.1 24 12.1z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Navigate</h4><a href="index.html">Home</a><a href="content.html">Content</a><a href="learn.html">Learn</a><a href="about.html">About</a></div>
+    <div class="footer-col"><h4>Content</h4><a href="content.html#tips">Finance Tips</a><a href="content.html#stories">Real-Life Stories</a></div>
+    <div class="footer-col"><h4>Learn</h4><a href="learn.html#concept">Concept Learn</a><a href="learn.html#words">Financial Words</a><a href="learn.html#accounting">Accounting</a><a href="learn.html#tricks">Tricks &amp; Strategies</a></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 MindWallet. All rights reserved.</p>
+    <p style="font-style:italic;">Upgrade Your Mind. Build Your Future.</p>
+  </div>
+</footer>
+<script>
+  document.getElementById('hamburger').addEventListener('click',function(){
+    document.getElementById('navLinks').classList.toggle('open');
+  });
+</script>
+</body>
+</html>
