@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>What Are Assets? – Mind Wallet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0a0a0a; --bg2:#111111; --card:#181818; --card2:#222222;
+      --text:#f0f0f0; --text2:#c8c8c8; --muted:#888888;
+      --border:#282828; --border2:#383838;
+      --purple:#5ab4ff; --purple-bg:rgba(90,180,255,0.08);
+    }
+    body { font-family: 'DM Sans', sans-serif; background:var(--bg); color:var(--text); line-height: 1.7; }
+
+    nav { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 5%; display:flex; align-items:center; justify-content:space-between; height:70px; position:sticky; top:0; z-index:100; }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; color:#00d4ff; text-decoration:none; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color:rgba(255,255,255,0.55); text-decoration:none; font-size:0.9rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color:#00d4ff; }
+
+    .article-shell { max-width: 780px; margin: 0 auto; padding: 2.5rem 5% 5rem; }
+
+    .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.25rem; }
+    .breadcrumb a { color:#00d4ff; text-decoration: none; }
+
+    .type-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.35rem 1rem; border-radius: 999px;
+      background:rgba(90,180,255,0.08); color:#5ab4ff;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .type-badge .dot { width: 6px; height: 6px; border-radius: 50%; background:#5ab4ff; }
+
+    /* WORD HERO */
+    .word-hero {
+      background:linear-gradient(135deg,#0d0d0d 0%,#1a1a1a 100%); border:1px solid rgba(0,212,255,0.15);
+      border-radius:16px;
+      padding: 2.5rem;
+      margin: 1.25rem 0 2.5rem;
+      text-align: center;
+      position: relative;
+      overflow: hidden;
+    }
+    .word-hero::before { content: 'A'; position: absolute; right: -10px; top: -20px; font-family: 'Playfair Display', serif; font-size: 8rem; color:rgba(0,212,255,0.05); pointer-events:none; }
+    .word-hero .wh-word { font-family:'Playfair Display',serif; font-size:clamp(2.5rem,6vw,4rem); color:#00d4ff; margin-bottom: 0.5rem; }
+    .word-hero .wh-phonetic { font-size: 0.85rem; color: rgba(255,255,255,0.4); margin-bottom: 1rem; letter-spacing: 0.05em; }
+    .word-hero .wh-meaning { font-size:1.1rem; color:var(--text); font-family: 'Playfair Display', serif; font-style: italic; }
+    .word-hero .wh-tag { display: inline-block; margin-top: 1rem; padding: 0.25rem 0.9rem; border-radius: 999px; background:rgba(0,212,255,0.1); border:1px solid rgba(0,212,255,0.3); font-size:0.75rem; color:#00d4ff; }
+
+    .article-meta { display: flex; gap: 1.25rem; color: var(--muted); font-size: 0.82rem; margin-bottom: 1.5rem; flex-wrap: wrap; }
+
+    .section-heading { font-family: 'Playfair Display', serif; font-size:1.3rem; color:var(--text); margin:2.25rem 0 0.9rem; padding-left:0.9rem; border-left:3px solid #00d4ff; }
+
+    p { font-size:0.97rem; color:var(--text2); line-height:1.8; margin-bottom: 1.1rem; }
+
+    /* EXAMPLES GRID */
+    .examples-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin: 1.25rem 0 1.5rem; }
+    .eg-card { background:var(--card); border:1px solid var(--border); border-radius: 10px; padding: 1.1rem; text-align: center; transition: all 0.2s; }
+    .eg-card:hover { border-color:rgba(0,212,255,0.4); }
+    .eg-card .eg-icon { font-size: 1.8rem; margin-bottom: 0.4rem; }
+    .eg-card .eg-name { font-weight:600; font-size:0.85rem; color:var(--text); margin-bottom: 0.2rem; }
+    .eg-card .eg-why { font-size: 0.75rem; color: var(--muted); }
+
+    /* NOT THIS BOX */
+    .not-this { background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.25); border-radius: 10px; padding: 1.25rem 1.5rem; margin: 1.25rem 0 1.5rem; }
+    .not-this .nt-label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.1em; color:#ff6b6b; margin-bottom:0.5rem; }
+    .not-this p { margin:0; font-size:0.9rem; color:var(--text2); }
+
+    /* COMPARISON TABLE */
+    .compare-table { width: 100%; border-collapse: collapse; margin: 1rem 0 1.5rem; border-radius: 10px; overflow: hidden; }
+    .compare-table thead tr { background:var(--card2); }
+    .compare-table th { padding:0.8rem 1.1rem; text-align:left; font-size:0.85rem; font-weight:500; color:#00d4ff; }
+    .compare-table td { padding:0.8rem 1.1rem; border-bottom:1px solid var(--border); font-size:0.88rem; background:var(--card); color:var(--text2); }
+    .compare-table .asset-row td:first-child { color:#4ecdc4; font-weight: 600; }
+    .compare-table .liability-row td:first-child { color:#ff6b6b; font-weight: 600; }
+    .compare-table tr:last-child td { border-bottom: none; }
+
+    /* WHY IMPORTANT */
+    .why-list { list-style: none; margin: 0.75rem 0 1.5rem; }
+    .why-list li { display:flex; gap:0.75rem; align-items:flex-start; margin-bottom:0.75rem; font-size:0.92rem; color:var(--text2); }
+    .why-list li::before { content:'→'; color:#00d4ff; font-weight: 700; flex-shrink: 0; }
+
+    /* REAL SENTENCE */
+    .sentence-box { background:var(--card); border:2px dashed rgba(0,212,255,0.4); border-radius: 12px; padding: 1.5rem 2rem; margin: 1.25rem 0 1.5rem; text-align: center; }
+    .sentence-box .sb-label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#00d4ff; margin-bottom:0.5rem; }
+    .sentence-box p { font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--text); font-style:italic; margin:0; }
+
+    /* SUMMARY */
+    .summary-box { background:var(--card); border:1px solid var(--border); border-radius: 12px; padding: 1.75rem 2rem; margin: 2rem 0; }
+    .summary-box h3 { font-family:'Playfair Display',serif; font-size:1.05rem; color:#00d4ff; margin-bottom:1rem; }
+    .summary-item { display: flex; gap: 0.6rem; margin-bottom: 0.6rem; }
+    .s-dot { width:6px; height:6px; background:#00d4ff; border-radius: 50%; flex-shrink: 0; margin-top: 8px; }
+    .summary-item p { font-size: 0.875rem; color:var(--text2); margin:0; }
+
+    .next-concept { display: flex; align-items: center; justify-content: space-between; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.25rem 1.5rem; text-decoration:none; color:inherit; margin-top:2rem; transition: all 0.2s; }
+    .next-concept:hover { border-color:rgba(0,212,255,0.4); transform: translateX(4px); }
+    .next-concept .nc-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing:0.08em; color:#00d4ff; margin-bottom:0.25rem; }
+    .next-concept h4 { font-family:'Playfair Display',serif; font-size:1rem; color:var(--text); }
+    .next-concept .arrow { font-size:1.3rem; color:#00d4ff; }
+
+    footer { background:var(--bg2); border-top:1px solid var(--border); color:var(--muted); text-align: center; padding: 2.5rem 5%; font-size: 0.85rem; margin-top: 4rem; }
+    footer .footer-logo { font-family:'Playfair Display',serif; color:#00d4ff; font-size: 1.2rem; margin-bottom: 1rem; display: block; }
+    footer .footer-links { display: flex; gap: 1.5rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    footer .footer-links a { color:var(--muted); text-decoration: none; transition: color 0.2s; }
+    footer .footer-links a:hover { color:#00d4ff; }
+
+    @media(max-width:600px){ .examples-grid{grid-template-columns:1fr 1fr;} }
+
+    /* PHOTO STYLES */
+    .hero-photo { width:100%; max-height:360px; object-fit:cover; border-radius:14px; margin:1.25rem 0 0.5rem; display:block; }
+    .photo-caption { font-size:0.78rem; color:var(--muted); text-align:center; margin-bottom:2rem; font-style:italic; }
+    .inline-photo-wrap { margin:1.5rem 0; }
+    .inline-photo { width:100%; max-height:240px; object-fit:cover; border-radius:10px; display:block; }
+    .inline-caption { font-size:0.76rem; color:var(--muted); margin-top:0.4rem; font-style:italic; text-align:center; }
+  </style>
+  <link rel="stylesheet" href="mindwallet.css"/>
+</head>
+<body>
+
+<nav class="mw-nav">
+  <a class="nav-logo" href="index.html">MindWallet</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="content.html">Content</a></li>
+    <li><a href="learn.html">Learn</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <a href="learn.html" class="nav-cta">Start Learning</a>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="article-shell">
+
+  <div class="breadcrumb"><a href="index.html">Home</a> › <a href="learn.html">Learn</a> › Financial Words</div>
+  <div class="type-badge"><span class="dot"></span> Financial Word</div>
+
+  <!-- 1️⃣ WORD AS TITLE -->
+  <div class="word-hero">
+    <div class="wh-word">Assets</div>
+    <div class="wh-phonetic">/ ˈæs·ets /</div>
+    <div class="wh-meaning">Things that put money in your pocket.</div>
+    <span class="wh-tag">Finance Vocabulary</span>
+  </div>
+  <div class="article-meta"><span>?? Financial Words</span><span>·</span><span>4 min read</span><span>·</span><span>Beginner</span>
+  <img src="https://images.pexels.com/photos/1546168/pexels-photo-1546168.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Real estate is one of the most common income-generating assets" class="hero-photo" loading="lazy"/>
+  <p class="photo-caption">📷 Real estate is one of the most common income-generating assets</p>
+</div>
+
+  <!-- 3️⃣ EASY EXAMPLES -->
+  <div class="section-heading">💼 Easy Examples of Assets</div>
+  <div class="examples-grid">
+    <div class="eg-card"><div class="eg-icon">??</div><div class="eg-name">Rental Property</div><div class="eg-why">Earns rent income monthly</div></div>
+    <div class="eg-card"><div class="eg-icon">??</div><div class="eg-name">Investments</div><div class="eg-why">Grows in value over time</div></div>
+    <div class="eg-card"><div class="eg-icon">??</div><div class="eg-name">A Business</div><div class="eg-why">Generates profit and cash flow</div></div>
+  </div>
+
+  <!-- 4️⃣ NOT THIS (CONFUSION) -->
+  <div class="section-heading">❌ Not This — Common Confusion</div>
+  <div class="not-this">
+    <div class="nt-label">❌ What People Often Think</div>
+    <p><strong>People think their home is always an asset.</strong> But if you live in it and it costs you money every month (mortgage, maintenance, taxes) without generating income, it's actually behaving more like a liability. An asset puts money IN your pocket — a liability takes money OUT.</p>
+  </div>
+
+  <!-- 5️⃣ COMPARISON TABLE -->
+  <div class="section-heading">📊 Asset vs Liability — Side by Side</div>
+  <table class="compare-table">
+    <thead><tr><th>Type</th><th>Definition</th><th>Example</th><th>Effect</th></tr></thead>
+    <tbody>
+      <tr class="asset-row"><td>✅ Asset</td><td>Puts money in your pocket</td><td>Rental property, stocks</td><td>Increases your wealth</td></tr>
+      <tr class="liability-row"><td>❌ Liability</td><td>Takes money out of your pocket</td><td>Car loan, credit card debt</td><td>Decreases your wealth</td></tr>
+    </tbody>
+  </table>
+
+  <!-- 6️⃣ WHY IMPORTANT -->
+  <div class="section-heading">💡 Why This Word Is Important</div>
+  <ul class="why-list">
+    <li>📈 Building wealth means acquiring more assets and reducing liabilities</li>
+    <li>🧠 Knowing the difference helps you make smarter purchase decisions</li>
+    <li>🏦 Banks and investors use assets to judge your financial health</li>
+    <li>🔑 The more income-producing assets you own, the less dependent you are on a salary</li>
+  </ul>
+
+  <!-- 7️⃣ USE IN A REAL SENTENCE -->
+  <div class="section-heading">💬 Use It in a Real Sentence</div>
+  <div class="sentence-box">
+    <div class="sb-label">?? Example</div>
+    <p>"A house can be an asset or a liability — it depends on whether it puts money in your pocket or takes money out."</p>
+  </div>
+
+
+  <div class="inline-photo-wrap">
+    <img src="https://images.pexels.com/photos/6801648/pexels-photo-6801648.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Building an asset portfolio takes time and strategy" class="inline-photo" loading="lazy"/>
+    <p class="inline-caption">📸 Building an asset portfolio takes time and strategy</p>
+  </div>
+
+  <!-- 8️⃣ SUMMARY -->
+  <div class="summary-box">
+    <h3>⚡ 1-Minute Summary</h3>
+    <div class="summary-item"><div class="s-dot"></div><p>An asset is anything that generates income or grows in value</p></div>
+    <div class="summary-item"><div class="s-dot"></div><p>Examples: rental property, shares, business, savings with interest</p></div>
+    <div class="summary-item"><div class="s-dot"></div><p>Not all "valuable" things are assets — a car you drive loses value</p></div>
+    <div class="summary-item"><div class="s-dot"></div><p>Building wealth = collecting assets, reducing liabilities</p></div>
+  </div>
+
+  <a class="next-concept" href="learn.html">
+    <div><div class="nc-label">Learn Next →</div><h4>What Is a Liability?</h4></div>
+    <div class="arrow">→</div>
+  </a>
+
+</div>
+
+<footer class="mw-footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="footer-logo">MindWallet</span>
+      <p>Upgrade Your Mind. Build Your Future. Simple finance education, real stories, and practical money knowledge for modern learners.</p>
+      <div class="footer-social">
+        <a href="#" class="social-icon" aria-label="YouTube"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 3.3.2 4.8 1.7 5 5 .1 1.3.1 1.6.1 4.9s0 3.6-.1 4.9c-.2 3.3-1.7 4.8-5 5-1.3.1-1.6.1-4.9.1s-3.6 0-4.9-.1c-3.3-.2-4.8-1.7-5-5C2 16.6 2 16.3 2 12s0-3.6.1-4.9c.2-3.3 1.7-4.8 5-5C8.4 2.2 8.8 2.2 12 2.2zM12 0C8.7 0 8.3 0 7.1.1 2.7.3.3 2.7.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9C.3 21.3 2.7 23.7 7.1 23.9 8.3 24 8.7 24 12 24s3.7 0 4.9-.1c4.4-.2 6.8-2.6 7-7C24 15.7 24 15.3 24 12s0-3.7-.1-4.9C23.7 2.7 21.3.3 16.9.1 15.7 0 15.3 0 12 0zm0 5.8a6.2 6.2 0 1 0 0 12.4A6.2 6.2 0 0 0 12 5.8zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.8a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M19.6 3.3A4.6 4.6 0 0 1 15.5 0h-3.4v16.4a2.7 2.7 0 0 1-2.7 2.5 2.7 2.7 0 0 1-2.7-2.7 2.7 2.7 0 0 1 2.7-2.7c.3 0 .5 0 .8.1V10a6.1 6.1 0 0 0-.8-.1 6.1 6.1 0 0 0-6.1 6.1 6.1 6.1 0 0 0 6.1 6.1 6.1 6.1 0 0 0 6.1-6.1V8.1A8 8 0 0 0 20 9.3V6a4.6 4.6 0 0 1-.4-.7z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M24 12.1C24 5.4 18.6 0 12 0S0 5.4 0 12.1C0 18.1 4.4 23.1 10.1 24v-8.4H7.1v-3.5h3V9.7c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.8v2.2h3.3l-.5 3.5H13.8V24C19.6 23.1 24 18.1 24 12.1z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Navigate</h4><a href="index.html">Home</a><a href="content.html">Content</a><a href="learn.html">Learn</a><a href="about.html">About</a></div>
+    <div class="footer-col"><h4>Content</h4><a href="content.html#tips">Finance Tips</a><a href="content.html#stories">Real-Life Stories</a></div>
+    <div class="footer-col"><h4>Learn</h4><a href="learn.html#concept">Concept Learn</a><a href="learn.html#words">Financial Words</a><a href="learn.html#accounting">Accounting</a><a href="learn.html#tricks">Tricks &amp; Strategies</a></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 MindWallet. All rights reserved.</p>
+    <p style="font-style:italic;">Upgrade Your Mind. Build Your Future.</p>
+  </div>
+</footer>
+<script>
+  document.getElementById('hamburger').addEventListener('click', function() {
+    document.getElementById('navLinks').classList.toggle('open');
+  });
+</script>
+</body>
+</html>

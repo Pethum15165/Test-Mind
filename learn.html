@@ -1,0 +1,324 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Learn — MindWallet</title>
+  <meta name="description" content="Learn finance concepts, financial words, accounting basics, and money strategies — all in simple language."/>
+  <link rel="stylesheet" href="mindwallet.css"/>
+  <style>
+    /* PAGE HERO */
+    .page-hero {
+      background: radial-gradient(ellipse 80% 50% at 50% 0%, rgba(0,212,255,0.07) 0%, transparent 70%), var(--bg3);
+      border-bottom: 1px solid var(--border);
+      padding: 4rem 5% 3.5rem;
+      text-align: center;
+    }
+    .page-hero .ph-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 0.75rem; }
+    .page-hero h1 { font-family: 'Playfair Display', serif; font-size: clamp(2rem, 5vw, 3.2rem); color: var(--text); line-height: 1.15; margin-bottom: 1rem; }
+    .page-hero p { font-size: 1.05rem; color: var(--muted); max-width: 560px; margin: 0 auto; line-height: 1.7; }
+
+    /* LEARN TABS */
+    .content-tabs {
+      display: flex; gap: 0;
+      border-bottom: 1px solid var(--border);
+      padding: 0 5%;
+      background: var(--bg2);
+      position: sticky; top: 70px; z-index: 100;
+      overflow-x: auto;
+    }
+    .content-tab {
+      padding: 1.1rem 1.5rem; font-size: 0.875rem; font-weight: 500;
+      color: var(--muted); text-decoration: none;
+      border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap;
+    }
+    .content-tab:hover { color: var(--text); }
+    .content-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+
+    /* LEARN SECTIONS */
+    .learn-section { padding: 4rem 5%; max-width: 1100px; margin: 0 auto; }
+    .ls-header { margin-bottom: 2.5rem; }
+    .ls-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; margin-bottom: 0.5rem; }
+    .ls-label.concept-l { color: var(--blue); }
+    .ls-label.words-l   { color: var(--blue); }
+    .ls-label.accounting-l { color: var(--teal); }
+    .ls-label.tricks-l  { color: var(--teal); }
+
+    .ls-header h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.5rem, 3vw, 2rem); color: var(--text); margin-bottom: 0.4rem; }
+    .ls-header p  { font-size: 0.9rem; color: var(--muted); }
+
+    /* CARDS GRID */
+    .learn-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; }
+
+    /* FEATURED LARGE */
+    .learn-card-large {
+      grid-column: span 3;
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 16px; overflow: hidden;
+      display: grid; grid-template-columns: 1fr 1fr;
+      text-decoration: none; color: inherit; transition: all 0.25s;
+    }
+    .learn-card-large:hover { border-color: rgba(0,212,255,0.3); transform: translateY(-3px); box-shadow: 0 10px 35px rgba(0,0,0,0.3); }
+    .lcl-img { height: 260px; overflow: hidden; }
+    .lcl-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; }
+    .learn-card-large:hover .lcl-img img { transform: scale(1.04); }
+    .lcl-body { padding: 2.5rem 2rem; display: flex; flex-direction: column; justify-content: center; }
+    .lcl-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.3rem 0.9rem; border-radius: 999px;
+      font-size: 0.7rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 1rem; width: fit-content;
+    }
+    .lcl-badge.concept-b  { background: rgba(90,180,255,0.1);  color: var(--blue); }
+    .lcl-badge.words-b    { background: rgba(90,180,255,0.1);  color: var(--blue); }
+    .lcl-badge.accounting-b { background: rgba(78,205,196,0.1); color: var(--teal); }
+    .lcl-badge.tricks-b   { background: rgba(78,205,196,0.1);  color: var(--teal); }
+    .lcl-body h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.3rem, 2.5vw, 1.75rem); color: var(--text); line-height: 1.25; margin-bottom: 0.75rem; }
+    .lcl-body p  { font-size: 0.92rem; color: var(--muted); margin-bottom: 1.5rem; line-height: 1.7; }
+    .lcl-meta    { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.25rem; }
+    .lcl-read-btn {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.65rem 1.5rem; border-radius: 6px;
+      font-size: 0.875rem; font-weight: 600; text-decoration: none; width: fit-content;
+      transition: background 0.2s;
+    }
+    .lcl-read-btn.concept-btn  { background: var(--blue);  color: #0a0a0a; }
+    .lcl-read-btn.words-btn    { background: var(--blue);  color: #0a0a0a; }
+    .lcl-read-btn.accounting-btn { background: var(--teal); color: #0a0a0a; }
+    .lcl-read-btn.tricks-btn   { background: var(--teal);  color: #0a0a0a; }
+    .lcl-read-btn:hover { opacity: 0.88; }
+
+    /* SMALL CARDS */
+    .learn-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; overflow: hidden;
+      text-decoration: none; color: inherit; transition: all 0.25s;
+      display: flex; flex-direction: column;
+    }
+    .learn-card:hover { border-color: rgba(0,212,255,0.3); transform: translateY(-4px); box-shadow: 0 10px 35px rgba(0,0,0,0.3); }
+    .lc-img { height: 155px; overflow: hidden; position: relative; }
+    .lc-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s; display: block; }
+    .learn-card:hover .lc-img img { transform: scale(1.04); }
+    .lc-cat {
+      position: absolute; top: 10px; left: 10px;
+      padding: 0.2rem 0.65rem; border-radius: 999px;
+      font-size: 0.65rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      backdrop-filter: blur(8px);
+    }
+    .lc-cat.concept-c    { background: rgba(90,180,255,0.2);  color: var(--blue); }
+    .lc-cat.words-c      { background: rgba(90,180,255,0.2);  color: var(--blue); }
+    .lc-cat.accounting-c { background: rgba(78,205,196,0.2);  color: var(--teal); }
+    .lc-cat.tricks-c     { background: rgba(78,205,196,0.2);  color: var(--teal); }
+    .lc-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+    .lc-body h3 { font-family: 'Playfair Display', serif; font-size: 0.97rem; color: var(--text); line-height: 1.4; margin-bottom: 0.5rem; }
+    .lc-body p  { font-size: 0.8rem; color: var(--muted); margin-bottom: 1rem; flex: 1; line-height: 1.55; }
+    .lc-footer  { display: flex; justify-content: space-between; font-size: 0.74rem; color: var(--muted); border-top: 1px solid var(--border); padding-top: 0.7rem; }
+    .lc-footer .lf-link { font-weight: 600; }
+    .lc-footer .lf-link.concept-link    { color: var(--blue); }
+    .lc-footer .lf-link.words-link      { color: var(--blue); }
+    .lc-footer .lf-link.accounting-link { color: var(--teal); }
+    .lc-footer .lf-link.tricks-link     { color: var(--teal); }
+
+    /* COMING SOON */
+    .card-coming {
+      background: var(--card); border: 1px dashed var(--border2);
+      border-radius: 14px; padding: 2rem; text-align: center;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 200px;
+    }
+    .card-coming .cc-icon { font-size: 1.75rem; margin-bottom: 0.7rem; opacity: 0.4; }
+    .card-coming h3 { font-size: 0.9rem; color: var(--muted); margin-bottom: 0.35rem; }
+    .card-coming p  { font-size: 0.78rem; color: var(--border2); margin: 0; }
+
+    .section-divider { height: 1px; background: var(--border); margin: 0 5%; }
+
+    @media (max-width: 900px) {
+      .learn-grid { grid-template-columns: repeat(2, 1fr); }
+      .learn-card-large { grid-column: span 2; grid-template-columns: 1fr; }
+      .lcl-img { height: 220px; }
+    }
+    @media (max-width: 600px) {
+      .learn-grid { grid-template-columns: 1fr; }
+      .learn-card-large { grid-column: span 1; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="mw-nav">
+  <a class="nav-logo" href="index.html">MindWallet</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="content.html">Content</a></li>
+    <li><a href="learn.html" class="active">Learn</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <a href="learn.html" class="nav-cta">Start Learning</a>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- PAGE HERO -->
+<section class="page-hero">
+  <div class="ph-label">Learn Hub</div>
+  <h1>Build real financial knowledge</h1>
+  <p>Concepts, vocabulary, accounting fundamentals, and money strategies — all explained simply for everyday people.</p>
+</section>
+
+<!-- TABS -->
+<div class="content-tabs">
+  <a href="#concept"    class="content-tab active">🎓 Concept Learn</a>
+  <a href="#words"      class="content-tab">📘 Financial Words</a>
+  <a href="#accounting" class="content-tab">📊 Accounting Learn</a>
+  <a href="#tricks"     class="content-tab">🧠 Tricks & Strategies</a>
+</div>
+
+<!-- ── CONCEPT LEARN ── -->
+<div id="concept" class="learn-section">
+  <div class="ls-header">
+    <div class="ls-label concept-l">Concept Learn</div>
+    <h2>Big finance ideas, made simple</h2>
+    <p>Understand the economic forces and financial concepts that affect your money every day.</p>
+  </div>
+  <div class="learn-grid">
+    <a href="article-concept.html" class="learn-card-large">
+      <div class="lcl-img">
+        <img src="https://images.pexels.com/photos/3943716/pexels-photo-3943716.jpeg?auto=compress&cs=tinysrgb&w=900" alt="What is inflation" loading="lazy"/>
+      </div>
+      <div class="lcl-body">
+        <div class="lcl-badge concept-b">🎓 Concept Learn</div>
+        <h2>What Is Inflation?</h2>
+        <p>Inflation silently erodes the value of your money year by year. This guide explains how it works, why it matters to your daily life, and what you can do to protect yourself.</p>
+        <div class="lcl-meta">5 min read · Beginner</div>
+        <span class="lcl-read-btn concept-btn">Read Article →</span>
+      </div>
+    </a>
+    <div class="card-coming"><div class="cc-icon">🎓</div><h3>What Is an Interest Rate?</h3><p>Coming soon</p></div>
+    <div class="card-coming"><div class="cc-icon">🎓</div><h3>What Is Compound Interest?</h3><p>Coming soon</p></div>
+    <div class="card-coming"><div class="cc-icon">🎓</div><h3>What Is a Stock Market?</h3><p>Coming soon</p></div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ── FINANCIAL WORDS ── -->
+<div id="words" class="learn-section">
+  <div class="ls-header">
+    <div class="ls-label words-l">Financial Words Explained</div>
+    <h2>The language of money, decoded</h2>
+    <p>One financial word at a time — clear definitions, real examples, and practical context.</p>
+  </div>
+  <div class="learn-grid">
+    <a href="article-words.html" class="learn-card-large">
+      <div class="lcl-img">
+        <img src="https://images.pexels.com/photos/534216/pexels-photo-534216.jpeg?auto=compress&cs=tinysrgb&w=900" alt="What are assets" loading="lazy"/>
+      </div>
+      <div class="lcl-body">
+        <div class="lcl-badge words-b">📘 Financial Words</div>
+        <h2>What Are Assets?</h2>
+        <p>Assets are things you own that hold or grow in value. Understanding this one word can transform how you see every financial decision you make — from buying a car to choosing where to live.</p>
+        <div class="lcl-meta">4 min read · Beginner</div>
+        <span class="lcl-read-btn words-btn">Read Article →</span>
+      </div>
+    </a>
+    <div class="card-coming"><div class="cc-icon">📘</div><h3>What Is a Liability?</h3><p>Coming soon</p></div>
+    <div class="card-coming"><div class="cc-icon">📘</div><h3>What Is Net Worth?</h3><p>Coming soon</p></div>
+    <div class="card-coming"><div class="cc-icon">📘</div><h3>What Is Cash Flow?</h3><p>Coming soon</p></div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ── ACCOUNTING LEARN ── -->
+<div id="accounting" class="learn-section">
+  <div class="ls-header">
+    <div class="ls-label accounting-l">Accounting Learn</div>
+    <h2>Numbers made understandable</h2>
+    <p>No accounting degree required. Learn the fundamentals of financial tracking for life and business.</p>
+  </div>
+  <div class="learn-grid">
+    <a href="article-accounting.html" class="learn-card-large">
+      <div class="lcl-img">
+        <img src="https://images.pexels.com/photos/6863183/pexels-photo-6863183.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Profit and loss" loading="lazy"/>
+      </div>
+      <div class="lcl-body">
+        <div class="lcl-badge accounting-b">📊 Accounting</div>
+        <h2>What Is Profit and Loss?</h2>
+        <p>P&amp;L is the most fundamental accounting concept — and once you understand it, you'll see your personal finances, business, and the news in a completely different way.</p>
+        <div class="lcl-meta">5 min read · Beginner</div>
+        <span class="lcl-read-btn accounting-btn">Read Article →</span>
+      </div>
+    </a>
+    <div class="card-coming"><div class="cc-icon">📊</div><h3>What Is a Balance Sheet?</h3><p>Coming soon</p></div>
+    <div class="card-coming"><div class="cc-icon">📊</div><h3>What Is a Budget?</h3><p>Coming soon</p></div>
+    <div class="card-coming"><div class="cc-icon">📊</div><h3>What Is Cash Flow Statement?</h3><p>Coming soon</p></div>
+  </div>
+</div>
+
+<div class="section-divider"></div>
+
+<!-- ── TRICKS & STRATEGIES ── -->
+<div id="tricks" class="learn-section">
+  <div class="ls-header">
+    <div class="ls-label tricks-l">Tricks & Strategies</div>
+    <h2>Proven playbooks for your money</h2>
+    <p>Not hacks. Not shortcuts. Practical, tested strategies that work in the real world for real people.</p>
+  </div>
+  <div class="learn-grid">
+    <a href="article-tricks.html" class="learn-card-large">
+      <div class="lcl-img">
+        <img src="https://images.pexels.com/photos/4386442/pexels-photo-4386442.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Save money low income" loading="lazy"/>
+      </div>
+      <div class="lcl-body">
+        <div class="lcl-badge tricks-b">🧠 Strategy</div>
+        <h2>How to Save Money Even With a Low Income</h2>
+        <p>Most saving advice assumes you earn a lot. This strategy was built specifically for people who don't — and it uses a three-step system that actually works, no matter your income level.</p>
+        <div class="lcl-meta">6 min read · All levels</div>
+        <span class="lcl-read-btn tricks-btn">Read Article →</span>
+      </div>
+    </a>
+    <div class="card-coming"><div class="cc-icon">🧠</div><h3>The Pay Yourself First Strategy</h3><p>Coming soon</p></div>
+    <div class="card-coming"><div class="cc-icon">🧠</div><h3>How to Get Out of Debt Faster</h3><p>Coming soon</p></div>
+    <div class="card-coming"><div class="cc-icon">🧠</div><h3>The 30-Day Money Reset</h3><p>Coming soon</p></div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="mw-footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="footer-logo">MindWallet</span>
+      <p>Upgrade Your Mind. Build Your Future. Simple finance education, real stories, and practical money knowledge for modern learners.</p>
+      <div class="footer-social">
+        <a href="#" class="social-icon" aria-label="YouTube"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 3.3.2 4.8 1.7 5 5 .1 1.3.1 1.6.1 4.9s0 3.6-.1 4.9c-.2 3.3-1.7 4.8-5 5-1.3.1-1.6.1-4.9.1s-3.6 0-4.9-.1c-3.3-.2-4.8-1.7-5-5C2 16.6 2 16.3 2 12s0-3.6.1-4.9c.2-3.3 1.7-4.8 5-5C8.4 2.2 8.8 2.2 12 2.2zM12 0C8.7 0 8.3 0 7.1.1 2.7.3.3 2.7.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9C.3 21.3 2.7 23.7 7.1 23.9 8.3 24 8.7 24 12 24s3.7 0 4.9-.1c4.4-.2 6.8-2.6 7-7C24 15.7 24 15.3 24 12s0-3.7-.1-4.9C23.7 2.7 21.3.3 16.9.1 15.7 0 15.3 0 12 0zm0 5.8a6.2 6.2 0 1 0 0 12.4A6.2 6.2 0 0 0 12 5.8zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.8a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M19.6 3.3A4.6 4.6 0 0 1 15.5 0h-3.4v16.4a2.7 2.7 0 0 1-2.7 2.5 2.7 2.7 0 0 1-2.7-2.7 2.7 2.7 0 0 1 2.7-2.7c.3 0 .5 0 .8.1V10a6.1 6.1 0 0 0-.8-.1 6.1 6.1 0 0 0-6.1 6.1 6.1 6.1 0 0 0 6.1 6.1 6.1 6.1 0 0 0 6.1-6.1V8.1A8 8 0 0 0 20 9.3V6a4.6 4.6 0 0 1-.4-.7z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M24 12.1C24 5.4 18.6 0 12 0S0 5.4 0 12.1C0 18.1 4.4 23.1 10.1 24v-8.4H7.1v-3.5h3V9.7c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.8v2.2h3.3l-.5 3.5H13.8V24C19.6 23.1 24 18.1 24 12.1z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Navigate</h4><a href="index.html">Home</a><a href="content.html">Content</a><a href="learn.html">Learn</a><a href="about.html">About</a></div>
+    <div class="footer-col"><h4>Content</h4><a href="content.html#tips">Finance Tips</a><a href="content.html#stories">Real-Life Stories</a></div>
+    <div class="footer-col"><h4>Learn</h4><a href="learn.html#concept">Concept Learn</a><a href="learn.html#words">Financial Words</a><a href="learn.html#accounting">Accounting</a><a href="learn.html#tricks">Tricks & Strategies</a></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 MindWallet. All rights reserved.</p>
+    <p style="font-style:italic;">Upgrade Your Mind. Build Your Future.</p>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('hamburger').addEventListener('click', function() {
+    document.getElementById('navLinks').classList.toggle('open');
+  });
+  const tabs = document.querySelectorAll('.content-tab');
+  tabs.forEach(tab => {
+    tab.addEventListener('click', function() {
+      tabs.forEach(t => t.classList.remove('active'));
+      this.classList.add('active');
+    });
+  });
+</script>
+</body>
+</html>

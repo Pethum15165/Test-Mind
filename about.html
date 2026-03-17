@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>About — MindWallet</title>
+  <meta name="description" content="MindWallet is a modern financial education platform. Learn about our mission, values, and the content we create."/>
+  <link rel="stylesheet" href="mindwallet.css"/>
+  <style>
+    /* ABOUT HERO */
+    .about-hero {
+      min-height: 420px;
+      display: flex; align-items: center; justify-content: center;
+      background: radial-gradient(ellipse 80% 60% at 50% 0%, rgba(0,212,255,0.09) 0%, transparent 70%), var(--bg3);
+      border-bottom: 1px solid var(--border);
+      padding: 5rem 5%;
+      text-align: center;
+      position: relative; overflow: hidden;
+    }
+    .about-hero-bg-text {
+      position: absolute; font-family: 'Playfair Display', serif;
+      font-size: clamp(8rem, 18vw, 18rem); font-weight: 700; font-style: italic;
+      color: rgba(0,212,255,0.03); pointer-events: none;
+      top: 50%; left: 50%; transform: translate(-50%,-50%); white-space: nowrap;
+      user-select: none;
+    }
+    .about-hero-content { position: relative; z-index: 1; max-width: 700px; }
+    .ah-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 0.75rem; }
+    .about-hero h1 {
+      font-family: 'Playfair Display', serif;
+      font-size: clamp(2.2rem, 5vw, 3.5rem);
+      color: var(--text); line-height: 1.12; margin-bottom: 1.25rem;
+    }
+    .about-hero p { font-size: 1.1rem; color: var(--muted); line-height: 1.7; max-width: 580px; margin: 0 auto; }
+
+    /* SECTIONS */
+    .about-section { padding: 5rem 5%; max-width: 1100px; margin: 0 auto; }
+    .as-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 0.75rem; }
+    .as-title { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 3vw, 2.2rem); color: var(--text); margin-bottom: 1.25rem; line-height: 1.2; }
+    .as-body { font-size: 1rem; color: var(--text2); line-height: 1.85; max-width: 700px; }
+    .as-body p { margin-bottom: 1.1rem; font-size: 1rem; color: var(--text2); }
+
+    /* MISSION SPLIT */
+    .mission-split {
+      display: grid; grid-template-columns: 1fr 1fr; gap: 2.5rem;
+      align-items: center; padding: 5rem 5%; max-width: 1100px; margin: 0 auto;
+    }
+    .ms-image { border-radius: 16px; overflow: hidden; }
+    .ms-image img { width: 100%; height: 380px; object-fit: cover; display: block; }
+    .ms-text .mst-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 0.75rem; }
+    .ms-text h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 3vw, 2.2rem); color: var(--text); margin-bottom: 1.25rem; line-height: 1.2; }
+    .ms-text p { font-size: 0.97rem; color: var(--text2); line-height: 1.85; margin-bottom: 1rem; }
+
+    /* VALUES */
+    .values-section {
+      background: var(--bg2); border-top: 1px solid var(--border); border-bottom: 1px solid var(--border);
+      padding: 5rem 5%;
+    }
+    .values-inner { max-width: 1100px; margin: 0 auto; }
+    .values-header { text-align: center; margin-bottom: 3rem; }
+    .values-header .v-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 0.75rem; }
+    .values-header h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 3vw, 2.2rem); color: var(--text); }
+    .values-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.25rem; }
+    .value-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.75rem 1.5rem; text-align: center;
+      transition: all 0.25s;
+    }
+    .value-card:hover { border-color: rgba(0,212,255,0.3); transform: translateY(-3px); }
+    .value-icon { font-size: 2rem; margin-bottom: 1rem; display: block; }
+    .value-card h3 { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
+    .value-card p { font-size: 0.82rem; color: var(--muted); margin: 0; line-height: 1.6; }
+
+    /* WHAT WE CREATE */
+    .create-section { padding: 5rem 5%; max-width: 1100px; margin: 0 auto; }
+    .create-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.25rem; margin-top: 2.5rem; }
+    .create-card {
+      border-radius: 14px; padding: 1.75rem;
+      border: 1px solid transparent;
+    }
+    .create-card.c1 { background: rgba(0,212,255,0.06); border-color: rgba(0,212,255,0.15); }
+    .create-card.c2 { background: rgba(255,107,107,0.06); border-color: rgba(255,107,107,0.15); }
+    .create-card.c3 { background: rgba(90,180,255,0.06); border-color: rgba(90,180,255,0.15); }
+    .create-card.c4 { background: rgba(78,205,196,0.06); border-color: rgba(78,205,196,0.15); }
+    .create-card.c5 { background: rgba(78,205,196,0.06); border-color: rgba(78,205,196,0.15); }
+    .create-card.c6 { background: var(--card); border-color: var(--border); }
+    .cc-icon-lg { font-size: 1.75rem; margin-bottom: 0.75rem; display: block; }
+    .create-card h3 { font-size: 0.97rem; font-weight: 600; color: var(--text); margin-bottom: 0.5rem; }
+    .create-card p { font-size: 0.83rem; color: var(--muted); margin: 0; line-height: 1.6; }
+
+    /* SOCIAL MEDIA SECTION */
+    .social-section {
+      padding: 5rem 5%;
+      text-align: center;
+      background: radial-gradient(ellipse 60% 50% at 50% 50%, rgba(0,212,255,0.06) 0%, transparent 70%);
+    }
+    .social-inner { max-width: 700px; margin: 0 auto; }
+    .social-section .ss-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); margin-bottom: 0.75rem; }
+    .social-section h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.6rem, 3vw, 2.2rem); color: var(--text); margin-bottom: 1rem; }
+    .social-section p { font-size: 1rem; color: var(--muted); margin-bottom: 2.5rem; line-height: 1.7; }
+    .social-cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; }
+    .social-card {
+      background: var(--card); border: 1px solid var(--border);
+      border-radius: 14px; padding: 1.75rem 1rem;
+      text-decoration: none; color: inherit;
+      transition: all 0.25s; text-align: center;
+    }
+    .social-card:hover { transform: translateY(-4px); box-shadow: 0 10px 30px rgba(0,0,0,0.3); }
+    .social-card.yt:hover  { border-color: #ff0000; }
+    .social-card.ig:hover  { border-color: #e1306c; }
+    .social-card.tt:hover  { border-color: #69C9D0; }
+    .social-card.fb:hover  { border-color: #1877f2; }
+    .social-icon-lg {
+      width: 52px; height: 52px; border-radius: 14px;
+      display: flex; align-items: center; justify-content: center;
+      margin: 0 auto 1rem; font-size: 1.5rem;
+    }
+    .yt  .social-icon-lg { background: rgba(255,0,0,0.12); }
+    .ig  .social-icon-lg { background: rgba(225,48,108,0.12); }
+    .tt  .social-icon-lg { background: rgba(105,201,208,0.12); }
+    .fb  .social-icon-lg { background: rgba(24,119,242,0.12); }
+    .social-card .sc-name { font-weight: 600; font-size: 0.9rem; color: var(--text); margin-bottom: 0.35rem; }
+    .social-card .sc-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.5; }
+    .social-card .sc-follow {
+      display: inline-block; margin-top: 0.9rem;
+      font-size: 0.75rem; font-weight: 600;
+      padding: 0.3rem 0.9rem; border-radius: 999px;
+    }
+    .yt  .sc-follow { background: rgba(255,0,0,0.1); color: #ff4444; }
+    .ig  .sc-follow { background: rgba(225,48,108,0.1); color: #e1306c; }
+    .tt  .sc-follow { background: rgba(105,201,208,0.1); color: #69C9D0; }
+    .fb  .sc-follow { background: rgba(24,119,242,0.1); color: #4a9eff; }
+
+    /* CTA STRIP */
+    .cta-strip {
+      background: linear-gradient(135deg, rgba(0,212,255,0.06), rgba(78,205,196,0.04));
+      border: 1px solid rgba(0,212,255,0.12); border-radius: 20px;
+      margin: 0 5% 5rem; padding: 3.5rem 5%; text-align: center;
+    }
+    .cta-strip h2 { font-family: 'Playfair Display', serif; font-size: clamp(1.5rem, 3vw, 2rem); color: var(--text); margin-bottom: 0.75rem; }
+    .cta-strip p { font-size: 0.97rem; color: var(--muted); max-width: 500px; margin: 0 auto 1.75rem; }
+    .cta-btns { display: flex; gap: 1rem; justify-content: center; flex-wrap: wrap; }
+
+    @media (max-width: 900px) {
+      .mission-split { grid-template-columns: 1fr; }
+      .ms-image img { height: 260px; }
+      .values-grid { grid-template-columns: repeat(2, 1fr); }
+      .create-grid  { grid-template-columns: repeat(2, 1fr); }
+      .social-cards { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 600px) {
+      .values-grid { grid-template-columns: 1fr; }
+      .create-grid  { grid-template-columns: 1fr; }
+      .social-cards { grid-template-columns: repeat(2, 1fr); }
+    }
+  </style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="mw-nav">
+  <a class="nav-logo" href="index.html">MindWallet</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="content.html">Content</a></li>
+    <li><a href="learn.html">Learn</a></li>
+    <li><a href="about.html" class="active">About</a></li>
+  </ul>
+  <a href="learn.html" class="nav-cta">Start Learning</a>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<!-- ABOUT HERO -->
+<section class="about-hero">
+  <div class="about-hero-bg-text">MindWallet</div>
+  <div class="about-hero-content">
+    <div class="ah-label">About MindWallet</div>
+    <h1>We make finance simple for everyone.</h1>
+    <p>Financial education, real stories, and practical knowledge for modern learners worldwide. No jargon. No gatekeeping. Just real knowledge.</p>
+  </div>
+</section>
+
+<!-- MISSION SPLIT -->
+<div class="mission-split">
+  <div class="ms-image">
+    <img src="https://images.pexels.com/photos/6289065/pexels-photo-6289065.jpeg?auto=compress&cs=tinysrgb&w=900" alt="Modern financial education" loading="lazy"/>
+  </div>
+  <div class="ms-text">
+    <div class="mst-label">Our Mission</div>
+    <h2>Financial knowledge should be free and accessible to all.</h2>
+    <p>Most people never received proper financial education. Schools rarely teach it. Parents can only share what they know. And the finance industry profits from confusion.</p>
+    <p>MindWallet exists to change that. We believe that understanding money — how it works, how to grow it, how to protect it — is a fundamental life skill that everyone deserves access to.</p>
+    <p>No paywalls. No complicated jargon. No agenda. Just honest, practical finance education delivered in a way that actually makes sense.</p>
+  </div>
+</div>
+
+<!-- VALUES -->
+<section class="values-section">
+  <div class="values-inner">
+    <div class="values-header">
+      <div class="v-label">Our Values</div>
+      <h2>What MindWallet stands for</h2>
+    </div>
+    <div class="values-grid">
+      <div class="value-card">
+        <span class="value-icon">🧠</span>
+        <h3>Smart</h3>
+        <p>We explain complex ideas in simple, precise language. Intelligence isn't about complexity — it's about clarity.</p>
+      </div>
+      <div class="value-card">
+        <span class="value-icon">✨</span>
+        <h3>Modern</h3>
+        <p>Finance education that looks and feels current. We build for how people actually learn today — short, visual, direct.</p>
+      </div>
+      <div class="value-card">
+        <span class="value-icon">🤝</span>
+        <h3>Trustworthy</h3>
+        <p>No ads disguised as advice. No affiliate gimmicks. We say what we mean and stand behind what we publish.</p>
+      </div>
+      <div class="value-card">
+        <span class="value-icon">🎯</span>
+        <h3>Practical</h3>
+        <p>Every article, tip, and strategy has one goal: to help you make a better financial decision in the real world.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- WHAT WE CREATE -->
+<section class="create-section">
+  <div class="as-label">What We Create</div>
+  <h2 class="as-title">Six types of content — one goal</h2>
+  <div class="create-grid">
+    <div class="create-card c1">
+      <span class="cc-icon-lg">💡</span>
+      <h3>Finance Tips</h3>
+      <p>Quick, actionable tips you can apply immediately. Practical, not theoretical.</p>
+    </div>
+    <div class="create-card c2">
+      <span class="cc-icon-lg">📖</span>
+      <h3>Real-Life Stories</h3>
+      <p>True financial journeys — with honest mistakes, turning points, and lasting lessons.</p>
+    </div>
+    <div class="create-card c3">
+      <span class="cc-icon-lg">🎓</span>
+      <h3>Concept Learn</h3>
+      <p>Big economic and financial concepts — inflation, interest rates, markets — explained simply.</p>
+    </div>
+    <div class="create-card c4">
+      <span class="cc-icon-lg">📘</span>
+      <h3>Financial Words</h3>
+      <p>One word at a time. The language of money decoded with real examples and context.</p>
+    </div>
+    <div class="create-card c5">
+      <span class="cc-icon-lg">📊</span>
+      <h3>Accounting Learn</h3>
+      <p>Profit, loss, balance sheets, budgets — demystified for everyday people and small business owners.</p>
+    </div>
+    <div class="create-card c6">
+      <span class="cc-icon-lg">🧠</span>
+      <h3>Tricks & Strategies</h3>
+      <p>Proven, real-world money strategies built for people at every income level.</p>
+    </div>
+  </div>
+</section>
+
+<!-- SOCIAL MEDIA -->
+<section class="social-section">
+  <div class="social-inner">
+    <div class="ss-label">Follow MindWallet</div>
+    <h2>Finance content, wherever you are</h2>
+    <p>We're building a community of financially aware people across all major platforms. Short videos, quick tips, and real stories — follow us to stay ahead.</p>
+  </div>
+  <div class="social-cards" style="max-width:800px; margin: 0 auto;">
+    <a href="#" class="social-card yt">
+      <div class="social-icon-lg">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#ff0000"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/></svg>
+      </div>
+      <div class="sc-name">YouTube</div>
+      <div class="sc-desc">In-depth finance videos and full explanations</div>
+      <span class="sc-follow">Subscribe →</span>
+    </a>
+    <a href="#" class="social-card ig">
+      <div class="social-icon-lg">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#e1306c"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 3.3.2 4.8 1.7 5 5 .1 1.3.1 1.6.1 4.9s0 3.6-.1 4.9c-.2 3.3-1.7 4.8-5 5-1.3.1-1.6.1-4.9.1s-3.6 0-4.9-.1c-3.3-.2-4.8-1.7-5-5C2 16.6 2 16.3 2 12s0-3.6.1-4.9c.2-3.3 1.7-4.8 5-5C8.4 2.2 8.8 2.2 12 2.2zM12 0C8.7 0 8.3 0 7.1.1 2.7.3.3 2.7.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9C.3 21.3 2.7 23.7 7.1 23.9 8.3 24 8.7 24 12 24s3.7 0 4.9-.1c4.4-.2 6.8-2.6 7-7C24 15.7 24 15.3 24 12s0-3.7-.1-4.9C23.7 2.7 21.3.3 16.9.1 15.7 0 15.3 0 12 0zm0 5.8a6.2 6.2 0 1 0 0 12.4A6.2 6.2 0 0 0 12 5.8zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.8a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z"/></svg>
+      </div>
+      <div class="sc-name">Instagram</div>
+      <div class="sc-desc">Daily tips, quote cards, and money reels</div>
+      <span class="sc-follow">Follow →</span>
+    </a>
+    <a href="#" class="social-card tt">
+      <div class="social-icon-lg">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#69C9D0"><path d="M19.6 3.3A4.6 4.6 0 0 1 15.5 0h-3.4v16.4a2.7 2.7 0 0 1-2.7 2.5 2.7 2.7 0 0 1-2.7-2.7 2.7 2.7 0 0 1 2.7-2.7c.3 0 .5 0 .8.1V10a6.1 6.1 0 0 0-.8-.1 6.1 6.1 0 0 0-6.1 6.1 6.1 6.1 0 0 0 6.1 6.1 6.1 6.1 0 0 0 6.1-6.1V8.1A8 8 0 0 0 20 9.3V6a4.6 4.6 0 0 1-.4-.7z"/></svg>
+      </div>
+      <div class="sc-name">TikTok</div>
+      <div class="sc-desc">Short-form finance lessons under 60 seconds</div>
+      <span class="sc-follow">Follow →</span>
+    </a>
+    <a href="#" class="social-card fb">
+      <div class="social-icon-lg">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="#1877f2"><path d="M24 12.1C24 5.4 18.6 0 12 0S0 5.4 0 12.1C0 18.1 4.4 23.1 10.1 24v-8.4H7.1v-3.5h3V9.7c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.8v2.2h3.3l-.5 3.5H13.8V24C19.6 23.1 24 18.1 24 12.1z"/></svg>
+      </div>
+      <div class="sc-name">Facebook</div>
+      <div class="sc-desc">Community discussions and full article shares</div>
+      <span class="sc-follow">Follow →</span>
+    </a>
+  </div>
+</section>
+
+<!-- CTA STRIP -->
+<div class="cta-strip">
+  <h2>Ready to upgrade your financial mindset?</h2>
+  <p>Start with one article. Build from there. Every piece of knowledge compounds.</p>
+  <div class="cta-btns">
+    <a href="learn.html" class="btn btn-primary">Start Learning</a>
+    <a href="content.html" class="btn btn-secondary">Browse Content</a>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer class="mw-footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="footer-logo">MindWallet</span>
+      <p>Upgrade Your Mind. Build Your Future. Simple finance education, real stories, and practical money knowledge for modern learners.</p>
+      <div class="footer-social">
+        <a href="#" class="social-icon" aria-label="YouTube"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 3.3.2 4.8 1.7 5 5 .1 1.3.1 1.6.1 4.9s0 3.6-.1 4.9c-.2 3.3-1.7 4.8-5 5-1.3.1-1.6.1-4.9.1s-3.6 0-4.9-.1c-3.3-.2-4.8-1.7-5-5C2 16.6 2 16.3 2 12s0-3.6.1-4.9c.2-3.3 1.7-4.8 5-5C8.4 2.2 8.8 2.2 12 2.2zM12 0C8.7 0 8.3 0 7.1.1 2.7.3.3 2.7.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9C.3 21.3 2.7 23.7 7.1 23.9 8.3 24 8.7 24 12 24s3.7 0 4.9-.1c4.4-.2 6.8-2.6 7-7C24 15.7 24 15.3 24 12s0-3.7-.1-4.9C23.7 2.7 21.3.3 16.9.1 15.7 0 15.3 0 12 0zm0 5.8a6.2 6.2 0 1 0 0 12.4A6.2 6.2 0 0 0 12 5.8zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.8a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M19.6 3.3A4.6 4.6 0 0 1 15.5 0h-3.4v16.4a2.7 2.7 0 0 1-2.7 2.5 2.7 2.7 0 0 1-2.7-2.7 2.7 2.7 0 0 1 2.7-2.7c.3 0 .5 0 .8.1V10a6.1 6.1 0 0 0-.8-.1 6.1 6.1 0 0 0-6.1 6.1 6.1 6.1 0 0 0 6.1 6.1 6.1 6.1 0 0 0 6.1-6.1V8.1A8 8 0 0 0 20 9.3V6a4.6 4.6 0 0 1-.4-.7z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M24 12.1C24 5.4 18.6 0 12 0S0 5.4 0 12.1C0 18.1 4.4 23.1 10.1 24v-8.4H7.1v-3.5h3V9.7c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.8v2.2h3.3l-.5 3.5H13.8V24C19.6 23.1 24 18.1 24 12.1z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Navigate</h4><a href="index.html">Home</a><a href="content.html">Content</a><a href="learn.html">Learn</a><a href="about.html">About</a></div>
+    <div class="footer-col"><h4>Content</h4><a href="content.html#tips">Finance Tips</a><a href="content.html#stories">Real-Life Stories</a></div>
+    <div class="footer-col"><h4>Learn</h4><a href="learn.html#concept">Concept Learn</a><a href="learn.html#words">Financial Words</a><a href="learn.html#accounting">Accounting</a><a href="learn.html#tricks">Tricks & Strategies</a></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 MindWallet. All rights reserved.</p>
+    <p style="font-style:italic;">Upgrade Your Mind. Build Your Future.</p>
+  </div>
+</footer>
+
+<script>
+  document.getElementById('hamburger').addEventListener('click', function() {
+    document.getElementById('navLinks').classList.toggle('open');
+  });
+</script>
+</body>
+</html>

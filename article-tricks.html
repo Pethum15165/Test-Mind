@@ -1,0 +1,258 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>How to Save Money Even With Low Income – Mind Wallet</title>
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400;1,600&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;1,9..40,300;1,9..40,400&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    :root {
+      --bg:#0a0a0a; --bg2:#111111; --card:#181818; --card2:#222222;
+      --text:#f0f0f0; --text2:#c8c8c8; --muted:#888888;
+      --border:#282828; --border2:#383838;
+      --green:#4ecdc4; --green-bg:rgba(78,205,196,0.08);
+    }
+    body { font-family: 'DM Sans', sans-serif; background:var(--bg); color:var(--text); line-height: 1.7; }
+
+    nav { background:var(--bg2); border-bottom:1px solid var(--border); padding:0 5%; display:flex; align-items:center; justify-content:space-between; height:70px; position:sticky; top:0; z-index:100; }
+    .nav-logo { font-family: 'Playfair Display', serif; font-size: 1.4rem; color:#00d4ff; text-decoration:none; }
+    .nav-links { display: flex; gap: 2rem; list-style: none; }
+    .nav-links a { color:rgba(255,255,255,0.55); text-decoration:none; font-size:0.9rem; font-weight: 500; transition: color 0.2s; }
+    .nav-links a:hover { color:#00d4ff; }
+
+    .article-shell { max-width: 780px; margin: 0 auto; padding: 2.5rem 5% 5rem; }
+    .breadcrumb { font-size: 0.8rem; color: var(--muted); margin-bottom: 1.25rem; }
+    .breadcrumb a { color:#00d4ff; text-decoration: none; }
+
+    .type-badge {
+      display: inline-flex; align-items: center; gap: 0.4rem;
+      padding: 0.35rem 1rem; border-radius: 999px;
+      background:rgba(78,205,196,0.08); color:#4ecdc4;
+      font-size: 0.72rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+      margin-bottom: 1rem;
+    }
+    .type-badge .dot { width: 6px; height: 6px; border-radius: 50%; background:#4ecdc4; }
+
+    .article-title { font-family: 'Playfair Display', serif; font-size: clamp(1.9rem, 4vw, 2.7rem); color:var(--text); line-height:1.2; margin-bottom:0.75rem; }
+    .article-meta { display: flex; gap: 1.25rem; color: var(--muted); font-size: 0.82rem; margin-bottom: 1.75rem; flex-wrap: wrap; }
+
+    .section-heading { font-family: 'Playfair Display', serif; font-size:1.3rem; color:var(--text); margin:2.25rem 0 0.9rem; }
+    p { font-size:0.97rem; color:var(--text2); line-height:1.8; margin-bottom: 1.1rem; }
+
+    /* PROBLEM BOX */
+    .problem-box { background:var(--card); border:1px solid var(--border); border-radius: 12px; padding: 1.75rem 2rem; margin: 1.5rem 0 2rem; }
+    .problem-box .pb-label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#00d4ff; margin-bottom: 0.75rem; }
+    .problem-box p { color:var(--text2); font-size: 0.95rem; margin: 0; }
+
+    /* WRONG WAY */
+    .wrong-ways { margin: 1rem 0 1.5rem; }
+    .wrong-item { display:flex; gap:0.75rem; background:rgba(255,107,107,0.08); border:1px solid rgba(255,107,107,0.25); border-radius: 8px; padding: 1rem 1.25rem; margin-bottom: 0.75rem; }
+    .wrong-icon { font-size: 1.2rem; flex-shrink: 0; }
+    .wrong-item p { margin:0; font-size:0.9rem; color:var(--text2); }
+
+    /* STRATEGY NAME BADGE */
+    .strategy-badge { background:linear-gradient(135deg,rgba(0,212,255,0.12),rgba(0,153,204,0.12)); border:1px solid rgba(0,212,255,0.3); border-radius: 12px; padding: 1.75rem 2rem; margin: 1.5rem 0; text-align: center; }
+    .strategy-badge .sb-prefix { font-size:0.75rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#00d4ff; opacity:0.8; margin-bottom: 0.4rem; }
+    .strategy-badge h2 { font-family:'Playfair Display',serif; font-size:1.75rem; color:var(--text); }
+    .strategy-badge p { font-size:0.9rem; color:var(--muted); margin: 0.5rem 0 0; }
+
+    /* STEPS */
+    .steps-list { margin: 1rem 0 1.5rem; counter-reset: step; }
+    .step-item { display: grid; grid-template-columns: 44px 1fr; gap: 1rem; margin-bottom: 1rem; align-items: start; }
+    .step-num { width:44px; height:44px; border-radius:50%; background:var(--card2); color:#00d4ff; font-family: 'Playfair Display', serif; font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+    .step-content h4 { font-size:0.95rem; font-weight:600; color:var(--text); margin-bottom: 0.25rem; }
+    .step-content p { font-size: 0.875rem; color: var(--muted); margin: 0; }
+
+    /* EXAMPLE */
+    .example-profile { background:var(--card); border:1px solid var(--border); border-radius:12px; overflow:hidden; margin: 1.25rem 0 1.5rem; }
+    .ep-header { background:var(--card2); padding:1rem 1.5rem; display: flex; gap: 1rem; align-items: center; }
+    .ep-avatar { width:44px; height:44px; border-radius:50%; background:#00d4ff; display: flex; align-items: center; justify-content: center; font-size: 1.25rem; flex-shrink: 0; }
+    .ep-info h4 { color:var(--text); font-size: 0.95rem; margin-bottom: 0.1rem; }
+    .ep-info p { color:var(--muted); font-size: 0.78rem; margin: 0; }
+    .ep-body { padding: 1.5rem; }
+    .ep-row { display: flex; justify-content: space-between; align-items: center; padding: 0.5rem 0; border-bottom: 1px solid var(--border); font-size: 0.9rem; }
+    .ep-row:last-child { border-bottom: none; }
+    .ep-row .label { color: var(--muted); }
+    .ep-row .value { font-weight:600; color:var(--text); }
+    .ep-row .value.green { color:#4ecdc4; }
+    .ep-row .value.gold { color:#00d4ff; }
+
+    /* WHY WORKS */
+    .why-works { background:rgba(78,205,196,0.07); border:1px solid rgba(78,205,196,0.2); border-radius: 12px; padding: 1.5rem; margin: 1.25rem 0 1.5rem; }
+    .ww-label { font-size:0.7rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#4ecdc4; margin-bottom: 0.5rem; }
+    .why-works p { margin:0; font-size:0.92rem; color:var(--text2); }
+
+    /* ONE ACTION */
+    .action-box { background:linear-gradient(135deg,#0d0d0d,#1a1a1a); border:1px solid rgba(0,212,255,0.2); border-radius: 12px; padding: 2rem; margin: 1.5rem 0; text-align: center; }
+    .action-box .ab-label { font-size:0.72rem; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; color:#00d4ff; margin-bottom: 0.75rem; }
+    .action-box h3 { font-family:'Playfair Display',serif; font-size:1.2rem; color:var(--text); margin-bottom: 0.5rem; }
+    .action-box p { font-size:0.88rem; color:var(--muted); margin: 0; }
+
+    /* SUMMARY */
+    .summary-box { background:var(--card); border:1px solid var(--border); border-radius: 12px; padding: 1.75rem 2rem; margin: 2rem 0; }
+    .summary-box h3 { font-family:'Playfair Display',serif; font-size:1.05rem; color:#00d4ff; margin-bottom:1rem; }
+    .summary-item { display: flex; gap: 0.6rem; margin-bottom: 0.6rem; }
+    .s-dot { width:6px; height:6px; background:#00d4ff; border-radius: 50%; flex-shrink: 0; margin-top: 8px; }
+    .summary-item p { font-size: 0.875rem; color:var(--text2); margin:0; }
+
+    .next-concept { display: flex; align-items: center; justify-content: space-between; background:var(--card); border:1px solid var(--border); border-radius:12px; padding:1.25rem 1.5rem; text-decoration:none; color:inherit; margin-top:2rem; transition: all 0.2s; }
+    .next-concept:hover { border-color:rgba(0,212,255,0.4); transform: translateX(4px); }
+    .next-concept .nc-label { font-size: 0.72rem; font-weight: 700; text-transform: uppercase; letter-spacing:0.08em; color:#00d4ff; margin-bottom:0.25rem; }
+    .next-concept h4 { font-family:'Playfair Display',serif; font-size:1rem; color:var(--text); }
+    .next-concept .arrow { font-size:1.3rem; color:#00d4ff; }
+
+    footer { background:var(--bg2); border-top:1px solid var(--border); color:var(--muted); text-align: center; padding: 2.5rem 5%; font-size: 0.85rem; margin-top: 4rem; }
+    footer .footer-logo { font-family:'Playfair Display',serif; color:#00d4ff; font-size: 1.2rem; margin-bottom: 1rem; display: block; }
+    footer .footer-links { display: flex; gap: 1.5rem; justify-content: center; margin-bottom: 1.5rem; flex-wrap: wrap; }
+    footer .footer-links a { color:var(--muted); text-decoration: none; transition: color 0.2s; }
+    footer .footer-links a:hover { color:#00d4ff; }
+
+    /* PHOTO STYLES */
+    .hero-photo { width:100%; max-height:360px; object-fit:cover; border-radius:14px; margin:1.25rem 0 0.5rem; display:block; }
+    .photo-caption { font-size:0.78rem; color:var(--muted); text-align:center; margin-bottom:2rem; font-style:italic; }
+    .inline-photo-wrap { margin:1.5rem 0; }
+    .inline-photo { width:100%; max-height:240px; object-fit:cover; border-radius:10px; display:block; }
+    .inline-caption { font-size:0.76rem; color:var(--muted); margin-top:0.4rem; font-style:italic; text-align:center; }
+  </style>
+  <link rel="stylesheet" href="mindwallet.css"/>
+</head>
+<body>
+
+<nav class="mw-nav">
+  <a class="nav-logo" href="index.html">MindWallet</a>
+  <ul class="nav-links" id="navLinks">
+    <li><a href="index.html">Home</a></li>
+    <li><a href="content.html">Content</a></li>
+    <li><a href="learn.html">Learn</a></li>
+    <li><a href="about.html">About</a></li>
+  </ul>
+  <a href="learn.html" class="nav-cta">Start Learning</a>
+  <button class="hamburger" id="hamburger" aria-label="Toggle menu">
+    <span></span><span></span><span></span>
+  </button>
+</nav>
+
+<div class="article-shell">
+  <div class="breadcrumb"><a href="index.html">Home</a> › <a href="learn.html">Learn</a> › Strategies</div>
+  <div class="type-badge"><span class="dot"></span> Strategy</div>
+
+  <!-- 1️⃣ PROBLEM TITLE -->
+  <h1 class="article-title">How to Save Money Even With a Low Income</h1>
+  <div class="article-meta"><span>?? Strategy</span><span>·</span><span>6 min read</span><span>·</span><span>All levels</span>
+  <img src="https://images.pexels.com/photos/4386431/pexels-photo-4386431.jpeg?auto=compress&cs=tinysrgb&w=1200" alt="Saving consistently — even small amounts — builds lasting security" class="hero-photo" loading="lazy"/>
+  <p class="photo-caption">📷 Saving consistently — even small amounts — builds lasting security</p>
+</div>
+
+  <!-- 2️⃣ PROBLEM DESCRIPTION -->
+  <div class="problem-box">
+    <div class="pb-label">The Problem</div>
+    <p>Most people believe saving money is a privilege of high earners. They wait to earn more before they start saving — and that wait never ends. The truth is, saving is a <em>habit</em>, not a number. And habits are built at any income level.</p>
+  </div>
+
+  <!-- 3️⃣ WRONG WAYS -->
+  <div class="section-heading">❌ Wrong Ways Most People Follow</div>
+  <div class="wrong-ways">
+    <div class="wrong-item"><div class="wrong-icon">❌</div><p><strong>"I'll save whatever's left at the end of the month."</strong> — There's almost never anything left. Saving last means saving nothing.</p></div>
+    <div class="wrong-item"><div class="wrong-icon">❌</div><p><strong>"I need to earn more before I start saving."</strong> — Waiting for a bigger income doesn't fix the habit. Most people who earn more just spend more.</p></div>
+    <div class="wrong-item"><div class="wrong-icon">❌</div><p><strong>"Small amounts don't matter."</strong> — $20/month invested for 20 years at 7% return grows to over $10,000. Small amounts always matter.</p></div>
+  </div>
+
+  <!-- 4️⃣ STRATEGY NAME -->
+  <div class="strategy-badge">
+    <div class="sb-prefix">The Strategy</div>
+    <h2>Pay Yourself First</h2>
+    <p>Save before you spend — not after. Treat savings like a non-negotiable bill.</p>
+  </div>
+
+  <!-- 5️⃣ STEP-BY-STEP -->
+  <div class="section-heading">📋 Step-by-Step Action Plan</div>
+  <div class="steps-list">
+    <div class="step-item"><div class="step-num">1</div><div class="step-content"><h4>💰 Decide your savings amount</h4><p>Start with just 5–10% of your income. Even $20 is a real start — don't let perfectionism stop you.</p></div></div>
+    <div class="step-item"><div class="step-num">2</div><div class="step-content"><h4>🏦 Open a separate savings account</h4><p>Keep savings away from your spending account. Out of sight = out of temptation.</p></div></div>
+    <div class="step-item"><div class="step-num">3</div><div class="step-content"><h4>⚡ Automate the transfer on payday</h4><p>Set up an automatic transfer the same day your salary arrives. Don't rely on willpower.</p></div></div>
+    <div class="step-item"><div class="step-num">4</div><div class="step-content"><h4>📊 Budget the rest</h4><p>Only after savings are set, plan your bills and spending from what remains.</p></div></div>
+    <div class="step-item"><div class="step-num">5</div><div class="step-content"><h4>📈 Increase by 1% every 3 months</h4><p>Gradually raise your savings rate. You won't feel a 1% change, but over time it compounds dramatically.</p></div></div>
+  </div>
+
+  <!-- 6️⃣ REAL EXAMPLE -->
+  <div class="section-heading">👤 Real Example — James, 24, Salary Worker</div>
+  <div class="example-profile">
+    <div class="ep-header">
+      <div class="ep-avatar">??</div>
+      <div class="ep-info"><h4>James — Customer Service Rep</h4><p>Monthly take-home: $1,400 · Pays rent, transport, food</p></div>
+    </div>
+    <div class="ep-body">
+      <div class="ep-row"><span class="label">Monthly Income</span><span class="value">$1,400</span></div>
+      <div class="ep-row"><span class="label">Savings First (10%)</span><span class="value green">−$140 → Savings Account</span></div>
+      <div class="ep-row"><span class="label">Rent</span><span class="value">$500</span></div>
+      <div class="ep-row"><span class="label">Food & Transport</span><span class="value">$400</span></div>
+      <div class="ep-row"><span class="label">Personal & Entertainment</span><span class="value">$300</span></div>
+      <div class="ep-row"><span class="label">After 12 months saved</span><span class="value gold">$1,680 ??</span></div>
+    </div>
+  </div>
+
+  <!-- 7️⃣ WHY IT WORKS -->
+  <div class="section-heading">🧠 Why This Works</div>
+  <div class="why-works">
+    <div class="ww-label">?? The Logic</div>
+    <p>Humans spend what they see. When your savings leave your account automatically before you can see them, you naturally adjust your spending to what's left. It's not discipline — it's <strong>design</strong>. You engineer your environment so saving happens whether you feel like it or not.</p>
+  </div>
+
+
+  <div class="inline-photo-wrap">
+    <img src="https://images.pexels.com/photos/3943723/pexels-photo-3943723.jpeg?auto=compress&cs=tinysrgb&w=800" alt="Automating savings removes willpower from the equation" class="inline-photo" loading="lazy"/>
+    <p class="inline-caption">📸 Automating savings removes willpower from the equation</p>
+  </div>
+
+  <!-- 8️⃣ ONE ACTION TODAY -->
+  <div class="action-box">
+    <div class="ab-label">⚡ One Small Action — Do This Today</div>
+    <h3>Set up a $20 automatic transfer for next payday</h3>
+    <p>It takes 3 minutes. Open a second savings account, set a $20 monthly auto-transfer. That's it. You've started. Increase it when you're ready.</p>
+  </div>
+
+  <!-- 9️⃣ SUMMARY -->
+  <div class="summary-box">
+    <h3>?? Short Summary</h3>
+    <div class="summary-item"><div class="s-dot"></div><p>Saving "what's left" almost never works — save first, spend what remains</p></div>
+    <div class="summary-item"><div class="s-dot"></div><p>Start small — even $10–$20/month builds the habit that matters most</p></div>
+    <div class="summary-item"><div class="s-dot"></div><p>Automate the transfer on payday so you never rely on willpower</p></div>
+    <div class="summary-item"><div class="s-dot"></div><p>Increase your savings rate by 1% every few months — you'll barely notice</p></div>
+  </div>
+
+  <a class="next-concept" href="content.html">
+    <div><div class="nc-label">Read Next →</div><h4>Building Your Emergency Fund — Step by Step</h4></div>
+    <div class="arrow">→</div>
+  </a>
+
+</div>
+
+<footer class="mw-footer">
+  <div class="footer-grid">
+    <div class="footer-brand">
+      <span class="footer-logo">MindWallet</span>
+      <p>Upgrade Your Mind. Build Your Future. Simple finance education, real stories, and practical money knowledge for modern learners.</p>
+      <div class="footer-social">
+        <a href="#" class="social-icon" aria-label="YouTube"><svg viewBox="0 0 24 24"><path d="M23.5 6.2a3 3 0 0 0-2.1-2.1C19.5 3.5 12 3.5 12 3.5s-7.5 0-9.4.5A3 3 0 0 0 .5 6.2C0 8.1 0 12 0 12s0 3.9.5 5.8a3 3 0 0 0 2.1 2.1c1.9.5 9.4.5 9.4.5s7.5 0 9.4-.5a3 3 0 0 0 2.1-2.1C24 15.9 24 12 24 12s0-3.9-.5-5.8zM9.75 15.5v-7l6.5 3.5-6.5 3.5z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="Instagram"><svg viewBox="0 0 24 24"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 3.3.2 4.8 1.7 5 5 .1 1.3.1 1.6.1 4.9s0 3.6-.1 4.9c-.2 3.3-1.7 4.8-5 5-1.3.1-1.6.1-4.9.1s-3.6 0-4.9-.1c-3.3-.2-4.8-1.7-5-5C2 16.6 2 16.3 2 12s0-3.6.1-4.9c.2-3.3 1.7-4.8 5-5C8.4 2.2 8.8 2.2 12 2.2zM12 0C8.7 0 8.3 0 7.1.1 2.7.3.3 2.7.1 7.1 0 8.3 0 8.7 0 12s0 3.7.1 4.9C.3 21.3 2.7 23.7 7.1 23.9 8.3 24 8.7 24 12 24s3.7 0 4.9-.1c4.4-.2 6.8-2.6 7-7C24 15.7 24 15.3 24 12s0-3.7-.1-4.9C23.7 2.7 21.3.3 16.9.1 15.7 0 15.3 0 12 0zm0 5.8a6.2 6.2 0 1 0 0 12.4A6.2 6.2 0 0 0 12 5.8zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm6.4-11.8a1.4 1.4 0 1 0 0 2.8 1.4 1.4 0 0 0 0-2.8z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="TikTok"><svg viewBox="0 0 24 24"><path d="M19.6 3.3A4.6 4.6 0 0 1 15.5 0h-3.4v16.4a2.7 2.7 0 0 1-2.7 2.5 2.7 2.7 0 0 1-2.7-2.7 2.7 2.7 0 0 1 2.7-2.7c.3 0 .5 0 .8.1V10a6.1 6.1 0 0 0-.8-.1 6.1 6.1 0 0 0-6.1 6.1 6.1 6.1 0 0 0 6.1 6.1 6.1 6.1 0 0 0 6.1-6.1V8.1A8 8 0 0 0 20 9.3V6a4.6 4.6 0 0 1-.4-.7z"/></svg></a>
+        <a href="#" class="social-icon" aria-label="Facebook"><svg viewBox="0 0 24 24"><path d="M24 12.1C24 5.4 18.6 0 12 0S0 5.4 0 12.1C0 18.1 4.4 23.1 10.1 24v-8.4H7.1v-3.5h3V9.7c0-3 1.8-4.7 4.5-4.7 1.3 0 2.7.2 2.7.2v3h-1.5c-1.5 0-2 .9-2 1.8v2.2h3.3l-.5 3.5H13.8V24C19.6 23.1 24 18.1 24 12.1z"/></svg></a>
+      </div>
+    </div>
+    <div class="footer-col"><h4>Navigate</h4><a href="index.html">Home</a><a href="content.html">Content</a><a href="learn.html">Learn</a><a href="about.html">About</a></div>
+    <div class="footer-col"><h4>Content</h4><a href="content.html#tips">Finance Tips</a><a href="content.html#stories">Real-Life Stories</a></div>
+    <div class="footer-col"><h4>Learn</h4><a href="learn.html#concept">Concept Learn</a><a href="learn.html#words">Financial Words</a><a href="learn.html#accounting">Accounting</a><a href="learn.html#tricks">Tricks &amp; Strategies</a></div>
+  </div>
+  <div class="footer-bottom">
+    <p>© 2025 MindWallet. All rights reserved.</p>
+    <p style="font-style:italic;">Upgrade Your Mind. Build Your Future.</p>
+  </div>
+</footer>
+<script>
+  document.getElementById('hamburger').addEventListener('click', function() {
+    document.getElementById('navLinks').classList.toggle('open');
+  });
+</script>
+</body>
+</html>
