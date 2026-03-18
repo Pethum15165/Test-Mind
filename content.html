@@ -162,6 +162,18 @@
       border-top: 1px solid var(--border); padding-top: 0.75rem; margin-top: auto;
     }
     .read-more-link { color: var(--accent); font-weight: 600; }
+    /* New article card styles */
+    .ac-img { height: 175px; overflow: hidden; position: relative; }
+    .ac-img img { width: 100%; height: 100%; object-fit: cover; transition: transform 0.4s ease; display: block; }
+    .article-card:hover .ac-img img { transform: scale(1.04); }
+    .ac-body { padding: 1.25rem; flex: 1; display: flex; flex-direction: column; }
+    .ac-body h3 { font-family: 'Playfair Display', serif; font-size: 1rem; color: var(--text); line-height: 1.4; margin-bottom: 0.6rem; }
+    .ac-body p { font-size: 0.82rem; color: var(--muted); margin-bottom: 1rem; flex: 1; line-height: 1.6; }
+    .ac-badge { display: inline-block; font-size: 0.68rem; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.2rem 0.6rem; border-radius: 999px; margin-bottom: 0.5rem; }
+    .ac-badge.tips { background: rgba(0,212,255,0.12); color: #00d4ff; }
+    .ac-badge.story { background: rgba(255,107,107,0.12); color: #ff6b6b; }
+    .ac-meta { font-size: 0.75rem; color: var(--muted); margin-bottom: 0.75rem; }
+    .ac-read-btn { display: inline-block; font-size: 0.78rem; font-weight: 600; color: #00d4ff; }
 
     /* COMING SOON CARD */
     .card-coming {
@@ -247,22 +259,56 @@
       </div>
     </a>
 
-    <!-- PLACEHOLDER CARDS -->
-    <div class="card-coming">
-      <div class="cc-icon">💡</div>
-      <h3>How to Build an Emergency Fund</h3>
-      <p>Coming soon</p>
-    </div>
-    <div class="card-coming">
-      <div class="cc-icon">💡</div>
-      <h3>The 50/30/20 Budget Rule Explained</h3>
-      <p>Coming soon</p>
-    </div>
-    <div class="card-coming">
-      <div class="cc-icon">💡</div>
-      <h3>5 Ways to Cut Monthly Expenses Fast</h3>
-      <p>Coming soon</p>
-    </div>
+    <a href="tips-wealth-habits.html" class="article-card">
+      <div class="ac-img"><img src="https://images.pexels.com/photos/4386442/pexels-photo-4386442.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Wealth habits" loading="lazy"/></div>
+      <div class="ac-body">
+        <div class="ac-badge tips">💡 Finance Tips</div>
+        <h3>5 Habits That Stop You From Building Wealth</h3>
+        <p>Most people aren't broke because they don't earn enough. These quiet daily habits drain wealth as fast as it arrives.</p>
+        <div class="ac-meta">5 min read · All levels</div>
+        <span class="ac-read-btn">Read Article →</span>
+      </div>
+    </a>
+    <a href="tips-impulse-buying.html" class="article-card">
+      <div class="ac-img"><img src="https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Impulse buying" loading="lazy"/></div>
+      <div class="ac-body">
+        <div class="ac-badge tips">💡 Finance Tips</div>
+        <h3>How to Stop Impulse Buying</h3>
+        <p>Impulse buying is a design problem, not a character flaw. Five systems that fight back without relying on willpower.</p>
+        <div class="ac-meta">5 min read · All levels</div>
+        <span class="ac-read-btn">Read Article →</span>
+      </div>
+    </a>
+    <a href="tips-lower-bills.html" class="article-card">
+      <div class="ac-img"><img src="https://images.pexels.com/photos/6289065/pexels-photo-6289065.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Lower monthly bills" loading="lazy"/></div>
+      <div class="ac-body">
+        <div class="ac-badge tips">💡 Finance Tips</div>
+        <h3>7 Ways to Lower Your Monthly Bills</h3>
+        <p>Most monthly bills are negotiable. A single afternoon of auditing often saves $150–$400 every month from here on.</p>
+        <div class="ac-meta">5 min read · All levels</div>
+        <span class="ac-read-btn">Read Article →</span>
+      </div>
+    </a>
+    <a href="tips-windfalls.html" class="article-card">
+      <div class="ac-img"><img src="https://images.pexels.com/photos/7821702/pexels-photo-7821702.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Use windfalls wisely" loading="lazy"/></div>
+      <div class="ac-body">
+        <div class="ac-badge tips">💡 Finance Tips</div>
+        <h3>How to Use Windfalls Wisely</h3>
+        <p>A bonus or tax refund managed well can change your financial trajectory. Most people spend it in 30 days and feel nothing.</p>
+        <div class="ac-meta">5 min read · All levels</div>
+        <span class="ac-read-btn">Read Article →</span>
+      </div>
+    </a>
+    <a href="tips-before-30.html" class="article-card">
+      <div class="ac-img"><img src="https://images.pexels.com/photos/6863183/pexels-photo-6863183.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Money moves before 30" loading="lazy"/></div>
+      <div class="ac-body">
+        <div class="ac-badge tips">💡 Finance Tips</div>
+        <h3>5 Money Moves to Make Before 30</h3>
+        <p>Your twenties have the longest compound runway of your life. These five moves, made early, pay dividends for forty years.</p>
+        <div class="ac-meta">5 min read · All levels</div>
+        <span class="ac-read-btn">Read Article →</span>
+      </div>
+    </a>
 
   </div>
 </div>
@@ -294,22 +340,56 @@
       </div>
     </a>
 
-    <!-- PLACEHOLDER CARDS -->
-    <div class="card-coming">
-      <div class="cc-icon">📖</div>
-      <h3>She Paid Off $40,000 in Two Years</h3>
-      <p>Coming soon</p>
-    </div>
-    <div class="card-coming">
-      <div class="cc-icon">📖</div>
-      <h3>How One Investment Changed His Life</h3>
-      <p>Coming soon</p>
-    </div>
-    <div class="card-coming">
-      <div class="cc-icon">📖</div>
-      <h3>From Broke to Budgeting at 25</h3>
-      <p>Coming soon</p>
-    </div>
+    <a href="story-teacher-debt.html" class="article-card">
+      <div class="ac-img"><img src="https://images.pexels.com/photos/5212345/pexels-photo-5212345.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Teacher paid off debt" loading="lazy"/></div>
+      <div class="ac-body">
+        <div class="ac-badge story">📖 Real Story</div>
+        <h3>She Paid Off $28,000 in 18 Months on a Teacher's Salary</h3>
+        <p>Not a windfall. Not a second job. Just a system applied with brutal consistency on $2,850/month take-home pay.</p>
+        <div class="ac-meta">6 min read · All levels</div>
+        <span class="ac-read-btn">Read Story →</span>
+      </div>
+    </a>
+    <a href="story-early-retirement.html" class="article-card">
+      <div class="ac-img"><img src="https://images.pexels.com/photos/159888/pexels-photo-159888.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Early retirement" loading="lazy"/></div>
+      <div class="ac-body">
+        <div class="ac-badge story">📖 Real Story</div>
+        <h3>He Retired at 52 With No Inheritance</h3>
+        <p>No family money, no lucky break, no exceptional salary. Just 25 years of the same boring decisions — consistently made.</p>
+        <div class="ac-meta">6 min read · All levels</div>
+        <span class="ac-read-btn">Read Story →</span>
+      </div>
+    </a>
+    <a href="story-rebuild-at-40.html" class="article-card">
+      <div class="ac-img"><img src="https://images.pexels.com/photos/5716032/pexels-photo-5716032.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Financial rebuild" loading="lazy"/></div>
+      <div class="ac-body">
+        <div class="ac-badge story">📖 Real Story</div>
+        <h3>I Lost Everything at 40 — and Rebuilt in 5 Years</h3>
+        <p>Divorce, a failed business, and $47,000 in debt. What rebuilding from zero actually looks like, month by month.</p>
+        <div class="ac-meta">6 min read · All levels</div>
+        <span class="ac-read-btn">Read Story →</span>
+      </div>
+    </a>
+    <a href="story-first-home.html" class="article-card">
+      <div class="ac-img"><img src="https://images.pexels.com/photos/2988232/pexels-photo-2988232.jpeg?auto=compress&cs=tinysrgb&w=600" alt="First home buyers" loading="lazy"/></div>
+      <div class="ac-body">
+        <div class="ac-badge story">📖 Real Story</div>
+        <h3>How a Couple Bought Their First Home Earning $45K Each</h3>
+        <p>Combined $90K income. High-cost city. No family help. They did it in three years — here's exactly the maths they used.</p>
+        <div class="ac-meta">6 min read · All levels</div>
+        <span class="ac-read-btn">Read Story →</span>
+      </div>
+    </a>
+    <a href="story-no-student-debt.html" class="article-card">
+      <div class="ac-img"><img src="https://images.pexels.com/photos/5212345/pexels-photo-5212345.jpeg?auto=compress&cs=tinysrgb&w=600" alt="No student debt graduate" loading="lazy"/></div>
+      <div class="ac-body">
+        <div class="ac-badge story">📖 Real Story</div>
+        <h3>The Student Who Graduated With No Debt</h3>
+        <p>Four-year university degree. Zero student loans at graduation. The choices she made at 17 that most students never consider.</p>
+        <div class="ac-meta">6 min read · All levels</div>
+        <span class="ac-read-btn">Read Story →</span>
+      </div>
+    </a>
 
   </div>
 </div>
