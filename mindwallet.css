@@ -95,6 +95,18 @@ body {
 }
 .nav-cta:hover { background: var(--accent2); transform: translateY(-1px); }
 
+.nav-auth-link {
+  color: rgba(255,255,255,0.55);
+  text-decoration: none;
+  font-size: 0.875rem;
+  font-weight: 500;
+  transition: color 0.2s;
+  padding: 0.5rem 0.75rem;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+.nav-auth-link:hover { color: var(--accent); }
+
 .hamburger {
   display: none;
   background: none;
