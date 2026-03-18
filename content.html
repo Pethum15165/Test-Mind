@@ -215,6 +215,7 @@
     <li><a href="learn.html">Learn</a></li>
     <li><a href="about.html">About</a></li>
   </ul>
+  <a href="signin.html" class="nav-auth-link">Sign In</a>
   <a href="learn.html" class="nav-cta">Start Learning</a>
   <button class="hamburger" id="hamburger" aria-label="Toggle menu">
     <span></span><span></span><span></span>
@@ -243,7 +244,7 @@
       <p>Actionable tips you can apply today. No jargon. No complicated theory.</p>
     </div>
   </div>
-  <div class="articles-grid">
+  <div class="articles-grid" data-show-more="2" id="tipsGrid">
 
     <!-- FEATURED LARGE -->
     <a href="article-finance-tips.html" class="article-card-large">
@@ -259,7 +260,7 @@
       </div>
     </a>
 
-    <a href="tips-wealth-habits.html" class="article-card">
+    <a href="tips-wealth-habits.html" class="article-card" data-item>
       <div class="ac-img"><img src="https://images.pexels.com/photos/4386442/pexels-photo-4386442.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Wealth habits" loading="lazy"/></div>
       <div class="ac-body">
         <div class="ac-badge tips">💡 Finance Tips</div>
@@ -269,7 +270,7 @@
         <span class="ac-read-btn">Read Article →</span>
       </div>
     </a>
-    <a href="tips-impulse-buying.html" class="article-card">
+    <a href="tips-impulse-buying.html" class="article-card" data-item>
       <div class="ac-img"><img src="https://images.pexels.com/photos/5632399/pexels-photo-5632399.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Impulse buying" loading="lazy"/></div>
       <div class="ac-body">
         <div class="ac-badge tips">💡 Finance Tips</div>
@@ -279,7 +280,7 @@
         <span class="ac-read-btn">Read Article →</span>
       </div>
     </a>
-    <a href="tips-lower-bills.html" class="article-card">
+    <a href="tips-lower-bills.html" class="article-card" data-item>
       <div class="ac-img"><img src="https://images.pexels.com/photos/6289065/pexels-photo-6289065.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Lower monthly bills" loading="lazy"/></div>
       <div class="ac-body">
         <div class="ac-badge tips">💡 Finance Tips</div>
@@ -289,7 +290,7 @@
         <span class="ac-read-btn">Read Article →</span>
       </div>
     </a>
-    <a href="tips-windfalls.html" class="article-card">
+    <a href="tips-windfalls.html" class="article-card" data-item>
       <div class="ac-img"><img src="https://images.pexels.com/photos/7821702/pexels-photo-7821702.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Use windfalls wisely" loading="lazy"/></div>
       <div class="ac-body">
         <div class="ac-badge tips">💡 Finance Tips</div>
@@ -299,7 +300,7 @@
         <span class="ac-read-btn">Read Article →</span>
       </div>
     </a>
-    <a href="tips-before-30.html" class="article-card">
+    <a href="tips-before-30.html" class="article-card" data-item>
       <div class="ac-img"><img src="https://images.pexels.com/photos/6863183/pexels-photo-6863183.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Money moves before 30" loading="lazy"/></div>
       <div class="ac-body">
         <div class="ac-badge tips">💡 Finance Tips</div>
@@ -324,7 +325,7 @@
       <p>True financial journeys — with honest mistakes, real turning points, and lessons that stick.</p>
     </div>
   </div>
-  <div class="articles-grid">
+  <div class="articles-grid" data-show-more="2" id="storiesGrid">
 
     <!-- FEATURED LARGE -->
     <a href="article-story.html" class="article-card-large">
@@ -340,7 +341,7 @@
       </div>
     </a>
 
-    <a href="story-teacher-debt.html" class="article-card">
+    <a href="story-teacher-debt.html" class="article-card" data-item>
       <div class="ac-img"><img src="https://images.pexels.com/photos/5212345/pexels-photo-5212345.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Teacher paid off debt" loading="lazy"/></div>
       <div class="ac-body">
         <div class="ac-badge story">📖 Real Story</div>
@@ -350,7 +351,7 @@
         <span class="ac-read-btn">Read Story →</span>
       </div>
     </a>
-    <a href="story-early-retirement.html" class="article-card">
+    <a href="story-early-retirement.html" class="article-card" data-item>
       <div class="ac-img"><img src="https://images.pexels.com/photos/159888/pexels-photo-159888.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Early retirement" loading="lazy"/></div>
       <div class="ac-body">
         <div class="ac-badge story">📖 Real Story</div>
@@ -360,7 +361,7 @@
         <span class="ac-read-btn">Read Story →</span>
       </div>
     </a>
-    <a href="story-rebuild-at-40.html" class="article-card">
+    <a href="story-rebuild-at-40.html" class="article-card" data-item>
       <div class="ac-img"><img src="https://images.pexels.com/photos/5716032/pexels-photo-5716032.jpeg?auto=compress&cs=tinysrgb&w=600" alt="Financial rebuild" loading="lazy"/></div>
       <div class="ac-body">
         <div class="ac-badge story">📖 Real Story</div>
@@ -370,7 +371,7 @@
         <span class="ac-read-btn">Read Story →</span>
       </div>
     </a>
-    <a href="story-first-home.html" class="article-card">
+    <a href="story-first-home.html" class="article-card" data-item>
       <div class="ac-img"><img src="https://images.pexels.com/photos/2988232/pexels-photo-2988232.jpeg?auto=compress&cs=tinysrgb&w=600" alt="First home buyers" loading="lazy"/></div>
       <div class="ac-body">
         <div class="ac-badge story">📖 Real Story</div>
@@ -380,7 +381,7 @@
         <span class="ac-read-btn">Read Story →</span>
       </div>
     </a>
-    <a href="story-no-student-debt.html" class="article-card">
+    <a href="story-no-student-debt.html" class="article-card" data-item>
       <div class="ac-img"><img src="https://images.pexels.com/photos/5212345/pexels-photo-5212345.jpeg?auto=compress&cs=tinysrgb&w=600" alt="No student debt graduate" loading="lazy"/></div>
       <div class="ac-body">
         <div class="ac-badge story">📖 Real Story</div>
@@ -454,5 +455,6 @@
     });
   });
 </script>
+<script src="mw-scripts.js"></script>
 </body>
 </html>
