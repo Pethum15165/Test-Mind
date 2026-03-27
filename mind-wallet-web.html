@@ -770,6 +770,8 @@ select.fi option{background:var(--bg3);color:var(--t1);}
       <div class="nav-item active" id="ni-home" onclick="goTab('home')"><span class="ni">🏠</span> Dashboard</div>
 
       <div class="nav-section-lbl">Finance</div>
+      <div class="nav-item" id="ni-income" onclick="goTab('income')"><span class="ni">💰</span> Income</div>
+      <div class="nav-item" id="ni-transfer" onclick="goTab('transfer')"><span class="ni">🔄</span> Transfer</div>
       <div class="nav-item" id="ni-budget" onclick="goTab('budget')"><span class="ni">📊</span> Budget</div>
       <div class="nav-item" id="ni-txns" onclick="goTab('txns')"><span class="ni">📋</span> Transactions</div>
       <div class="nav-item" id="ni-savings" onclick="goTab('savings')"><span class="ni">💎</span> Savings</div>
@@ -824,6 +826,8 @@ select.fi option{background:var(--bg3);color:var(--t1);}
       <div class="page active" id="pg-home"></div>
       <div class="page" id="pg-budget"></div>
       <div class="page" id="pg-txns"></div>
+      <div class="page" id="pg-income"></div>
+      <div class="page" id="pg-transfer"></div>
       <div class="page" id="pg-savings"></div>
       <div class="page" id="pg-invest"></div>
       <div class="page" id="pg-accounts"></div>
@@ -841,7 +845,7 @@ select.fi option{background:var(--bg3);color:var(--t1);}
 // ═══════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════
-let S={accounts:[],categories:[],savings:[],investments:[],currency:'LKR'};
+let S={accounts:[],categories:[],savings:[],investments:[],incomes:[],transfers:[],currency:'LKR'};
 let CM=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');})();
 let AT='home', EXP=new Set(), TF='all';
 let homeChart=null, txnChart=null;
@@ -915,7 +919,7 @@ async function signOut(){
   toggleUserMenu();
   await _sb.auth.signOut();
   _currentUser=null;
-  S={accounts:[],categories:[],savings:[],investments:[],currency:'LKR'};
+  S={accounts:[],categories:[],savings:[],investments:[],incomes:[],transfers:[],currency:'LKR'};
   document.getElementById('appLayout').style.display='none';
   document.getElementById('authScreen').style.display='flex';
 }
@@ -1022,7 +1026,9 @@ function defaultState(){
       {id:uid(),name:'Fixed Deposit',icon:'🏛️',type:'fixed deposit',current:0,notes:'Annual FD'},
       {id:uid(),name:'Gold',icon:'🥇',type:'gold',current:0,notes:'Sovereign gold'},
     ],
-    currency:'LKR'
+    currency:'LKR',
+    incomes:[],
+    transfers:[]
   };
 }
 
@@ -1030,7 +1036,8 @@ function defaultState(){
 const PAGE_TITLES={
   home:['🏠','Dashboard'],budget:['📊','Budget'],
   txns:['📋','Transactions'],savings:['💎','Savings'],
-  invest:['📈','Investments'],accounts:['🏦','Accounts']
+  invest:['📈','Investments'],accounts:['🏦','Accounts'],
+  income:['💰','Income'],transfer:['🔄','Transfer']
 };
 function goTab(tab){
   AT=tab;
@@ -1063,6 +1070,8 @@ function render(){
   else if(AT==='txns') renderTxns();
   else if(AT==='savings') renderSavings();
   else if(AT==='invest') renderInvest();
+  else if(AT==='income') renderIncome();
+  else if(AT==='transfer') renderTransfer();
   else renderAccounts();
 }
 
@@ -1239,7 +1248,7 @@ function renderBudget(){
         <div class="cat-icon" style="background:${cat.color}18;">${cat.icon}</div>
         <div class="cat-meta">
           <div class="cat-name">${esc(cat.name)}</div>
-          <div class="cat-amounts">${S.currency} ${fmt(a)} spent of ${fmt(b)} budgeted</div>
+          <div class="cat-amounts">${S.currency} ${fmt(a)} of ${fmt(b)} · <span style="font-size:10px;padding:2px 7px;border-radius:99px;font-weight:700;background:${cat.type==='saving'?'var(--green-dim)':cat.type==='investment'?'var(--purple-dim)':'var(--red-dim)'};color:${cat.type==='saving'?'var(--green)':cat.type==='investment'?'var(--purple)':'var(--red)'}">${cat.type==='saving'?'💎 Saving':cat.type==='investment'?'📈 Investment':'💸 Expense'}</span></div>
           <div style="margin-top:8px;">${pb(p,pcol(p),'5')}</div>
         </div>
         <div class="cat-right">
@@ -1488,11 +1497,12 @@ function renderInvest(){
 function renderAccounts(){
   const totBal=(S.accounts||[]).reduce((s,a)=>s+(a.balance||0),0);
   const accCards=(S.accounts||[]).map(acc=>`
-    <div class="acc-card" style="background:linear-gradient(135deg,${acc.color},${acc.color}cc);color:#fff;">
+    <div class="acc-card" style="background:linear-gradient(135deg,${acc.color},${acc.color}cc);color:#fff;" onclick="openAccSummary('${acc.id}')" title="Click to view summary">
       <div class="acc-type-lbl">${acc.type}</div>
       <div class="acc-name2">${esc(acc.name)}</div>
       <div class="acc-bank-name">${esc(acc.bank)}</div>
       <div class="acc-bal">${fmt(acc.balance)} <span class="acc-cur2">${S.currency}</span></div>
+      <div style="font-size:10px;opacity:.6;margin-top:6px;">Click to view summary</div>
     </div>`).join('');
 
   const accRows=(S.accounts||[]).map(acc=>{
@@ -1574,9 +1584,12 @@ function openTxnModal(){
   </div>`).join('');
 
   openModal('Add Transaction','Record a new expense or saving deposit',`
-    <div style="display:flex;gap:8px;margin-bottom:20px;">
-      <button id="ttab-expense" class="filter-pill active" style="flex:1;text-align:center;" onclick="switchTxnType('expense')">💸 Expense</button>
-      <button id="ttab-saving" class="filter-pill" style="flex:1;text-align:center;" onclick="switchTxnType('saving')">💎 Saving Deposit</button>
+    <div style="display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap;">
+      <button id="ttab-expense" class="filter-pill active" style="flex:1;text-align:center;min-width:110px;" onclick="switchTxnType('expense')">💸 Expense</button>
+      <button id="ttab-income" class="filter-pill" style="flex:1;text-align:center;min-width:110px;" onclick="switchTxnType('income')">💰 Income</button>
+      <button id="ttab-saving" class="filter-pill" style="flex:1;text-align:center;min-width:110px;" onclick="switchTxnType('saving')">💎 Savings</button>
+      <button id="ttab-invest" class="filter-pill" style="flex:1;text-align:center;min-width:110px;" onclick="switchTxnType('invest')">📈 Investment</button>
+      <button id="ttab-transfer" class="filter-pill" style="flex:1;text-align:center;min-width:110px;" onclick="switchTxnType('transfer')">🔄 Transfer</button>
     </div>
 
     <!-- EXPENSE SECTION -->
@@ -1619,19 +1632,68 @@ function openTxnModal(){
       </div>
     </div>
 
+    <!-- INCOME SECTION -->
+    <div id="txn-income-section" style="display:none;">
+      <div class="fg"><div class="fl">Income Source</div><input type="text" class="fi" id="incSource" placeholder="e.g. Salary, Freelance, Bonus..." /></div>
+      <div class="fg"><div class="fl">Deposit to Account</div><select class="fi" id="incAccId">${accOpts}</select></div>
+      <div class="fr">
+        <div class="fg"><div class="fl">Amount (${S.currency})</div><input type="number" class="fi" id="incAmt" placeholder="0.00" min="1" step="1" /></div>
+        <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="incDate" value="${today()}" /></div>
+      </div>
+      <div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="incNote" placeholder="e.g. Monthly salary, Client payment..." /></div>
+      <div class="em" id="incErr"></div>
+    </div>
+
+    <!-- INVESTMENT DEPOSIT SECTION -->
+    <div id="txn-invest-section" style="display:none;">
+      <div class="fg"><div class="fl">Transfer From Account</div><select class="fi" id="invAccId">${accOpts}</select></div>
+      <div class="fg"><div class="fl">Choose Investment</div>
+        <div class="cat-sel-list" id="invGoalList">${(S.investments||[]).map(iv=>`<div class="cat-sel-item" id="invsel-\${iv.id}" onclick="selInvGoal('\${iv.id}')">
+          <div class="csi-ico" style="background:var(--purple-dim);">\${iv.icon||'📊'}</div>
+          <div class="csi-body"><div class="csi-name">\${esc(iv.name)}</div><div class="csi-meta">\${esc(iv.type)} · Current: \${S.currency} \${fmt(iv.current)}</div></div>
+        </div>`).join('')||'<div style="color:var(--t3);padding:12px;">No investments. Add one in Investments.</div>'}</div>
+      </div>
+      <div id="invDepositForm" style="display:none;">
+        <div class="info-chip g" id="invGoalChip"></div>
+        <div class="fr">
+          <div class="fg"><div class="fl">Amount (${S.currency})</div><input type="number" class="fi" id="invDepAmt" placeholder="0.00" min="1" step="1" /></div>
+          <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="invDepDate" value="${today()}" /></div>
+        </div>
+        <div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="invDepNote" placeholder="e.g. Monthly top-up..." /></div>
+        <div class="em" id="invDepErr"></div>
+      </div>
+    </div>
+
+    <!-- TRANSFER SECTION -->
+    <div id="txn-transfer-section" style="display:none;">
+      <div class="info-chip a">🔄 Money moves between your own accounts — balances update automatically.</div>
+      <div class="fr">
+        <div class="fg"><div class="fl">From Account</div><select class="fi" id="trFromId" onchange="checkTransferAccounts()">${accOpts}</select></div>
+        <div class="fg"><div class="fl">To Account</div><select class="fi" id="trToId" onchange="checkTransferAccounts()">${accOpts}</select></div>
+      </div>
+      <div class="fr">
+        <div class="fg"><div class="fl">Amount (${S.currency})</div><input type="number" class="fi" id="trAmt" placeholder="0.00" min="1" step="1" oninput="checkTransferBalance()" /></div>
+        <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="trDate" value="${today()}" /></div>
+      </div>
+      <div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="trNote" placeholder="e.g. Move to savings account..." /></div>
+      <div class="em" id="trErr"></div>
+    </div>
+
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
       <button class="btn btn-green" onclick="submitAnyTxn()">Save</button>
     </div>
-  `);
+  \`);
 }
 
 function switchTxnType(type){
   _txnType=type;
-  document.getElementById('ttab-expense').classList.toggle('active',type==='expense');
-  document.getElementById('ttab-saving').classList.toggle('active',type==='saving');
-  document.getElementById('txn-expense-section').style.display=type==='expense'?'block':'none';
-  document.getElementById('txn-saving-section').style.display=type==='saving'?'block':'none';
+  ['expense','income','saving','invest','transfer'].forEach(t=>{
+    const tab=document.getElementById('ttab-'+t);
+    const sec=document.getElementById('txn-'+t+'-section');
+    if(tab)tab.classList.toggle('active',t===type);
+    if(sec)sec.style.display=t===type?'block':'none';
+  });
 }
 
 let _selSavGoalId=null;
@@ -1646,8 +1708,11 @@ function selSavGoal(id){
 }
 
 function submitAnyTxn(){
-  if(_txnType==='saving'){submitSavingDeposit();}
-  else{submitTxn();}
+  if(_txnType==='saving') submitSavingDeposit();
+  else if(_txnType==='income') submitIncome();
+  else if(_txnType==='invest') submitInvestDeposit();
+  else if(_txnType==='transfer') submitTransfer();
+  else submitTxn();
 }
 
 function submitSavingDeposit(){
@@ -1660,11 +1725,13 @@ function submitSavingDeposit(){
   if(amount<=0){if(err)err.textContent='Please enter a valid amount.';return;}
   const sv=(S.savings||[]).find(s=>s.id===_selSavGoalId);
   if(!sv){if(err)err.textContent='Goal not found.';return;}
+  // Check account balance
+  const acc=(S.accounts||[]).find(a=>a.id===accountId);
+  if(acc&&acc.balance<amount){if(err)err.textContent=`⛔ Insufficient balance! ${esc(acc.name)} only has ${S.currency} ${fmt(acc.balance)}.`;return;}
   // Add to savings balance
   sv.current=(sv.current||0)+amount;
   // Deduct from account
-  const acc=(S.accounts||[]).find(a=>a.id===accountId);
-  if(acc)acc.balance=Math.max(0,(acc.balance||0)-amount);
+  if(acc)acc.balance=(acc.balance||0)-amount;
   // Record as a saving transaction log
   if(!sv.transactions)sv.transactions=[];
   sv.transactions.push({id:uid(),amount,date,note,month:CM,accountId,type:'deposit'});
@@ -1787,6 +1854,9 @@ function submitTxn(){
   const rem=sc.budget-gA(sc);
   if(amount<=0){if(err)err.textContent='Please enter a valid amount.';return;}
   if(amount>rem){if(err)err.textContent=`Amount exceeds remaining budget of ${S.currency} ${fmt(rem)}.`;return;}
+  // Check account has enough balance
+  const acc=(S.accounts||[]).find(a=>a.id===accountId);
+  if(acc&&acc.balance<amount){if(err)err.textContent=`⛔ Insufficient balance! ${esc(acc.name)} only has ${S.currency} ${fmt(acc.balance)}.`;return;}
   if(!sc.transactions)sc.transactions=[];
   let linkedSavingId=null;
   const savChk=document.getElementById('savToggle');
@@ -1795,8 +1865,7 @@ function submitTxn(){
     const sav=(S.savings||[]).find(s=>s.id===savId);
     if(sav){sav.current=Math.max(0,(sav.current||0)-amount);linkedSavingId=savId;}
   }
-  const acc=(S.accounts||[]).find(a=>a.id===accountId);
-  if(acc)acc.balance=Math.max(0,(acc.balance||0)-amount);
+  if(acc)acc.balance=(acc.balance||0)-amount;
   sc.transactions.push({id:uid(),amount,date,note,month:CM,accountId,linkedSavingId});
   saveState();closeModal();render();
 }
@@ -1809,8 +1878,18 @@ const CC=['#3b82f6','#f97316','#8b5cf6','#ec4899','#14b8a6','#eab308','#06b6d4',
 
 function openAddCategory(){
   _catIcon='🏠';_catColor='#3b82f6';
-  openModal('New Budget Category','Create a category with a monthly spending limit',`
-    <div class="fg"><div class="fl">Category Name</div><input type="text" class="fi" id="catName" placeholder="e.g. Housing, Food & Dining, Transport..." autofocus /></div>
+  openModal('New Budget Category','Create a category with a monthly budget',`
+    <div class="fg"><div class="fl">Category Name</div><input type="text" class="fi" id="catName" placeholder="e.g. Housing, Emergency Fund, Stock Portfolio..." autofocus /></div>
+    <div class="fg"><div class="fl">Budget Type</div>
+      <div style="display:flex;gap:8px;margin-top:4px;">
+        <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--border2);border-radius:10px;cursor:pointer;background:var(--bg3);">
+          <input type="radio" name="catType" value="expense" checked style="accent-color:var(--red);" /> <span style="font-size:13px;">💸 Expense</span></label>
+        <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--border2);border-radius:10px;cursor:pointer;background:var(--bg3);">
+          <input type="radio" name="catType" value="saving" style="accent-color:var(--green);" /> <span style="font-size:13px;">💎 Saving</span></label>
+        <label style="flex:1;display:flex;align-items:center;gap:8px;padding:10px 14px;border:1px solid var(--border2);border-radius:10px;cursor:pointer;background:var(--bg3);">
+          <input type="radio" name="catType" value="investment" style="accent-color:var(--purple);" /> <span style="font-size:13px;">📈 Investment</span></label>
+      </div>
+    </div>
     <div class="fg"><div class="fl">Icon</div><div class="ipicker">${CI.map(i=>`<span class="iopt${i==='🏠'?' on':''}" onclick="_catIcon='${i}';selI(this)">${i}</span>`).join('')}</div></div>
     <div class="fg"><div class="fl">Color</div><div class="cpicker">${CC.map(c=>`<span class="copt${c==='#3b82f6'?' on':''}" style="background:${c};" onclick="_catColor='${c}';selC(this)"></span>`).join('')}</div></div>
     <div class="em" id="catErr"></div>
@@ -1821,7 +1900,8 @@ function selC(el){document.querySelectorAll('.copt').forEach(e=>e.classList.remo
 function submitCat(){
   const name=document.getElementById('catName').value.trim();
   if(!name){document.getElementById('catErr').textContent='Name is required.';return;}
-  S.categories.push({id:uid(),name,icon:_catIcon,color:_catColor,subcategories:[]});
+  const type=document.querySelector('input[name="catType"]:checked')?.value||'expense';
+  S.categories.push({id:uid(),name,icon:_catIcon,color:_catColor,type,subcategories:[]});
   saveState();closeModal();render();
 }
 
@@ -1976,13 +2056,286 @@ function submitUpdAcc(id){
   saveState();closeModal();render();
 }
 
+
+// ═══════════════════════════════════════════════════════
+//  INCOME
+// ═══════════════════════════════════════════════════════
+function renderIncome(){
+  if(!S.incomes)S.incomes=[];
+  const thisMonth=S.incomes.filter(i=>i.month===CM);
+  const total=thisMonth.reduce((s,i)=>s+i.amount,0);
+  const bySource={};
+  thisMonth.forEach(i=>{bySource[i.source]=(bySource[i.source]||0)+i.amount;});
+  const rows=thisMonth.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(i=>{
+    const acc=getAcc(i.accountId);
+    return`<tr>
+      <td><div class="txn-icon" style="background:var(--green-dim);">💰</div></td>
+      <td><div class="txn-name">${esc(i.source)}</div><div class="txn-sub">${i.note?esc(i.note):''}</div></td>
+      <td><div style="font-size:12px;color:var(--t2);">${acc?esc(acc.name):'—'}</div></td>
+      <td><div style="font-size:12px;color:var(--t2);">${fmtDateShort(i.date)}</div></td>
+      <td style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--green);">+${S.currency} ${fmt(i.amount)}</div></td>
+      <td style="text-align:right;"><button class="btn-xs red" onclick="delIncome('${i.id}')">Delete</button></td>
+    </tr>`;}).join('');
+  const srcRows=Object.entries(bySource).sort((a,b)=>b[1]-a[1]).map(([src,amt])=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
+      <div style="font-size:13px;font-weight:600;color:var(--t1);">${esc(src)}</div>
+      <div style="font-size:14px;font-weight:700;color:var(--green);">+${S.currency} ${fmt(amt)}</div>
+    </div>`).join('');
+  document.getElementById('pg-income').innerHTML=`
+    <div class="grid-3" style="margin-bottom:20px;">
+      <div class="metric" style="--accent:var(--green)">
+        <div class="metric-label">Total Income This Month</div>
+        <div><span class="metric-value" style="color:var(--green);">${fmt(total)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${thisMonth.length} income records</div>
+      </div>
+      <div class="metric" style="--accent:var(--blue)">
+        <div class="metric-label">Income Sources</div>
+        <div><span class="metric-value" style="color:var(--blue);">${Object.keys(bySource).length}</span></div>
+        <div class="metric-sub">Unique sources this month</div>
+      </div>
+      <div class="metric" style="--accent:var(--amber)">
+        <div class="metric-label">Daily Average</div>
+        <div><span class="metric-value" style="color:var(--amber);">${fmt(total/new Date(new Date().getFullYear(),new Date().getMonth()+1,0).getDate())}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">Per day this month</div>
+      </div>
+    </div>
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div class="card">
+        <div class="card-title">Income by Source</div>
+        ${srcRows||'<div class="empty" style="padding:20px 0;"><div class="empty-ico">💰</div><div class="empty-text">No income recorded yet.</div></div>'}
+      </div>
+      <div class="card">
+        <div class="card-title">Quick Add Income <span class="card-link" onclick="openTxnModal();switchTxnType('income')">+ Add →</span></div>
+        <div style="font-size:13px;color:var(--t2);line-height:1.8;">Use the <strong style="color:var(--green);">+ Add Transaction</strong> button above, then select the <strong>💰 Income</strong> tab to record salary, freelance, bonus or any income directly into your bank account.</div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Income History <span style="font-size:12px;color:var(--t2);font-weight:400;">${thisMonth.length} records</span></div>
+      ${rows?`<table class="txn-table"><thead><tr><th></th><th>Source</th><th>Account</th><th>Date</th><th style="text-align:right;">Amount</th><th></th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="empty"><div class="empty-ico">💰</div><div class="empty-text">No income recorded this month.</div></div>'}
+    </div>
+  `;
+}
+function submitIncome(){
+  const err=document.getElementById('incErr');
+  const source=document.getElementById('incSource')?.value.trim();
+  const amount=parseFloat(document.getElementById('incAmt')?.value)||0;
+  const date=document.getElementById('incDate')?.value||today();
+  const note=document.getElementById('incNote')?.value.trim()||'';
+  const accountId=document.getElementById('incAccId')?.value||null;
+  if(!source){if(err)err.textContent='Please enter an income source.';return;}
+  if(amount<=0){if(err)err.textContent='Please enter a valid amount.';return;}
+  // Add to account balance
+  const acc=(S.accounts||[]).find(a=>a.id===accountId);
+  if(acc)acc.balance=(acc.balance||0)+amount;
+  if(!S.incomes)S.incomes=[];
+  S.incomes.push({id:uid(),source,amount,date,note,month:CM,accountId});
+  saveState();closeModal();render();
+}
+function delIncome(id){
+  if(!confirm('Delete this income record? Account balance will be reversed.'))return;
+  const inc=(S.incomes||[]).find(i=>i.id===id);
+  if(inc){
+    const acc=(S.accounts||[]).find(a=>a.id===inc.accountId);
+    if(acc)acc.balance=Math.max(0,(acc.balance||0)-inc.amount);
+  }
+  S.incomes=(S.incomes||[]).filter(i=>i.id!==id);
+  saveState();render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  TRANSFER
+// ═══════════════════════════════════════════════════════
+function renderTransfer(){
+  if(!S.transfers)S.transfers=[];
+  const thisMonth=S.transfers.filter(t=>t.month===CM);
+  const total=thisMonth.reduce((s,t)=>s+t.amount,0);
+  const rows=thisMonth.slice().sort((a,b)=>b.date.localeCompare(a.date)).map(t=>{
+    const from=getAcc(t.fromId),to=getAcc(t.toId);
+    return`<tr>
+      <td><div class="txn-icon" style="background:var(--blue-dim);">🔄</div></td>
+      <td><div class="txn-name">${from?esc(from.name):'?'} → ${to?esc(to.name):'?'}</div><div class="txn-sub">${t.note?esc(t.note):''}</div></td>
+      <td><div style="font-size:12px;color:var(--t2);">${fmtDateShort(t.date)}</div></td>
+      <td style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--blue);">${S.currency} ${fmt(t.amount)}</div></td>
+      <td style="text-align:right;"><button class="btn-xs red" onclick="delTransfer('${t.id}')">Delete</button></td>
+    </tr>`;}).join('');
+  document.getElementById('pg-transfer').innerHTML=`
+    <div class="grid-2" style="margin-bottom:20px;">
+      <div class="metric" style="--accent:var(--blue)">
+        <div class="metric-label">Total Transferred This Month</div>
+        <div><span class="metric-value" style="color:var(--blue);">${fmt(total)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${thisMonth.length} transfers</div>
+      </div>
+      <div class="metric" style="--accent:var(--green)">
+        <div class="metric-label">Quick Transfer</div>
+        <div style="margin-top:8px;"><button class="btn btn-green" onclick="openTxnModal();switchTxnType('transfer')" style="width:100%;">🔄 New Transfer</button></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title">Transfer History <span style="font-size:12px;color:var(--t2);font-weight:400;">${thisMonth.length} records</span></div>
+      ${rows?`<table class="txn-table"><thead><tr><th></th><th>Transfer</th><th>Date</th><th style="text-align:right;">Amount</th><th></th></tr></thead><tbody>${rows}</tbody></table>`:'<div class="empty"><div class="empty-ico">🔄</div><div class="empty-text">No transfers this month.</div><div class="empty-sub">Use + Add Transaction → Transfer tab.</div></div>'}
+    </div>
+  `;
+}
+function checkTransferAccounts(){
+  const from=document.getElementById('trFromId')?.value;
+  const to=document.getElementById('trToId')?.value;
+  const err=document.getElementById('trErr');
+  if(from&&to&&from===to){if(err)err.textContent='⛔ From and To accounts must be different.';}
+  else{if(err)err.textContent='';}
+  const acc=getAcc(from);
+  if(acc){const el=document.getElementById('trFromBalance');if(el)el.textContent=`Balance: ${S.currency} ${fmt(acc.balance)}`;}
+}
+function checkTransferBalance(){
+  const fromId=document.getElementById('trFromId')?.value;
+  const amt=parseFloat(document.getElementById('trAmt')?.value)||0;
+  const acc=getAcc(fromId);
+  const err=document.getElementById('trErr');
+  if(acc&&amt>acc.balance){if(err)err.textContent=`⛔ Insufficient balance! ${esc(acc.name)} only has ${S.currency} ${fmt(acc.balance)}.`;}
+  else{if(err&&!err.textContent.includes('same'))err.textContent='';}
+}
+function submitTransfer(){
+  const err=document.getElementById('trErr');
+  const fromId=document.getElementById('trFromId')?.value;
+  const toId=document.getElementById('trToId')?.value;
+  const amount=parseFloat(document.getElementById('trAmt')?.value)||0;
+  const date=document.getElementById('trDate')?.value||today();
+  const note=document.getElementById('trNote')?.value.trim()||'';
+  if(fromId===toId){if(err)err.textContent='⛔ From and To accounts must be different.';return;}
+  if(amount<=0){if(err)err.textContent='Please enter a valid amount.';return;}
+  const from=getAcc(fromId),to=getAcc(toId);
+  if(!from||!to){if(err)err.textContent='Invalid accounts.';return;}
+  if(from.balance<amount){if(err)err.textContent=`⛔ Insufficient balance! ${esc(from.name)} only has ${S.currency} ${fmt(from.balance)}.`;return;}
+  from.balance=(from.balance||0)-amount;
+  to.balance=(to.balance||0)+amount;
+  if(!S.transfers)S.transfers=[];
+  S.transfers.push({id:uid(),fromId,toId,amount,date,note,month:CM});
+  saveState();closeModal();render();
+}
+function delTransfer(id){
+  if(!confirm('Delete this transfer? Account balances will be reversed.'))return;
+  const tr=(S.transfers||[]).find(t=>t.id===id);
+  if(tr){
+    const from=getAcc(tr.fromId),to=getAcc(tr.toId);
+    if(from)from.balance=(from.balance||0)+tr.amount;
+    if(to)to.balance=Math.max(0,(to.balance||0)-tr.amount);
+  }
+  S.transfers=(S.transfers||[]).filter(t=>t.id!==id);
+  saveState();render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  INVESTMENT DEPOSIT FROM MODAL
+// ═══════════════════════════════════════════════════════
+let _selInvGoalId=null;
+function selInvGoal(id){
+  _selInvGoalId=id;
+  document.querySelectorAll('[id^="invsel-"]').forEach(e=>e.classList.remove('on'));
+  const el=document.getElementById('invsel-'+id);if(el)el.classList.add('on');
+  const iv=(S.investments||[]).find(i=>i.id===id);if(!iv)return;
+  document.getElementById('invGoalChip').innerHTML=`📈 ${esc(iv.name)} — Current value: ${S.currency} ${fmt(iv.current)}`;
+  document.getElementById('invDepositForm').style.display='block';
+}
+function submitInvestDeposit(){
+  const err=document.getElementById('invDepErr');
+  if(!_selInvGoalId){if(err)err.textContent='Please select an investment.';return;}
+  const amount=parseFloat(document.getElementById('invDepAmt')?.value)||0;
+  const date=document.getElementById('invDepDate')?.value||today();
+  const note=document.getElementById('invDepNote')?.value.trim()||'';
+  const accountId=document.getElementById('invAccId')?.value||null;
+  if(amount<=0){if(err)err.textContent='Please enter a valid amount.';return;}
+  const acc=(S.accounts||[]).find(a=>a.id===accountId);
+  if(acc&&acc.balance<amount){if(err)err.textContent=`⛔ Insufficient balance! ${esc(acc.name)} only has ${S.currency} ${fmt(acc.balance)}.`;return;}
+  const iv=(S.investments||[]).find(i=>i.id===_selInvGoalId);
+  if(!iv){if(err)err.textContent='Investment not found.';return;}
+  iv.current=(iv.current||0)+amount;
+  if(acc)acc.balance=(acc.balance||0)-amount;
+  if(!iv.transactions)iv.transactions=[];
+  iv.transactions.push({id:uid(),amount,date,note,month:CM,accountId,type:'deposit'});
+  saveState();closeModal();render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  ACCOUNT SUMMARY MODAL
+// ═══════════════════════════════════════════════════════
+function openAccSummary(id){
+  const acc=(S.accounts||[]).find(a=>a.id===id);if(!acc)return;
+  const txns=allTxns().filter(t=>t.accountId===id);
+  const thisMonthTxns=txns.filter(t=>t.month===CM);
+  const totalSpent=thisMonthTxns.reduce((s,t)=>s+t.amount,0);
+  const incomes=(S.incomes||[]).filter(i=>i.accountId===id&&i.month===CM);
+  const totalIncome=incomes.reduce((s,i)=>s+i.amount,0);
+  const transfers=(S.transfers||[]).filter(t=>(t.fromId===id||t.toId===id)&&t.month===CM);
+  const recentTxns=txns.slice().sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const recentRows=recentTxns.map(t=>`
+    <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid var(--border);">
+      <div><div style="font-size:13px;font-weight:600;color:var(--t1);">${esc(t.scName)}</div><div style="font-size:11px;color:var(--t3);">${fmtDateShort(t.date)} · ${esc(t.catName)}</div></div>
+      <div style="font-size:13px;font-weight:700;color:var(--red);">−${S.currency} ${fmt(t.amount)}</div>
+    </div>`).join('');
+  openModal(`${acc.icon} ${acc.name}`,`${acc.bank} · ${acc.type}`,`
+    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:20px;">
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;margin-bottom:6px;">Balance</div>
+        <div style="font-size:18px;font-weight:700;color:var(--green);">${S.currency} ${fmt(acc.balance)}</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;margin-bottom:6px;">Spent</div>
+        <div style="font-size:18px;font-weight:700;color:var(--red);">−${S.currency} ${fmt(totalSpent)}</div>
+      </div>
+      <div style="background:var(--bg3);border-radius:10px;padding:14px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;margin-bottom:6px;">Income</div>
+        <div style="font-size:18px;font-weight:700;color:var(--blue);">+${S.currency} ${fmt(totalIncome)}</div>
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;margin-bottom:16px;">
+      <div style="flex:1;background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;margin-bottom:4px;">Transactions</div>
+        <div style="font-size:16px;font-weight:700;color:var(--t1);">${thisMonthTxns.length}</div>
+      </div>
+      <div style="flex:1;background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;margin-bottom:4px;">Transfers</div>
+        <div style="font-size:16px;font-weight:700;color:var(--blue);">${transfers.length}</div>
+      </div>
+      <div style="flex:1;background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;margin-bottom:4px;">Net Flow</div>
+        <div style="font-size:16px;font-weight:700;color:${totalIncome>=totalSpent?'var(--green)':'var(--red)'};">${totalIncome>=totalSpent?'+':''}${S.currency} ${fmt(totalIncome-totalSpent)}</div>
+      </div>
+    </div>
+    <div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px;">Recent Transactions</div>
+    ${recentRows||'<div style="color:var(--t3);font-size:13px;padding:12px 0;">No transactions yet.</div>'}
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Close</button>
+      <button class="btn btn-green" onclick="closeModal();openUpdAcc('${id}')">Edit Account</button>
+    </div>`);
+}
+
 // ═══════════════════════════════════════════════════════
 //  DELETES
 // ═══════════════════════════════════════════════════════
 function toggleCat(id){EXP.has(id)?EXP.delete(id):EXP.add(id);render();}
 function delCat(id){if(!confirm('Delete this category and all its data?'))return;S.categories=S.categories.filter(c=>c.id!==id);EXP.delete(id);saveState();render();}
 function delSubcat(cId,sId){if(!confirm('Remove this subcategory?'))return;const c=S.categories.find(x=>x.id===cId);if(c)c.subcategories=c.subcategories.filter(s=>s.id!==sId);saveState();render();}
-function delTxn(scId,txnId){for(const c of S.categories){const sc=(c.subcategories||[]).find(s=>s.id===scId);if(sc){sc.transactions=(sc.transactions||[]).filter(t=>t.id!==txnId);break;}}saveState();render();}
+function delTxn(scId,txnId){
+  if(!confirm('Delete this transaction? All account and savings balances will be restored.'))return;
+  for(const c of S.categories){
+    const sc=(c.subcategories||[]).find(s=>s.id===scId);
+    if(sc){
+      const txn=(sc.transactions||[]).find(t=>t.id===txnId);
+      if(txn){
+        // Undo account deduction
+        const acc=(S.accounts||[]).find(a=>a.id===txn.accountId);
+        if(acc)acc.balance=(acc.balance||0)+txn.amount;
+        // Undo savings deduction if linked
+        if(txn.linkedSavingId){
+          const sav=(S.savings||[]).find(s=>s.id===txn.linkedSavingId);
+          if(sav)sav.current=(sav.current||0)+txn.amount;
+        }
+      }
+      sc.transactions=(sc.transactions||[]).filter(t=>t.id!==txnId);
+      break;
+    }
+  }
+  saveState();render();
+}
 function delSaving(id){if(!confirm('Delete this savings goal?'))return;S.savings=S.savings.filter(s=>s.id!==id);saveState();render();}
 function delInvest(id){if(!confirm('Delete this investment?'))return;S.investments=S.investments.filter(i=>i.id!==id);saveState();render();}
 function delAcc(id){if(!confirm('Delete this account?'))return;S.accounts=(S.accounts||[]).filter(a=>a.id!==id);saveState();render();}
