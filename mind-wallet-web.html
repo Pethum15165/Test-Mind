@@ -907,7 +907,7 @@ async function submitAuth(){
 async function signInGoogle(){
   const {error} = await _sb.auth.signInWithOAuth({
     provider:'google',
-    options:{redirectTo: 'https://www.mindwalletedu.com'}
+    options:{redirectTo: 'https://www.mindwalletedu.com/mind-wallet-web.html'}
   });
   if(error)document.getElementById('authErr').textContent=error.message;
 }
