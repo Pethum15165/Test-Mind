@@ -1,0 +1,2054 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Mind Wallet — Smart Finance Manager</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<style>
+/* ═══════════════════════════════════════════════
+   MIND WALLET — WEB APP
+   Design: Premium dark finance dashboard
+   Font: DM Serif Display (headings) + Sora (UI)
+═══════════════════════════════════════════════ */
+
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:        #0b0e14;
+  --bg2:       #111520;
+  --bg3:       #181d2a;
+  --bg4:       #1e2535;
+  --bg5:       #252d3d;
+  --border:    #ffffff0d;
+  --border2:   #ffffff18;
+  --border3:   #ffffff28;
+  --green:     #10d68e;
+  --green2:    #0ab87a;
+  --green-dim: #10d68e18;
+  --green-glow:#10d68e30;
+  --amber:     #f5a623;
+  --amber-dim: #f5a62318;
+  --red:       #f05252;
+  --red-dim:   #f0525218;
+  --blue:      #4f9cf9;
+  --blue-dim:  #4f9cf918;
+  --purple:    #a78bfa;
+  --purple-dim:#a78bfa18;
+  --t1:#e8edf7;
+  --t2:#8892a8;
+  --t3:#4a5568;
+  --t4:#2d3748;
+  --r:14px;
+  --r2:10px;
+  --sidebar-w:240px;
+  --header-h:64px;
+  --shadow: 0 4px 32px rgba(0,0,0,.5);
+  --shadow2: 0 2px 16px rgba(0,0,0,.3);
+}
+
+html{scroll-behavior:smooth;}
+body{
+  font-family:'Sora',sans-serif;
+  background:var(--bg);
+  color:var(--t1);
+  min-height:100vh;
+  overflow-x:hidden;
+  font-size:14px;
+  line-height:1.6;
+}
+
+/* ══ LAYOUT ══════════════════════════════════ */
+.layout{display:flex;min-height:100vh;}
+
+/* ══ SIDEBAR ═════════════════════════════════ */
+.sidebar{
+  width:var(--sidebar-w);
+  background:var(--bg2);
+  border-right:1px solid var(--border);
+  display:flex;
+  flex-direction:column;
+  position:fixed;
+  left:0;top:0;bottom:0;
+  z-index:100;
+  transition:transform .3s ease;
+}
+.sidebar-brand{
+  padding:24px 20px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;gap:12px;
+}
+.brand-logo{
+  width:38px;height:38px;
+  border-radius:11px;
+  background:linear-gradient(135deg,var(--green),var(--green2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:19px;
+  box-shadow:0 4px 16px var(--green-glow);
+  flex-shrink:0;
+}
+.brand-name{
+  font-family:'DM Serif Display',serif;
+  font-size:18px;
+  color:var(--t1);
+  letter-spacing:.3px;
+}
+.brand-tagline{
+  font-size:10px;color:var(--t3);
+  letter-spacing:.5px;text-transform:uppercase;
+  margin-top:-2px;
+}
+
+.sidebar-month{
+  padding:16px 20px;
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.month-disp{
+  font-size:13px;font-weight:600;color:var(--t1);
+}
+.month-arrows{display:flex;gap:4px;}
+.m-arrow{
+  width:26px;height:26px;border-radius:7px;
+  border:1px solid var(--border2);background:var(--bg3);
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  font-size:12px;color:var(--t2);transition:all .15s;
+}
+.m-arrow:hover{background:var(--bg4);color:var(--t1);}
+
+.nav{flex:1;padding:12px 12px;overflow-y:auto;}
+.nav-section-lbl{
+  font-size:10px;font-weight:700;color:var(--t3);
+  text-transform:uppercase;letter-spacing:.8px;
+  padding:8px 8px 6px;
+}
+.nav-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:10px;
+  cursor:pointer;transition:all .15s;
+  margin-bottom:2px;color:var(--t2);font-weight:500;
+  font-size:13.5px;
+}
+.nav-item:hover{background:var(--bg3);color:var(--t1);}
+.nav-item.active{
+  background:var(--green-dim);
+  color:var(--green);
+  border:1px solid var(--border2);
+}
+.nav-item.active .ni{color:var(--green);}
+.ni{font-size:16px;width:20px;text-align:center;}
+.nav-badge{
+  margin-left:auto;
+  font-size:10px;font-weight:700;
+  background:var(--green);color:#000;
+  padding:2px 7px;border-radius:99px;
+}
+
+.sidebar-footer{
+  padding:16px 20px;border-top:1px solid var(--border);
+}
+.currency-row{
+  display:flex;align-items:center;justify-content:space-between;
+  font-size:12px;color:var(--t2);
+}
+.currency-val{
+  font-weight:700;color:var(--green);
+  font-size:13px;
+}
+.sync-pill{
+  display:flex;align-items:center;gap:5px;
+  font-size:11px;color:var(--t3);margin-top:8px;
+}
+.sync-dot{width:7px;height:7px;border-radius:50%;background:var(--t3);}
+.sync-dot.ok{background:var(--green);}
+.sync-dot.pulse{background:var(--amber);animation:pulse 1.2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+/* ══ MAIN ════════════════════════════════════ */
+.main{
+  margin-left:var(--sidebar-w);
+  flex:1;
+  display:flex;flex-direction:column;
+  min-height:100vh;
+}
+
+.topbar{
+  height:var(--header-h);
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 28px;
+  position:sticky;top:0;z-index:50;
+}
+.page-title{
+  font-family:'DM Serif Display',serif;
+  font-size:22px;color:var(--t1);
+  display:flex;align-items:center;gap:10px;
+}
+.page-title span{font-size:20px;}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.add-txn-btn{
+  display:flex;align-items:center;gap:8px;
+  padding:9px 18px;border-radius:10px;
+  background:var(--green);color:#000;
+  border:none;font-family:'Sora',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;
+  transition:all .15s;box-shadow:0 4px 14px var(--green-glow);
+}
+.add-txn-btn:hover{background:var(--green2);transform:translateY(-1px);}
+.add-txn-btn:active{transform:translateY(0);}
+
+.content{padding:28px;flex:1;}
+.page{display:none;animation:fadeIn .2s ease;}
+.page.active{display:block;}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+
+/* ══ CARDS ════════════════════════════════════ */
+.card{
+  background:var(--bg2);
+  border:1px solid var(--border);
+  border-radius:var(--r);
+  padding:20px;
+}
+.card2{
+  background:var(--bg3);
+  border:1px solid var(--border);
+  border-radius:var(--r2);
+  padding:16px;
+}
+.card-title{
+  font-size:11px;font-weight:700;
+  color:var(--t3);text-transform:uppercase;letter-spacing:.8px;
+  margin-bottom:14px;
+  display:flex;align-items:center;justify-content:space-between;
+}
+.card-link{
+  font-size:12px;color:var(--green);cursor:pointer;
+  font-weight:600;text-transform:none;letter-spacing:0;
+}
+.card-link:hover{text-decoration:underline;}
+
+/* ══ GRID LAYOUTS ════════════════════════════ */
+.grid-4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:20px;}
+.grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:20px;}
+.grid-2{display:grid;grid-template-columns:repeat(2,1fr);gap:16px;margin-bottom:20px;}
+.grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:16px;margin-bottom:20px;}
+
+/* ══ METRIC CARDS ════════════════════════════ */
+.metric{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);padding:18px 20px;
+  transition:border-color .2s;
+  position:relative;overflow:hidden;
+}
+.metric::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:2px;
+  background:var(--accent,var(--green));
+  opacity:.6;
+}
+.metric:hover{border-color:var(--border2);}
+.metric-label{
+  font-size:11px;font-weight:700;color:var(--t3);
+  text-transform:uppercase;letter-spacing:.7px;margin-bottom:8px;
+}
+.metric-value{
+  font-family:'DM Serif Display',serif;
+  font-size:28px;color:var(--t1);
+  letter-spacing:-.5px;line-height:1;
+}
+.metric-cur{font-size:12px;color:var(--t2);font-family:'Sora',sans-serif;margin-left:4px;}
+.metric-sub{font-size:12px;color:var(--t3);margin-top:6px;}
+.metric-change{
+  display:inline-flex;align-items:center;gap:4px;
+  font-size:11px;font-weight:700;padding:2px 8px;
+  border-radius:99px;margin-top:6px;
+}
+
+/* ══ PROGRESS BAR ════════════════════════════ */
+.pbar{height:5px;background:var(--bg4);border-radius:99px;overflow:hidden;}
+.pfill{height:100%;border-radius:99px;transition:width .6s cubic-bezier(.4,0,.2,1);}
+
+/* ══ BUDGET PAGE ═════════════════════════════ */
+.cat-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);padding:18px 20px;
+  margin-bottom:12px;transition:border-color .2s;
+}
+.cat-card:hover{border-color:var(--border2);}
+.cat-header{
+  display:flex;align-items:center;gap:14px;cursor:pointer;
+}
+.cat-icon{
+  width:44px;height:44px;border-radius:13px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:21px;flex-shrink:0;
+}
+.cat-meta{flex:1;min-width:0;}
+.cat-name{font-size:15px;font-weight:700;color:var(--t1);}
+.cat-amounts{font-size:12px;color:var(--t2);margin-top:2px;}
+.cat-right{display:flex;align-items:center;gap:12px;flex-shrink:0;}
+.cat-pct{font-size:14px;font-weight:700;}
+.chev{color:var(--t3);transition:transform .2s;cursor:pointer;font-size:12px;}
+.chev.open{transform:rotate(90deg);}
+.cat-prog{margin-top:10px;}
+
+.subcat-wrap{
+  margin-top:16px;padding-top:16px;
+  border-top:1px solid var(--border);
+}
+.subcat-row{
+  display:grid;grid-template-columns:1fr 200px 100px auto;
+  align-items:center;gap:16px;
+  padding:12px 0;border-bottom:1px solid var(--border);
+}
+.subcat-row:last-of-type{border-bottom:none;}
+.sc-name{font-size:14px;font-weight:600;color:var(--t1);}
+.sc-meta{font-size:12px;color:var(--t2);margin-top:2px;}
+.sc-bar-wrap{min-width:0;}
+.sc-pct-lbl{display:flex;justify-content:space-between;font-size:11px;color:var(--t3);margin-bottom:4px;}
+.sc-actions{display:flex;gap:6px;}
+.btn-xs{
+  font-size:11px;padding:5px 12px;border-radius:7px;
+  border:1px solid var(--border2);background:var(--bg3);
+  color:var(--t2);cursor:pointer;font-family:'Sora',sans-serif;
+  transition:all .12s;white-space:nowrap;
+}
+.btn-xs:hover{background:var(--bg4);color:var(--t1);}
+.btn-xs.green{border-color:var(--green);background:var(--green-dim);color:var(--green);}
+.btn-xs.green:hover{background:var(--green);color:#000;}
+.btn-xs.red{border-color:var(--red);color:var(--red);}
+.btn-xs.red:hover{background:var(--red-dim);}
+
+.subcat-actions{
+  display:flex;gap:8px;align-items:center;
+  margin-top:14px;padding-top:14px;
+  border-top:1px solid var(--border);
+}
+
+/* ══ TRANSACTION LIST ════════════════════════ */
+.txn-table{width:100%;border-collapse:collapse;}
+.txn-table th{
+  font-size:11px;font-weight:700;color:var(--t3);
+  text-transform:uppercase;letter-spacing:.6px;
+  padding:10px 14px;text-align:left;
+  border-bottom:1px solid var(--border);
+  position:sticky;top:0;background:var(--bg2);z-index:5;
+}
+.txn-table td{
+  padding:12px 14px;border-bottom:1px solid var(--border);
+  vertical-align:middle;
+}
+.txn-table tr:last-child td{border-bottom:none;}
+.txn-table tr:hover td{background:var(--bg3);}
+.txn-icon{
+  width:38px;height:38px;border-radius:11px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:17px;flex-shrink:0;
+}
+.txn-name{font-size:14px;font-weight:600;color:var(--t1);}
+.txn-sub{font-size:12px;color:var(--t2);margin-top:1px;}
+.txn-amt{font-size:15px;font-weight:700;color:var(--red);white-space:nowrap;}
+.txn-bank{font-size:11px;color:var(--t3);}
+.txn-date-lbl{
+  font-size:12px;font-weight:700;color:var(--t2);
+  padding:14px 0 8px;
+  border-top:1px solid var(--border);
+  margin-top:4px;
+  display:flex;justify-content:space-between;
+}
+
+.filter-bar{
+  display:flex;gap:8px;margin-bottom:18px;
+  flex-wrap:wrap;align-items:center;
+}
+.filter-pill{
+  padding:7px 16px;border-radius:99px;
+  border:1px solid var(--border2);background:var(--bg3);
+  color:var(--t2);font-size:12px;font-weight:600;
+  cursor:pointer;white-space:nowrap;
+  transition:all .15s;font-family:'Sora',sans-serif;
+}
+.filter-pill:hover{border-color:var(--border3);color:var(--t1);}
+.filter-pill.active{background:var(--green);border-color:var(--green);color:#000;}
+
+/* ══ SAVINGS ══════════════════════════════════ */
+.sv-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px;}
+.sv-card{
+  background:var(--bg2);border:1px solid var(--border);
+  border-radius:var(--r);padding:20px;
+  transition:border-color .2s;
+  display:flex;flex-direction:column;gap:14px;
+}
+.sv-card:hover{border-color:var(--border2);}
+.sv-top{display:flex;align-items:flex-start;gap:14px;}
+.sv-ico{
+  width:48px;height:48px;border-radius:14px;
+  display:flex;align-items:center;justify-content:center;
+  font-size:23px;flex-shrink:0;
+}
+.sv-info{flex:1;}
+.sv-name{font-size:15px;font-weight:700;color:var(--t1);}
+.sv-note{font-size:12px;color:var(--t2);margin-top:2px;}
+.sv-amounts{display:flex;justify-content:space-between;align-items:baseline;}
+.sv-current{font-family:'DM Serif Display',serif;font-size:24px;color:var(--green);}
+.sv-target{font-size:12px;color:var(--t3);}
+.sv-actions{display:flex;gap:8px;margin-top:4px;}
+
+/* ══ ACCOUNTS PAGE ════════════════════════════ */
+.acc-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:16px;margin-bottom:24px;}
+.acc-card{
+  border-radius:var(--r);padding:22px;
+  position:relative;overflow:hidden;cursor:pointer;
+  transition:all .2s;min-height:150px;
+}
+.acc-card::after{
+  content:'';position:absolute;
+  right:-30px;top:-30px;
+  width:120px;height:120px;
+  border-radius:50%;background:#ffffff08;
+}
+.acc-card::before{
+  content:'';position:absolute;
+  right:20px;bottom:-40px;
+  width:160px;height:160px;
+  border-radius:50%;background:#ffffff05;
+}
+.acc-card:hover{transform:translateY(-3px);box-shadow:var(--shadow);}
+.acc-type-lbl{font-size:10px;font-weight:700;opacity:.7;text-transform:uppercase;letter-spacing:.8px;}
+.acc-name2{font-size:15px;font-weight:700;margin-top:4px;opacity:.95;}
+.acc-bank-name{font-size:12px;opacity:.7;margin-top:2px;}
+.acc-bal{
+  font-family:'DM Serif Display',serif;
+  font-size:28px;margin-top:18px;
+  position:relative;z-index:1;
+}
+.acc-cur2{font-size:12px;opacity:.7;font-family:'Sora',sans-serif;}
+
+/* ══ BADGE ════════════════════════════════════ */
+.badge{
+  display:inline-flex;align-items:center;
+  padding:3px 10px;border-radius:99px;
+  font-size:11px;font-weight:700;
+}
+.b-g{background:var(--green-dim);color:var(--green);}
+.b-a{background:var(--amber-dim);color:var(--amber);}
+.b-r{background:var(--red-dim);color:var(--red);}
+.b-b{background:var(--blue-dim);color:var(--blue);}
+.b-p{background:var(--purple-dim);color:var(--purple);}
+
+/* ══ MODAL ════════════════════════════════════ */
+.modal-bg{
+  position:fixed;inset:0;
+  background:rgba(0,0,0,.7);
+  backdrop-filter:blur(8px);
+  z-index:500;display:none;
+  align-items:center;justify-content:center;
+  padding:20px;
+}
+.modal-bg.open{display:flex;animation:fadeIn .2s ease;}
+.modal{
+  background:var(--bg2);
+  border:1px solid var(--border2);
+  border-radius:18px;
+  padding:28px;
+  width:100%;max-width:500px;
+  max-height:90vh;overflow-y:auto;
+  box-shadow:0 32px 80px rgba(0,0,0,.6);
+}
+.modal-title{
+  font-family:'DM Serif Display',serif;
+  font-size:22px;color:var(--t1);
+  margin-bottom:22px;
+}
+.modal-sub{font-size:13px;color:var(--t2);margin-top:-16px;margin-bottom:22px;}
+
+/* ══ FORM ══════════════════════════════════════ */
+.fg{margin-bottom:16px;}
+.fl{
+  display:block;font-size:11px;font-weight:700;
+  color:var(--t2);text-transform:uppercase;
+  letter-spacing:.5px;margin-bottom:8px;
+}
+.fi{
+  width:100%;padding:12px 14px;
+  border:1px solid var(--border2);
+  border-radius:10px;font-size:14px;
+  color:var(--t1);background:var(--bg3);
+  font-family:'Sora',sans-serif;outline:none;
+  transition:border-color .15s;
+}
+.fi:focus{border-color:var(--green);box-shadow:0 0 0 3px var(--green-dim);}
+.fi::placeholder{color:var(--t3);}
+select.fi option{background:var(--bg3);color:var(--t1);}
+.fr{display:grid;grid-template-columns:1fr 1fr;gap:14px;}
+.em{font-size:12px;color:var(--red);margin-top:5px;}
+.info-chip{
+  font-size:13px;padding:12px 16px;
+  border-radius:10px;margin-bottom:16px;
+  font-weight:600;border:1px solid transparent;
+}
+.info-chip.g{background:var(--green-dim);color:var(--green);border-color:#10d68e25;}
+.info-chip.a{background:var(--amber-dim);color:var(--amber);border-color:#f5a62325;}
+.info-chip.r{background:var(--red-dim);color:var(--red);border-color:#f0525225;}
+.modal-actions{display:flex;gap:10px;margin-top:22px;justify-content:flex-end;}
+.btn{
+  padding:10px 22px;border-radius:10px;
+  font-size:13px;font-weight:700;
+  cursor:pointer;border:none;
+  font-family:'Sora',sans-serif;
+  transition:all .15s;
+}
+.btn:active{transform:scale(.97);}
+.btn-green{background:var(--green);color:#000;}
+.btn-green:hover{background:var(--green2);}
+.btn-outline{
+  background:var(--bg3);color:var(--t2);
+  border:1px solid var(--border2);
+}
+.btn-outline:hover{background:var(--bg4);color:var(--t1);}
+
+/* ══ ICON / COLOR PICKERS ════════════════════ */
+.ipicker{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px;}
+.iopt{
+  width:40px;height:40px;border-radius:10px;
+  border:2px solid var(--border2);
+  display:flex;align-items:center;justify-content:center;
+  font-size:20px;cursor:pointer;background:var(--bg3);
+  transition:all .12s;
+}
+.iopt:hover,.iopt.on{border-color:var(--green);background:var(--green-dim);}
+.cpicker{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px;}
+.copt{
+  width:28px;height:28px;border-radius:50%;
+  cursor:pointer;border:3px solid transparent;transition:all .12s;
+}
+.copt:hover,.copt.on{border-color:#fff;transform:scale(1.2);}
+
+/* ══ TOGGLE ══════════════════════════════════ */
+.toggle-row{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:12px 14px;background:var(--bg3);border-radius:10px;
+  border:1px solid var(--border);margin-bottom:16px;
+}
+.tgl{position:relative;width:44px;height:24px;flex-shrink:0;}
+.tgl input{opacity:0;width:0;height:0;position:absolute;}
+.tgl-track{
+  position:absolute;inset:0;background:var(--bg4);
+  border-radius:12px;cursor:pointer;transition:background .2s;
+}
+.tgl input:checked + .tgl-track{background:var(--green);}
+.tgl-track::before{
+  content:'';position:absolute;
+  width:18px;height:18px;left:3px;top:3px;
+  background:#fff;border-radius:50%;transition:transform .2s;
+}
+.tgl input:checked + .tgl-track::before{transform:translateX(20px);}
+
+/* ══ CAT SELECTOR IN MODAL ═══════════════════ */
+.cat-sel-list{display:flex;flex-direction:column;gap:8px;max-height:200px;overflow-y:auto;}
+.cat-sel-item{
+  display:flex;align-items:center;gap:12px;
+  padding:10px 14px;background:var(--bg3);
+  border:2px solid transparent;border-radius:10px;
+  cursor:pointer;transition:all .15s;
+}
+.cat-sel-item:hover{border-color:var(--border2);}
+.cat-sel-item.on{border-color:var(--green);background:var(--green-dim);}
+.csi-ico{width:36px;height:36px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0;}
+.csi-body{flex:1;min-width:0;}
+.csi-name{font-size:13px;font-weight:600;color:var(--t1);}
+.csi-meta{font-size:11px;color:var(--t2);}
+
+/* ══ CHART ════════════════════════════════════ */
+.chart-wrap{position:relative;height:220px;}
+
+/* ══ EMPTY STATE ══════════════════════════════ */
+.empty{
+  text-align:center;padding:60px 20px;
+  color:var(--t3);
+}
+.empty-ico{font-size:48px;margin-bottom:16px;opacity:.5;}
+.empty-text{font-size:15px;color:var(--t2);margin-bottom:8px;}
+.empty-sub{font-size:13px;}
+
+/* ══ SCROLLBAR ════════════════════════════════ */
+::-webkit-scrollbar{width:6px;height:6px;}
+::-webkit-scrollbar-track{background:var(--bg2);}
+::-webkit-scrollbar-thumb{background:var(--bg5);border-radius:99px;}
+::-webkit-scrollbar-thumb:hover{background:var(--border3);}
+
+/* ══ DIVIDER ══════════════════════════════════ */
+.dv{height:1px;background:var(--border);margin:20px 0;}
+
+/* ══ SECTION HEADER ═══════════════════════════ */
+.sec-hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:14px;
+}
+.sec-title{
+  font-family:'DM Serif Display',serif;
+  font-size:18px;color:var(--t1);
+}
+.sec-action{
+  display:flex;align-items:center;gap:6px;
+  padding:7px 14px;border-radius:8px;
+  background:var(--bg3);border:1px solid var(--border2);
+  color:var(--t1);font-size:12px;font-weight:700;
+  cursor:pointer;transition:all .15s;font-family:'Sora',sans-serif;
+}
+.sec-action:hover{background:var(--bg4);}
+.sec-action.green{background:var(--green-dim);border-color:var(--green);color:var(--green);}
+.sec-action.green:hover{background:var(--green);color:#000;}
+
+/* ══ AUTH SCREEN ══════════════════════════════ */
+#authScreen{
+  position:fixed;inset:0;background:var(--bg);
+  display:flex;align-items:center;justify-content:center;
+  z-index:1000;padding:20px;
+}
+.auth-box{
+  width:100%;max-width:420px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:20px;padding:36px;
+  box-shadow:0 32px 80px rgba(0,0,0,.6);
+}
+.auth-logo{
+  width:52px;height:52px;border-radius:15px;
+  background:linear-gradient(135deg,var(--green),var(--green2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:26px;box-shadow:0 4px 20px var(--green-glow);
+  margin:0 auto 20px;
+}
+.auth-title{
+  font-family:'DM Serif Display',serif;
+  font-size:26px;color:var(--t1);
+  text-align:center;margin-bottom:6px;
+}
+.auth-sub{font-size:13px;color:var(--t2);text-align:center;margin-bottom:28px;}
+.auth-tabs{display:flex;gap:6px;margin-bottom:24px;background:var(--bg3);border-radius:10px;padding:4px;}
+.auth-tab{
+  flex:1;padding:9px;border-radius:8px;
+  border:none;font-family:'Sora',sans-serif;
+  font-size:13px;font-weight:700;cursor:pointer;
+  background:transparent;color:var(--t3);transition:all .2s;
+}
+.auth-tab.active{background:var(--bg2);color:var(--t1);box-shadow:var(--shadow2);}
+.auth-divider{display:flex;align-items:center;gap:12px;margin:20px 0;}
+.auth-divider span{font-size:11px;color:var(--t3);white-space:nowrap;}
+.auth-divider::before,.auth-divider::after{content:'';flex:1;height:1px;background:var(--border);}
+.auth-google{
+  width:100%;padding:11px;border-radius:10px;
+  border:1px solid var(--border2);background:var(--bg3);
+  color:var(--t1);font-family:'Sora',sans-serif;
+  font-size:13px;font-weight:600;cursor:pointer;
+  display:flex;align-items:center;justify-content:center;gap:10px;
+  transition:all .15s;
+}
+.auth-google:hover{background:var(--bg4);border-color:var(--border3);}
+.auth-err{font-size:12px;color:var(--red);margin-top:8px;text-align:center;min-height:18px;}
+.auth-footer{font-size:11px;color:var(--t3);text-align:center;margin-top:20px;}
+
+/* ══ USER MENU ════════════════════════════════ */
+.user-pill{
+  display:flex;align-items:center;gap:8px;
+  padding:6px 12px;border-radius:10px;
+  background:var(--bg3);border:1px solid var(--border2);
+  cursor:pointer;transition:all .15s;
+}
+.user-pill:hover{background:var(--bg4);}
+.user-avatar{
+  width:28px;height:28px;border-radius:50%;
+  background:linear-gradient(135deg,var(--green),var(--green2));
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#000;flex-shrink:0;
+}
+.user-name{font-size:12px;font-weight:600;color:var(--t1);max-width:100px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
+.user-dropdown{
+  position:absolute;top:calc(var(--header-h) + 8px);right:28px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:12px;padding:8px;min-width:200px;
+  box-shadow:var(--shadow);z-index:200;display:none;
+}
+.user-dropdown.open{display:block;animation:fadeIn .15s ease;}
+.ud-item{
+  display:flex;align-items:center;gap:10px;
+  padding:10px 12px;border-radius:8px;
+  font-size:13px;font-weight:500;color:var(--t2);
+  cursor:pointer;transition:all .12s;
+}
+.ud-item:hover{background:var(--bg3);color:var(--t1);}
+.ud-item.red:hover{background:var(--red-dim);color:var(--red);}
+.ud-email{font-size:11px;color:var(--t3);padding:8px 12px;border-bottom:1px solid var(--border);margin-bottom:4px;}
+
+/* ══ SYNC STATUS ══════════════════════════════ */
+.cloud-badge{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:11px;padding:3px 10px;border-radius:99px;
+  background:var(--green-dim);color:var(--green);
+  font-weight:600;
+}
+
+/* ══ RESPONSIVE SIDEBAR ═══════════════════════ */
+.sidebar-toggle{display:none;}
+@media(max-width:900px){
+  .sidebar{transform:translateX(-100%);}
+  .sidebar.mob-open{transform:translateX(0);}
+  .main{margin-left:0;}
+  .grid-4{grid-template-columns:repeat(2,1fr);}
+  .grid-3{grid-template-columns:1fr 1fr;}
+  .grid-2-1{grid-template-columns:1fr;}
+  .subcat-row{grid-template-columns:1fr auto auto;}
+  .sidebar-toggle{display:flex;width:36px;height:36px;border-radius:8px;border:1px solid var(--border2);background:var(--bg3);align-items:center;justify-content:center;cursor:pointer;font-size:18px;color:var(--t2);}
+  .acc-grid{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:600px){
+  .grid-4{grid-template-columns:1fr 1fr;}
+  .grid-3{grid-template-columns:1fr;}
+  .content{padding:16px;}
+  .fr{grid-template-columns:1fr;}
+  .acc-grid{grid-template-columns:1fr;}
+  .sv-grid{grid-template-columns:1fr;}
+  .topbar{padding:0 16px;}
+  .add-txn-btn span{display:none;}
+}
+</style>
+</head>
+<body>
+
+<!-- ══ AUTH SCREEN ══════════════════════════════════════════════ -->
+<div id="authScreen">
+  <div class="auth-box">
+    <div class="auth-logo">💸</div>
+    <div class="auth-title">Mind Wallet</div>
+    <div class="auth-sub">Sign in to sync your data across all your devices securely</div>
+    <div class="auth-tabs">
+      <button class="auth-tab active" id="atab-login" onclick="switchAuthTab('login')">Sign In</button>
+      <button class="auth-tab" id="atab-signup" onclick="switchAuthTab('signup')">Create Account</button>
+    </div>
+    <div id="authEmailForm">
+      <div class="fg"><label class="fl">Email</label><input type="email" class="fi" id="authEmail" placeholder="you@example.com" autocomplete="email" /></div>
+      <div class="fg"><label class="fl">Password</label><input type="password" class="fi" id="authPass" placeholder="Min. 6 characters" onkeydown="if(event.key==='Enter')submitAuth()" /></div>
+      <div id="authSignupExtra" style="display:none;">
+        <div class="fg"><label class="fl">Your Name</label><input type="text" class="fi" id="authName" placeholder="e.g. Pethum" /></div>
+      </div>
+      <div class="auth-err" id="authErr"></div>
+      <button class="btn btn-green" style="width:100%;margin-top:4px;" id="authSubmitBtn" onclick="submitAuth()">Sign In</button>
+    </div>
+    <div class="auth-divider"><span>or continue with</span></div>
+    <button class="auth-google" onclick="signInGoogle()">
+      <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.615z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.18l-2.908-2.259c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332A8.997 8.997 0 0 0 9 18z"/><path fill="#FBBC05" d="M3.964 10.71A5.41 5.41 0 0 1 3.682 9c0-.593.102-1.17.282-1.71V4.958H.957A8.996 8.996 0 0 0 0 9c0 1.452.348 2.827.957 4.042l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0A8.997 8.997 0 0 0 .957 4.958L3.964 6.29C4.672 4.163 6.656 3.58 9 3.58z"/></svg>
+      Continue with Google
+    </button>
+    <div class="auth-footer">Your data is private — nobody else can access it.</div>
+  </div>
+</div>
+
+<div class="layout" id="appLayout" style="display:none;">
+
+  <!-- ══ SIDEBAR ══════════════════════════════════════════════════ -->
+  <aside class="sidebar" id="sidebar">
+    <div class="sidebar-brand">
+      <div class="brand-logo">💸</div>
+      <div>
+        <div class="brand-name">Mind Wallet</div>
+        <div class="brand-tagline">Smart Finance</div>
+      </div>
+    </div>
+
+    <div class="sidebar-month">
+      <div class="month-disp" id="sidebarMonth"></div>
+      <div class="month-arrows">
+        <div class="m-arrow" onclick="chM(-1)">&#8592;</div>
+        <div class="m-arrow" onclick="chM(1)">&#8594;</div>
+      </div>
+    </div>
+
+    <nav class="nav">
+      <div class="nav-section-lbl">Overview</div>
+      <div class="nav-item active" id="ni-home" onclick="goTab('home')"><span class="ni">🏠</span> Dashboard</div>
+
+      <div class="nav-section-lbl">Finance</div>
+      <div class="nav-item" id="ni-budget" onclick="goTab('budget')"><span class="ni">📊</span> Budget</div>
+      <div class="nav-item" id="ni-txns" onclick="goTab('txns')"><span class="ni">📋</span> Transactions</div>
+      <div class="nav-item" id="ni-savings" onclick="goTab('savings')"><span class="ni">💎</span> Savings</div>
+      <div class="nav-item" id="ni-invest" onclick="goTab('invest')"><span class="ni">📈</span> Investments</div>
+      <div class="nav-item" id="ni-accounts" onclick="goTab('accounts')"><span class="ni">🏦</span> Accounts</div>
+    </nav>
+
+    <div class="sidebar-footer">
+      <div class="currency-row">
+        <span>Currency</span>
+        <span class="currency-val" id="curLbl">LKR</span>
+      </div>
+      <div class="sync-pill">
+        <div class="sync-dot" id="syncDot"></div>
+        <span id="syncLbl">Saved locally</span>
+      </div>
+    </div>
+  </aside>
+
+  <!-- ══ MAIN AREA ══════════════════════════════════════════════ -->
+  <div class="main">
+
+    <!-- Top Bar -->
+    <div class="topbar">
+      <div style="display:flex;align-items:center;gap:14px;">
+        <div class="sidebar-toggle" onclick="toggleSidebar()">☰</div>
+        <div class="page-title" id="pageTitle"><span>🏠</span> Dashboard</div>
+      </div>
+      <div class="topbar-right">
+        <input type="file" id="restoreInput" accept=".json" style="display:none;" onchange="importBackup(event)" />
+        <button class="add-txn-btn" onclick="openTxnModal()">
+          <span>+</span> <span>Add Transaction</span>
+        </button>
+        <div style="position:relative;">
+          <div class="user-pill" onclick="toggleUserMenu()" id="userPill">
+            <div class="user-avatar" id="userAvatar">?</div>
+            <div class="user-name" id="userNameLbl">Account</div>
+            <span style="font-size:10px;color:var(--t3);">▼</span>
+          </div>
+          <div class="user-dropdown" id="userDropdown">
+            <div class="ud-email" id="udEmail">—</div>
+            <div class="ud-item" onclick="exportBackup();toggleUserMenu()">⬇ Export Backup</div>
+            <div class="ud-item" onclick="document.getElementById('restoreInput').click();toggleUserMenu()">⬆ Restore Backup</div>
+            <div class="ud-item red" onclick="signOut()">🚪 Sign Out</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pages -->
+    <div class="content">
+      <div class="page active" id="pg-home"></div>
+      <div class="page" id="pg-budget"></div>
+      <div class="page" id="pg-txns"></div>
+      <div class="page" id="pg-savings"></div>
+      <div class="page" id="pg-invest"></div>
+      <div class="page" id="pg-accounts"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══ MODAL BACKDROP ══════════════════════════════════════════ -->
+<div class="modal-bg" id="modalBg" onclick="handleMBg(event)">
+  <div class="modal" id="modalBox"></div>
+</div>
+
+<script>
+// ═══════════════════════════════════════════════════════
+//  STATE
+// ═══════════════════════════════════════════════════════
+let S={accounts:[],categories:[],savings:[],investments:[],currency:'LKR'};
+let CM=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');})();
+let AT='home', EXP=new Set(), TF='all';
+let homeChart=null, txnChart=null;
+let _cid=null,_sid=null,_catIcon='🏠',_catColor='#3b82f6',_savIcon='🛡️',_invIcon='📈',_accColor='#1e40af';
+
+// ─── Utils ───────────────────────────────────────────
+const uid=()=>'x'+Math.random().toString(36).slice(2,9);
+const fmt=n=>new Intl.NumberFormat('en-US').format(Math.round(+n||0));
+const fmtFull=n=>new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0);
+const fmtDate=d=>new Date(d+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
+const fmtDateShort=d=>new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
+const mLabel=ym=>{const[y,m]=ym.split('-');return new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});};
+const today=()=>new Date().toISOString().split('T')[0];
+const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const gA=sc=>(sc.transactions||[]).filter(t=>t.month===CM).reduce((s,t)=>s+t.amount,0);
+const cA=c=>(c.subcategories||[]).reduce((s,sc)=>s+gA(sc),0);
+const cB=c=>(c.subcategories||[]).reduce((s,sc)=>s+(sc.budget||0),0);
+const pc=(a,b)=>b>0?Math.min(Math.round(a/b*100),100):0;
+const pcol=p=>p>=100?'var(--red)':p>=80?'var(--amber)':'var(--green)';
+const badge=(p,extra='')=>{const c=p>=100?'b-r':p>=80?'b-a':'b-g';return`<span class="badge ${c}" ${extra}>${p}%</span>`;};
+const allTxns=()=>{const o=[];for(const c of S.categories)for(const sc of(c.subcategories||[]))for(const t of(sc.transactions||[]))o.push({...t,catName:c.name,catIcon:c.icon,catColor:c.color,scName:sc.name,scId:sc.id,catId:c.id});return o.sort((a,b)=>b.date.localeCompare(a.date));};
+const getAcc=id=>(S.accounts||[]).find(a=>a.id===id);
+
+function pb(p,col,h='5'){
+  return `<div class="pbar" style="height:${h}px;"><div class="pfill" style="width:${p}%;background:${col};"></div></div>`;
+}
+
+// ═══════════════════════════════════════════════════════
+//  SUPABASE CONFIG  ← PASTE YOUR 2 VALUES HERE
+// ═══════════════════════════════════════════════════════
+const SUPABASE_URL = 'https://znhufvqyeugoqclwcasm.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InpuaHVmdnF5ZXVnb3FjbHdjYXNtIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzQ1MTM3MDAsImV4cCI6MjA5MDA4OTcwMH0.l0_F7-Ed3RnO2wy4cswpIBpTH3_kdFbLtSZGdmIVG7U';
+const _sb = window.supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+let _currentUser = null;
+
+// ─── Auth helpers ─────────────────────────────────────
+function switchAuthTab(tab){
+  document.getElementById('atab-login').classList.toggle('active', tab==='login');
+  document.getElementById('atab-signup').classList.toggle('active', tab==='signup');
+  document.getElementById('authSignupExtra').style.display = tab==='signup'?'block':'none';
+  document.getElementById('authSubmitBtn').textContent = tab==='signup'?'Create Account':'Sign In';
+  document.getElementById('authErr').textContent='';
+}
+async function submitAuth(){
+  const email = document.getElementById('authEmail').value.trim();
+  const pass  = document.getElementById('authPass').value;
+  const isSignup = document.getElementById('atab-signup').classList.contains('active');
+  const errEl = document.getElementById('authErr');
+  errEl.textContent='';
+  if(!email||!pass){errEl.textContent='Email and password required.';return;}
+  document.getElementById('authSubmitBtn').textContent='Please wait…';
+  if(isSignup){
+    const name = document.getElementById('authName').value.trim()||email.split('@')[0];
+    const {error} = await _sb.auth.signUp({email,password:pass,options:{data:{full_name:name}}});
+    if(error){errEl.textContent=error.message;document.getElementById('authSubmitBtn').textContent='Create Account';return;}
+    errEl.style.color='var(--green)';errEl.textContent='✓ Check your email to confirm your account!';
+    document.getElementById('authSubmitBtn').textContent='Create Account';
+  } else {
+    const {error} = await _sb.auth.signInWithPassword({email,password:pass});
+    if(error){errEl.textContent=error.message;document.getElementById('authSubmitBtn').textContent='Sign In';return;}
+  }
+}
+async function signInGoogle(){
+  const {error} = await _sb.auth.signInWithOAuth({
+    provider:'google',
+    options:{redirectTo: 'https://www.mindwalletedu.com'}
+  });
+  if(error)document.getElementById('authErr').textContent=error.message;
+}
+async function signOut(){
+  toggleUserMenu();
+  await _sb.auth.signOut();
+  _currentUser=null;
+  S={accounts:[],categories:[],savings:[],investments:[],currency:'LKR'};
+  document.getElementById('appLayout').style.display='none';
+  document.getElementById('authScreen').style.display='flex';
+}
+function toggleUserMenu(){
+  document.getElementById('userDropdown').classList.toggle('open');
+}
+document.addEventListener('click',e=>{
+  const dd=document.getElementById('userDropdown');
+  const pill=document.getElementById('userPill');
+  if(dd&&!dd.contains(e.target)&&!pill.contains(e.target))dd.classList.remove('open');
+});
+function updateUserUI(user){
+  if(!user)return;
+  const name = user.user_metadata?.full_name || user.email?.split('@')[0] || 'User';
+  const initials = name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+  const el=document.getElementById('userAvatar');if(el)el.textContent=initials;
+  const nl=document.getElementById('userNameLbl');if(nl)nl.textContent=name.split(' ')[0];
+  const em=document.getElementById('udEmail');if(em)em.textContent=user.email;
+}
+
+// ─── Cloud Storage ─────────────────────────────────────
+async function loadState(){
+  if(!_currentUser){S=defaultState();return;}
+  setSyncStatus('pulse','Loading…');
+  try{
+    const {data,error}=await _sb.from('wallet_data').select('data').eq('user_id',_currentUser.id).single();
+    if(data?.data && Object.keys(data.data).length>0){
+      S={...defaultState(),...data.data};
+    } else {
+      S=defaultState();
+    }
+  }catch(e){
+    // Try localStorage fallback
+    try{const raw=localStorage.getItem('mw_'+_currentUser.id);if(raw)S=JSON.parse(raw);}catch(e2){}
+    if(!S.categories)S=defaultState();
+  }
+  setSyncStatus('ok','Synced ☁️');
+}
+let _saveTimer=null;
+async function saveState(){
+  // Immediate localStorage write (instant, no spinner)
+  if(_currentUser){
+    try{localStorage.setItem('mw_'+_currentUser.id, JSON.stringify(S));}catch(e){}
+  }
+  setSyncStatus('pulse','Saving…');
+  clearTimeout(_saveTimer);
+  _saveTimer=setTimeout(async()=>{
+    if(!_currentUser){setSyncStatus('ok','Saved locally');return;}
+    try{
+      await _sb.from('wallet_data').upsert({user_id:_currentUser.id,data:S,updated_at:new Date().toISOString()},{onConflict:'user_id'});
+      setSyncStatus('ok','Synced ☁️');
+    }catch(e){setSyncStatus('ok','Saved locally');}
+  }, 800);
+}
+function setSyncStatus(t,l){
+  const d=document.getElementById('syncDot');
+  const lb=document.getElementById('syncLbl');
+  if(d){d.className='sync-dot'+(t==='ok'?' ok':t==='pulse'?' pulse':'');}
+  if(lb)lb.textContent=l;
+}
+
+function defaultState(){
+  return{
+    accounts:[
+      {id:uid(),name:'Main Wallet',bank:'Cash',color:'#0f766e',icon:'💵',balance:50000,type:'cash'},
+      {id:uid(),name:'BOC Savings',bank:'Bank of Ceylon',color:'#1e40af',icon:'🏦',balance:250000,type:'bank'},
+      {id:uid(),name:'Sampath Card',bank:'Sampath Bank',color:'#7c3aed',icon:'💳',balance:80000,type:'credit card'},
+    ],
+    categories:[
+      {id:uid(),name:'Housing',icon:'🏠',color:'#3b82f6',subcategories:[
+        {id:uid(),name:'Rent / Mortgage',budget:50000,transactions:[]},
+        {id:uid(),name:'Utilities',budget:8000,transactions:[]},
+        {id:uid(),name:'Internet',budget:3500,transactions:[]},
+      ]},
+      {id:uid(),name:'Food & Dining',icon:'🍽️',color:'#f97316',subcategories:[
+        {id:uid(),name:'Groceries',budget:20000,transactions:[]},
+        {id:uid(),name:'Dining Out',budget:10000,transactions:[]},
+        {id:uid(),name:'Coffee & Snacks',budget:4000,transactions:[]},
+      ]},
+      {id:uid(),name:'Transport',icon:'🚗',color:'#8b5cf6',subcategories:[
+        {id:uid(),name:'Fuel',budget:12000,transactions:[]},
+        {id:uid(),name:'Public Transport',budget:3000,transactions:[]},
+      ]},
+      {id:uid(),name:'Healthcare',icon:'🏥',color:'#ec4899',subcategories:[
+        {id:uid(),name:'Medical',budget:5000,transactions:[]},
+        {id:uid(),name:'Pharmacy',budget:3000,transactions:[]},
+      ]},
+      {id:uid(),name:'Entertainment',icon:'🎬',color:'#14b8a6',subcategories:[
+        {id:uid(),name:'Streaming',budget:2500,transactions:[]},
+        {id:uid(),name:'Movies & Events',budget:3000,transactions:[]},
+      ]},
+      {id:uid(),name:'Personal',icon:'👗',color:'#f43f5e',subcategories:[
+        {id:uid(),name:'Clothing',budget:8000,transactions:[]},
+        {id:uid(),name:'Personal Care',budget:4000,transactions:[]},
+      ]},
+    ],
+    savings:[
+      {id:uid(),name:'Emergency Fund',icon:'🛡️',target:300000,current:0,notes:'6 months of expenses'},
+      {id:uid(),name:'House Down Payment',icon:'🏡',target:2000000,current:0,notes:'Dream home fund'},
+      {id:uid(),name:'EPF / ETF',icon:'🏦',target:1000000,current:0,notes:'Retirement fund'},
+    ],
+    investments:[
+      {id:uid(),name:'Stocks (CSE)',icon:'📈',type:'stocks',current:0,notes:'Blue chip equities'},
+      {id:uid(),name:'Fixed Deposit',icon:'🏛️',type:'fixed deposit',current:0,notes:'Annual FD'},
+      {id:uid(),name:'Gold',icon:'🥇',type:'gold',current:0,notes:'Sovereign gold'},
+    ],
+    currency:'LKR'
+  };
+}
+
+// ─── Navigation ───────────────────────────────────────
+const PAGE_TITLES={
+  home:['🏠','Dashboard'],budget:['📊','Budget'],
+  txns:['📋','Transactions'],savings:['💎','Savings'],
+  invest:['📈','Investments'],accounts:['🏦','Accounts']
+};
+function goTab(tab){
+  AT=tab;
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n=>n.classList.remove('active'));
+  document.getElementById('pg-'+tab).classList.add('active');
+  document.getElementById('ni-'+tab).classList.add('active');
+  const [ico,lbl]=PAGE_TITLES[tab]||['',''];
+  document.getElementById('pageTitle').innerHTML=`<span>${ico}</span> ${lbl}`;
+  if(homeChart&&tab!=='home'){homeChart.destroy();homeChart=null;}
+  render();
+  // Close mobile sidebar
+  document.getElementById('sidebar').classList.remove('mob-open');
+}
+function chM(d){
+  let[y,m]=CM.split('-').map(Number);m+=d;
+  if(m>12){m=1;y++;}if(m<1){m=12;y--;}
+  CM=`${y}-${String(m).padStart(2,'0')}`;
+  if(homeChart){homeChart.destroy();homeChart=null;}
+  render();
+}
+function toggleSidebar(){
+  document.getElementById('sidebar').classList.toggle('mob-open');
+}
+function render(){
+  document.getElementById('sidebarMonth').textContent=mLabel(CM);
+  document.getElementById('curLbl').textContent=S.currency||'LKR';
+  if(AT==='home') renderHome();
+  else if(AT==='budget') renderBudget();
+  else if(AT==='txns') renderTxns();
+  else if(AT==='savings') renderSavings();
+  else if(AT==='invest') renderInvest();
+  else renderAccounts();
+}
+
+// ═══════════════════════════════════════════════════════
+//  DASHBOARD
+// ═══════════════════════════════════════════════════════
+function renderHome(){
+  const totB=S.categories.reduce((s,c)=>s+cB(c),0);
+  const totA=S.categories.reduce((s,c)=>s+cA(c),0);
+  const rem=totB-totA, pct=pc(totA,totB);
+  const totBal=(S.accounts||[]).reduce((s,a)=>s+(a.balance||0),0);
+  const totSav=(S.savings||[]).reduce((s,sv)=>s+(sv.current||0),0);
+  const totInv=(S.investments||[]).reduce((s,iv)=>s+(iv.current||0),0);
+  const tod=allTxns().filter(t=>t.date===today());
+  const todTot=tod.reduce((s,t)=>s+t.amount,0);
+
+  // Top 5 transactions today
+  const todRows=tod.slice(0,5).map(t=>{
+    const acc=getAcc(t.accountId);
+    return`<tr>
+      <td><div style="display:flex;align-items:center;gap:10px;">
+        <div class="txn-icon" style="background:${t.catColor}18;">${t.catIcon}</div>
+        <div><div class="txn-name">${esc(t.scName)}</div><div class="txn-sub">${esc(t.catName)}${t.note?' · '+esc(t.note):''}</div></div>
+      </div></td>
+      <td><span class="badge b-g">${esc(acc?.bank||'—')}</span></td>
+      <td style="text-align:right;"><div class="txn-amt">−${S.currency} ${fmt(t.amount)}</div></td>
+    </tr>`;}).join('');
+
+  const catSummary=S.categories.map(c=>{
+    const b=cB(c),a=cA(c),p=pc(a,b);
+    return`<div style="margin-bottom:14px;">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;">
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:16px;">${c.icon}</span>
+          <span style="font-size:13px;font-weight:600;color:var(--t1);">${esc(c.name)}</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <span style="font-size:12px;color:var(--t2);">${S.currency} ${fmt(a)} / ${fmt(b)}</span>
+          ${badge(p)}
+        </div>
+      </div>
+      ${pb(p,pcol(p),'6')}
+    </div>`;}).join('');
+
+  const accCards=(S.accounts||[]).map(acc=>`
+    <div style="display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg3);border:1px solid var(--border);border-radius:10px;cursor:pointer;" onclick="goTab('accounts')">
+      <div style="width:40px;height:40px;border-radius:12px;background:${acc.color}25;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;">${acc.icon}</div>
+      <div style="flex:1;min-width:0;">
+        <div style="font-size:13px;font-weight:600;color:var(--t1);">${esc(acc.name)}</div>
+        <div style="font-size:11px;color:var(--t2);">${esc(acc.bank)}</div>
+      </div>
+      <div style="text-align:right;">
+        <div style="font-size:15px;font-weight:700;color:${acc.color};">${fmt(acc.balance)}</div>
+        <div style="font-size:11px;color:var(--t3);">${S.currency}</div>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('pg-home').innerHTML=`
+    <!-- Metric Row -->
+    <div class="grid-4" style="margin-bottom:20px;">
+      <div class="metric" style="--accent:var(--green);grid-column:span 1;">
+        <div class="metric-label">Total Balance</div>
+        <div><span class="metric-value">${fmt(totBal)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${(S.accounts||[]).length} accounts</div>
+      </div>
+      <div class="metric" style="--accent:${pct>=100?'var(--red)':pct>=80?'var(--amber)':'var(--blue)'}">
+        <div class="metric-label">Monthly Budget</div>
+        <div><span class="metric-value">${fmt(totB)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${pct}% used · ${S.currency} ${fmt(rem<0?0:rem)} remaining</div>
+        <div style="margin-top:8px;">${pb(pct,pcol(pct),'4')}</div>
+      </div>
+      <div class="metric" style="--accent:var(--green)">
+        <div class="metric-label">Total Savings</div>
+        <div><span class="metric-value">${fmt(totSav)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${(S.savings||[]).length} goals</div>
+      </div>
+      <div class="metric" style="--accent:var(--purple)">
+        <div class="metric-label">Investments</div>
+        <div><span class="metric-value">${fmt(totInv)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">Net wealth: ${fmt(totSav+totInv)}</div>
+      </div>
+    </div>
+
+    <!-- Chart + Accounts -->
+    <div class="grid-2-1" style="margin-bottom:20px;">
+      <div class="card">
+        <div class="card-title">
+          Spending by Category — ${mLabel(CM)}
+          <span class="card-link" onclick="goTab('budget')">View Budget →</span>
+        </div>
+        <div class="chart-wrap"><canvas id="homeChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title">Accounts <span class="card-link" onclick="goTab('accounts')">Manage →</span></div>
+        <div style="display:flex;flex-direction:column;gap:8px;">${accCards||'<div class="empty" style="padding:20px 0;"><div class="empty-ico">🏦</div><div class="empty-text">No accounts yet.</div></div>'}</div>
+        <div class="dv" style="margin:14px 0;"></div>
+        <div style="display:flex;justify-content:space-between;padding:10px;background:var(--bg3);border-radius:10px;">
+          <div><div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;">Net Worth</div><div style="font-size:18px;font-weight:700;color:var(--green);margin-top:2px;">${S.currency} ${fmt(totBal+totSav+totInv)}</div></div>
+          <div style="text-align:right;"><div style="font-size:11px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;">Today Spent</div><div style="font-size:18px;font-weight:700;color:var(--amber);margin-top:2px;">${S.currency} ${fmt(todTot)}</div></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Budget Overview + Today's Txns -->
+    <div class="grid-2" style="margin-bottom:0;">
+      <div class="card">
+        <div class="card-title">Budget Overview <span class="card-link" onclick="goTab('budget')">Manage →</span></div>
+        ${catSummary||'<div class="empty" style="padding:20px 0;"><div class="empty-ico">📊</div><div class="empty-text">No budget categories yet.</div></div>'}
+      </div>
+      <div class="card">
+        <div class="card-title">Today's Transactions <span class="card-link" onclick="goTab('txns')">All Transactions →</span></div>
+        ${tod.length?`<table class="txn-table">${todRows}</table>`:'<div class="empty" style="padding:20px 0;"><div class="empty-ico">✅</div><div class="empty-text">No spending today!</div></div>'}
+      </div>
+    </div>
+  `;
+
+  setTimeout(()=>{
+    const cv=document.getElementById('homeChart');
+    if(!cv)return;
+    if(homeChart){homeChart.destroy();homeChart=null;}
+    const acts=S.categories.map(c=>cA(c));
+    const total=acts.reduce((s,a)=>s+a,0);
+    if(!total){cv.parentElement.innerHTML='<div class="empty" style="padding:40px 0;"><div class="empty-ico">📊</div><div class="empty-text">No transactions this month.</div></div>';return;}
+    homeChart=new Chart(cv,{
+      type:'bar',
+      data:{
+        labels:S.categories.map(c=>c.name),
+        datasets:[
+          {label:'Budget',data:S.categories.map(c=>cB(c)),backgroundColor:'#ffffff0a',borderColor:'#ffffff15',borderWidth:1.5,borderRadius:6,barPercentage:.6},
+          {label:'Actual',data:acts,backgroundColor:S.categories.map(c=>c.color+'bb'),borderColor:S.categories.map(c=>c.color),borderWidth:1,borderRadius:6,barPercentage:.6}
+        ]
+      },
+      options:{
+        responsive:true,maintainAspectRatio:false,
+        plugins:{
+          legend:{display:false},
+          tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${S.currency} ${fmt(ctx.raw)}`},backgroundColor:'#1e2535',titleColor:'#e8edf7',bodyColor:'#8892a8',borderColor:'#ffffff18',borderWidth:1}
+        },
+        scales:{
+          y:{beginAtZero:true,grid:{color:'#ffffff08'},ticks:{color:'#4a5568',font:{size:11,family:'Sora'},callback:v=>fmt(v)}},
+          x:{grid:{display:false},ticks:{color:'#4a5568',font:{size:11,family:'Sora'},maxRotation:20,autoSkip:false}}
+        }
+      }
+    });
+  },80);
+}
+
+// ═══════════════════════════════════════════════════════
+//  BUDGET PAGE
+// ═══════════════════════════════════════════════════════
+function renderBudget(){
+  const html=S.categories.map(cat=>{
+    const b=cB(cat),a=cA(cat),p=pc(a,b),isOpen=EXP.has(cat.id);
+    const scRows=isOpen?(cat.subcategories||[]).map(sc=>{
+      const sa=gA(sc),sp=pc(sa,sc.budget),rem=sc.budget-sa;
+      return`<div class="subcat-row">
+        <div>
+          <div class="sc-name">${esc(sc.name)}</div>
+          <div class="sc-meta">${S.currency} ${fmt(sa)} spent · ${S.currency} ${fmt(rem<0?0:rem)} remaining</div>
+        </div>
+        <div class="sc-bar-wrap">
+          <div class="sc-pct-lbl"><span>${sp}% used</span><span>${S.currency} ${fmt(sc.budget)}</span></div>
+          ${pb(sp,pcol(sp),'6')}
+        </div>
+        ${badge(sp)}
+        <div class="sc-actions">
+          <button class="btn-xs green" onclick="openTxnForSc('${cat.id}','${sc.id}')">+ Add</button>
+          <button class="btn-xs" onclick="viewScTxns('${sc.id}')">View</button>
+          <button class="btn-xs red" onclick="delSubcat('${cat.id}','${sc.id}')">✕</button>
+        </div>
+      </div>`;}).join(''):'';
+    return`<div class="cat-card">
+      <div class="cat-header" onclick="toggleCat('${cat.id}')">
+        <div class="cat-icon" style="background:${cat.color}18;">${cat.icon}</div>
+        <div class="cat-meta">
+          <div class="cat-name">${esc(cat.name)}</div>
+          <div class="cat-amounts">${S.currency} ${fmt(a)} spent of ${fmt(b)} budgeted</div>
+          <div style="margin-top:8px;">${pb(p,pcol(p),'5')}</div>
+        </div>
+        <div class="cat-right">
+          ${badge(p,'style="font-size:12px;padding:4px 12px;"')}
+          <span class="chev ${isOpen?'open':''}">▶</span>
+        </div>
+      </div>
+      ${isOpen?`<div class="subcat-wrap">
+        ${scRows||'<div style="color:var(--t3);font-size:13px;padding:8px 0;">No subcategories yet.</div>'}
+        <div class="subcat-actions">
+          <button class="sec-action green" onclick="openAddSubcat('${cat.id}')">+ Add Subcategory</button>
+          <button class="sec-action" style="color:var(--red);border-color:var(--red)20;" onclick="delCat('${cat.id}')">Delete Category</button>
+        </div>
+      </div>`:''}
+    </div>`;}).join('');
+
+  const totB=S.categories.reduce((s,c)=>s+cB(c),0);
+  const totA=S.categories.reduce((s,c)=>s+cA(c),0);
+  const pct=pc(totA,totB);
+
+  document.getElementById('pg-budget').innerHTML=`
+    <div class="grid-3" style="margin-bottom:20px;">
+      <div class="metric" style="--accent:var(--blue)">
+        <div class="metric-label">Total Budget</div>
+        <div><span class="metric-value">${fmt(totB)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${S.categories.length} categories, ${S.categories.reduce((s,c)=>s+(c.subcategories||[]).length,0)} items</div>
+      </div>
+      <div class="metric" style="--accent:${pcol(pct)}">
+        <div class="metric-label">Total Spent</div>
+        <div><span class="metric-value" style="color:${pcol(pct)};">${fmt(totA)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${pct}% of budget used</div>
+        <div style="margin-top:8px;">${pb(pct,pcol(pct),'4')}</div>
+      </div>
+      <div class="metric" style="--accent:var(--green)">
+        <div class="metric-label">Remaining</div>
+        <div><span class="metric-value" style="color:var(--green);">${fmt(Math.max(0,totB-totA))}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${totA>totB?'⛔ Over budget!':'Available to spend'}</div>
+      </div>
+    </div>
+
+    <div class="sec-hdr">
+      <div class="sec-title">Categories</div>
+      <button class="sec-action green" onclick="openAddCategory()">+ Add Category</button>
+    </div>
+
+    ${html||`<div class="empty"><div class="empty-ico">📝</div><div class="empty-text">No budget categories yet.</div><div class="empty-sub">Click "Add Category" to get started.</div></div>`}
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+//  TRANSACTIONS PAGE
+// ═══════════════════════════════════════════════════════
+function renderTxns(scIdFilter=null){
+  const td=today();
+  const wk=new Date();wk.setDate(wk.getDate()-7);const wkS=wk.toISOString().split('T')[0];
+  let txns=allTxns().filter(t=>t.month===CM);
+
+  if(scIdFilter)txns=txns.filter(t=>t.scId===scIdFilter);
+  else if(TF==='today')txns=txns.filter(t=>t.date===td);
+  else if(TF==='week')txns=txns.filter(t=>t.date>=wkS);
+  else if(TF!=='all'){const cat=S.categories.find(c=>c.id===TF);if(cat)txns=txns.filter(t=>t.catId===TF);}
+
+  const groups={};
+  for(const t of txns){if(!groups[t.date])groups[t.date]=[];groups[t.date].push(t);}
+  const dates=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
+  const total=txns.reduce((s,t)=>s+t.amount,0);
+
+  const rows=dates.map(date=>{
+    const dt=groups[date].reduce((s,t)=>s+t.amount,0);
+    const dayRows=groups[date].map(t=>{
+      const acc=getAcc(t.accountId);
+      return`<tr>
+        <td><div style="display:flex;align-items:center;gap:12px;">
+          <div class="txn-icon" style="background:${t.catColor}18;">${t.catIcon}</div>
+          <div><div class="txn-name">${esc(t.scName)}</div><div class="txn-sub">${esc(t.catName)}${t.note?' · '+esc(t.note):''}${t.linkedSavingId?' · 💎 Savings':''}</div></div>
+        </div></td>
+        <td><div style="font-size:12px;color:var(--t2);">${acc?esc(acc.name):''}</div><div class="txn-bank">${acc?esc(acc.bank):'—'}</div></td>
+        <td><span class="badge b-g" style="font-size:11px;">${esc(t.catName)}</span></td>
+        <td style="text-align:right;"><div class="txn-amt">−${S.currency} ${fmt(t.amount)}</div></td>
+        <td style="text-align:right;">
+          <button class="btn-xs red" onclick="delTxn('${t.scId}','${t.id}')">Delete</button>
+        </td>
+      </tr>`;}).join('');
+    const lbl=date===td?'Today — '+fmtDate(date):fmtDate(date);
+    return`<div class="txn-date-lbl"><span>${lbl}</span><span style="color:var(--amber);">−${S.currency} ${fmt(dt)}</span></div>
+    <table class="txn-table" style="margin-bottom:8px;">${dayRows}</table>`;
+  }).join('');
+
+  const filters=['all','today','week'].map(f=>`<button class="filter-pill${TF===f?' active':''}" onclick="setTF('${f}')">${f==='all'?'This Month':f==='today'?'Today':'This Week'}</button>`).join('');
+  const catFilters=S.categories.map(c=>`<button class="filter-pill${TF===c.id?' active':''}" style="${TF===c.id?'background:'+c.color+';border-color:'+c.color+';color:#000;':''}" onclick="setTF('${c.id}')">${c.icon} ${esc(c.name)}</button>`).join('');
+
+  document.getElementById('pg-txns').innerHTML=`
+    <div class="grid-3" style="margin-bottom:20px;">
+      <div class="metric" style="--accent:var(--red)">
+        <div class="metric-label">Total Spent ${TF==='today'?'Today':TF==='week'?'This Week':'This Month'}</div>
+        <div><span class="metric-value" style="color:var(--red);">${fmt(total)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${txns.length} transactions</div>
+      </div>
+      <div class="metric" style="--accent:var(--amber)">
+        <div class="metric-label">Daily Average</div>
+        <div><span class="metric-value" style="color:var(--amber);">${fmt(dates.length>0?total/dates.length:0)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${dates.length} days with spending</div>
+      </div>
+      <div class="metric" style="--accent:var(--blue)">
+        <div class="metric-label">Largest Transaction</div>
+        <div><span class="metric-value" style="color:var(--blue);">${fmt(txns.length?Math.max(...txns.map(t=>t.amount)):0)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${txns.length?esc(txns.find(t=>t.amount===Math.max(...txns.map(x=>x.amount)))?.scName||''):'—'}</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-title" style="margin-bottom:12px;">Filter Transactions</div>
+      <div class="filter-bar">${filters} ${catFilters}</div>
+    </div>
+
+    <div class="card" style="margin-top:16px;">
+      <div class="card-title">
+        Transaction History
+        <span style="font-size:12px;color:var(--t2);font-weight:400;">${txns.length} records</span>
+      </div>
+      ${rows||`<div class="empty"><div class="empty-ico">🧾</div><div class="empty-text">No transactions found.</div><div class="empty-sub">Add your first transaction using the button above.</div></div>`}
+    </div>
+  `;
+}
+function setTF(f){TF=f;renderTxns();}
+function viewScTxns(scId){goTab('txns');setTimeout(()=>renderTxns(scId),10);}
+
+// ═══════════════════════════════════════════════════════
+//  SAVINGS PAGE
+// ═══════════════════════════════════════════════════════
+function renderSavings(){
+  const ts=(S.savings||[]).reduce((s,sv)=>s+(sv.current||0),0);
+  const targetTotal=(S.savings||[]).reduce((s,sv)=>s+(sv.target||0),0);
+  const overallPct=pc(ts,targetTotal);
+
+  const cards=(S.savings||[]).map(sv=>{
+    const p=pc(sv.current,sv.target);
+    const deposits=(sv.transactions||[]).filter(t=>t.type==='deposit').slice(-3).reverse();
+    const depositLog=deposits.length?`<div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px;">
+      <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Recent Deposits</div>
+      ${deposits.map(d=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;"><span style="color:var(--t2);">${fmtDateShort(d.date)}${d.note?' · '+esc(d.note):''}</span><span style="color:var(--green);font-weight:700;">+${S.currency} ${fmt(d.amount)}</span></div>`).join('')}
+    </div>`:'';
+    return`<div class="sv-card">
+      <div class="sv-top">
+        <div class="sv-ico" style="background:var(--green-dim);">${sv.icon||'💰'}</div>
+        <div class="sv-info">
+          <div class="sv-name">${esc(sv.name)}</div>
+          <div class="sv-note">${esc(sv.notes||'Savings goal')}</div>
+        </div>
+        ${badge(p,'style="align-self:flex-start;"')}
+      </div>
+      <div>
+        <div class="sv-amounts">
+          <span class="sv-current">${S.currency} ${fmt(sv.current)}</span>
+          <span class="sv-target">Goal: ${S.currency} ${fmt(sv.target)}</span>
+        </div>
+        ${pb(p,'var(--green)','6')}
+        <div style="font-size:11px;color:var(--t3);margin-top:4px;">${S.currency} ${fmt(sv.target-sv.current)} remaining to goal</div>
+      </div>
+      ${depositLog}
+      <div class="sv-actions">
+        <button class="btn-xs green" onclick="openSavDeposit('${sv.id}')">+ Deposit</button>
+        <button class="btn-xs" onclick="openUpdSaving('${sv.id}')">Update</button>
+        <button class="btn-xs red" onclick="delSaving('${sv.id}')">Delete</button>
+      </div>
+    </div>`;}).join('');
+
+  document.getElementById('pg-savings').innerHTML=`
+    <div class="grid-3" style="margin-bottom:20px;">
+      <div class="metric" style="--accent:var(--green)">
+        <div class="metric-label">Total Savings</div>
+        <div><span class="metric-value">${fmt(ts)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${(S.savings||[]).length} goals active</div>
+      </div>
+      <div class="metric" style="--accent:var(--green)">
+        <div class="metric-label">Total Target</div>
+        <div><span class="metric-value">${fmt(targetTotal)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${overallPct}% of total goal achieved</div>
+        <div style="margin-top:8px;">${pb(overallPct,'var(--green)','4')}</div>
+      </div>
+      <div class="metric" style="--accent:var(--amber)">
+        <div class="metric-label">Still Needed</div>
+        <div><span class="metric-value" style="color:var(--amber);">${fmt(Math.max(0,targetTotal-ts))}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">To reach all goals</div>
+      </div>
+    </div>
+
+    <div class="sec-hdr">
+      <div class="sec-title">Savings Goals</div>
+      <button class="sec-action green" onclick="openAddSaving()">+ Add Goal</button>
+    </div>
+    <div class="sv-grid">${cards||`<div class="empty"><div class="empty-ico">🛡️</div><div class="empty-text">No savings goals yet.</div></div>`}</div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+//  INVESTMENTS PAGE
+// ═══════════════════════════════════════════════════════
+function renderInvest(){
+  const ti=(S.investments||[]).reduce((s,iv)=>s+(iv.current||0),0);
+  const TC={stocks:'b-g',bonds:'b-b','mutual funds':'b-p','fixed deposit':'b-b',gold:'b-a',crypto:'b-a','real estate':'b-p'};
+  const cards=(S.investments||[]).map(iv=>`
+    <div class="sv-card">
+      <div class="sv-top">
+        <div class="sv-ico" style="background:var(--purple-dim);">${iv.icon||'📊'}</div>
+        <div class="sv-info">
+          <div class="sv-name">${esc(iv.name)}</div>
+          <div class="sv-note">${esc(iv.notes||'Investment')}</div>
+          <span class="badge ${TC[iv.type]||'b-p'}" style="margin-top:6px;">${esc(iv.type)}</span>
+        </div>
+      </div>
+      <div style="text-align:center;padding:16px 0;border-top:1px solid var(--border);">
+        <div style="font-family:'DM Serif Display',serif;font-size:30px;color:var(--purple);">${S.currency} ${fmt(iv.current)}</div>
+        <div style="font-size:12px;color:var(--t3);margin-top:4px;">Current market value</div>
+      </div>
+      <div class="sv-actions">
+        <button class="btn-xs" style="border-color:var(--purple);color:var(--purple);" onclick="openUpdInvest('${iv.id}')">Update Value</button>
+        <button class="btn-xs red" onclick="delInvest('${iv.id}')">Delete</button>
+      </div>
+    </div>`).join('');
+
+  document.getElementById('pg-invest').innerHTML=`
+    <div class="grid-3" style="margin-bottom:20px;">
+      <div class="metric" style="--accent:var(--purple);grid-column:span 2;">
+        <div class="metric-label">Total Investment Portfolio</div>
+        <div><span class="metric-value" style="font-size:36px;color:var(--purple);">${fmt(ti)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${(S.investments||[]).length} holdings tracked</div>
+      </div>
+      <div class="metric" style="--accent:var(--green)">
+        <div class="metric-label">Net Wealth</div>
+        <div><span class="metric-value">${fmt(ti+(S.savings||[]).reduce((s,sv)=>s+(sv.current||0),0))}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">Savings + Investments</div>
+      </div>
+    </div>
+    <div class="sec-hdr">
+      <div class="sec-title">Investment Holdings</div>
+      <button class="sec-action" style="color:var(--purple);border-color:var(--purple)20;" onclick="openAddInvest()">+ Add Investment</button>
+    </div>
+    <div class="sv-grid">${cards||`<div class="empty"><div class="empty-ico">📈</div><div class="empty-text">No investments tracked yet.</div></div>`}</div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+//  ACCOUNTS PAGE
+// ═══════════════════════════════════════════════════════
+function renderAccounts(){
+  const totBal=(S.accounts||[]).reduce((s,a)=>s+(a.balance||0),0);
+  const accCards=(S.accounts||[]).map(acc=>`
+    <div class="acc-card" style="background:linear-gradient(135deg,${acc.color},${acc.color}cc);color:#fff;">
+      <div class="acc-type-lbl">${acc.type}</div>
+      <div class="acc-name2">${esc(acc.name)}</div>
+      <div class="acc-bank-name">${esc(acc.bank)}</div>
+      <div class="acc-bal">${fmt(acc.balance)} <span class="acc-cur2">${S.currency}</span></div>
+    </div>`).join('');
+
+  const accRows=(S.accounts||[]).map(acc=>{
+    const spent=allTxns().filter(t=>t.accountId===acc.id&&t.month===CM).reduce((s,t)=>s+t.amount,0);
+    const txnCt=allTxns().filter(t=>t.accountId===acc.id&&t.month===CM).length;
+    return`<tr>
+      <td><div style="display:flex;align-items:center;gap:12px;">
+        <div style="width:40px;height:40px;border-radius:12px;background:${acc.color}25;display:flex;align-items:center;justify-content:center;font-size:20px;">${acc.icon}</div>
+        <div><div class="txn-name">${esc(acc.name)}</div><div class="txn-sub">${esc(acc.bank)} · ${acc.type}</div></div>
+      </div></td>
+      <td><div style="font-size:15px;font-weight:700;color:${acc.color};">${S.currency} ${fmt(acc.balance)}</div></td>
+      <td><span style="color:var(--red);">−${S.currency} ${fmt(spent)}</span><div style="font-size:11px;color:var(--t3);">${txnCt} txns this month</div></td>
+      <td>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-xs green" onclick="openUpdAcc('${acc.id}')">Update Balance</button>
+          <button class="btn-xs red" onclick="delAcc('${acc.id}')">Delete</button>
+        </div>
+      </td>
+    </tr>`;}).join('');
+
+  document.getElementById('pg-accounts').innerHTML=`
+    <div class="grid-3" style="margin-bottom:20px;">
+      <div class="metric" style="--accent:var(--green);grid-column:span 2;">
+        <div class="metric-label">Combined Balance</div>
+        <div><span class="metric-value" style="font-size:36px;">${fmt(totBal)}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">${(S.accounts||[]).length} accounts linked</div>
+      </div>
+      <div class="metric" style="--accent:var(--red)">
+        <div class="metric-label">Spent This Month</div>
+        <div><span class="metric-value" style="color:var(--red);">${fmt(allTxns().filter(t=>t.month===CM).reduce((s,t)=>s+t.amount,0))}</span><span class="metric-cur">${S.currency}</span></div>
+        <div class="metric-sub">Across all accounts</div>
+      </div>
+    </div>
+
+    <div class="sec-hdr"><div class="sec-title">Account Cards</div><button class="sec-action green" onclick="openAddAcc()">+ Add Account</button></div>
+    <div class="acc-grid" style="margin-bottom:24px;">${accCards||''}</div>
+
+    <div class="card">
+      <div class="card-title">Account Details</div>
+      ${(S.accounts||[]).length?`<table class="txn-table"><thead><tr><th>Account</th><th>Balance</th><th>Spent This Month</th><th>Actions</th></tr></thead><tbody>${accRows}</tbody></table>`:`<div class="empty"><div class="empty-ico">🏦</div><div class="empty-text">No accounts yet. Add your first account!</div></div>`}
+    </div>
+  `;
+}
+
+// ═══════════════════════════════════════════════════════
+//  MODAL SYSTEM
+// ═══════════════════════════════════════════════════════
+function openModal(title,sub,html){
+  document.getElementById('modalBox').innerHTML=`
+    <div class="modal-title">${title}</div>
+    ${sub?`<div class="modal-sub">${sub}</div>`:''}
+    ${html}
+  `;
+  document.getElementById('modalBg').classList.add('open');
+}
+function closeModal(){document.getElementById('modalBg').classList.remove('open');}
+function handleMBg(e){if(e.target===e.currentTarget)closeModal();}
+
+// ═══════════════════════════════════════════════════════
+//  ADD TRANSACTION — FULL MODAL (expense + saving deposit)
+// ═══════════════════════════════════════════════════════
+let _txnType='expense';
+let _curSc=null;
+function openTxnModal(){
+  _cid=null;_sid=null;_curSc=null;_txnType='expense';
+  const accOpts=(S.accounts||[]).map(a=>`<option value="${a.id}">${esc(a.icon)} ${esc(a.name)} — ${esc(a.bank)}</option>`).join('');
+  const catItems=S.categories.map(c=>`<div class="cat-sel-item" id="csel-${c.id}" onclick="selCat('${c.id}')">
+    <div class="csi-ico" style="background:${c.color}18;">${c.icon}</div>
+    <div class="csi-body"><div class="csi-name">${esc(c.name)}</div><div class="csi-meta">${(c.subcategories||[]).length} subcategories · Budget ${S.currency} ${fmt(cB(c))}</div></div>
+  </div>`).join('');
+  const savOpts=(S.savings||[]).map(s=>`<option value="${s.id}">${esc(s.icon)} ${esc(s.name)} (${S.currency} ${fmt(s.current)} / ${fmt(s.target)})</option>`).join('');
+  const savItems=(S.savings||[]).map(s=>`<div class="cat-sel-item" id="savsel-${s.id}" onclick="selSavGoal('${s.id}')">
+    <div class="csi-ico" style="background:var(--green-dim);">${s.icon||'💰'}</div>
+    <div class="csi-body">
+      <div class="csi-name">${esc(s.name)}</div>
+      <div class="csi-meta">${S.currency} ${fmt(s.current)} saved · Goal: ${fmt(s.target)}</div>
+      ${pb(pc(s.current,s.target),'var(--green)','4')}
+    </div>
+  </div>`).join('');
+
+  openModal('Add Transaction','Record a new expense or saving deposit',`
+    <div style="display:flex;gap:8px;margin-bottom:20px;">
+      <button id="ttab-expense" class="filter-pill active" style="flex:1;text-align:center;" onclick="switchTxnType('expense')">💸 Expense</button>
+      <button id="ttab-saving" class="filter-pill" style="flex:1;text-align:center;" onclick="switchTxnType('saving')">💎 Saving Deposit</button>
+    </div>
+
+    <!-- EXPENSE SECTION -->
+    <div id="txn-expense-section">
+      ${!accOpts?`<div class="info-chip a">⚠️ Please add an account first in the Accounts section.</div>`:
+      `<div class="fg"><div class="fl">Pay From Account</div><select class="fi" id="txnAccId">${accOpts}</select></div>`}
+      <div class="fg"><div class="fl">Category</div><div class="cat-sel-list" id="catSelList">${catItems||'<div style="color:var(--t3);padding:12px;">No categories. Add one in Budget.</div>'}</div></div>
+      <div id="scSection" style="display:none;" class="fg"><div class="fl">Subcategory</div><div class="cat-sel-list" id="scSelList"></div></div>
+      <div id="txnFormSection" style="display:none;">
+        <div id="budChip"></div>
+        <div class="fr">
+          <div class="fg"><div class="fl">Amount (${S.currency})</div><input type="number" class="fi" id="txnAmt" placeholder="0.00" min="1" step="1" oninput="validateAmt()" /></div>
+          <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="txnDate" value="${today()}" /></div>
+        </div>
+        <div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="txnNote" placeholder="e.g. Weekly groceries, Grab ride to office..." /></div>
+        ${savOpts?`<div class="toggle-row">
+          <div><div style="font-size:13px;font-weight:600;color:var(--t1);">Link to a Savings Goal</div><div style="font-size:12px;color:var(--t2);margin-top:2px;">Automatically deduct from a savings balance</div></div>
+          <label class="tgl"><input type="checkbox" id="savToggle" onchange="document.getElementById('savPickerWrap').style.display=this.checked?'block':'none'"><span class="tgl-track"></span></label>
+        </div>
+        <div id="savPickerWrap" style="display:none;" class="fg"><div class="fl">Select Savings Goal</div><select class="fi" id="txnSavId">${savOpts}</select></div>`:''}
+        <div class="em" id="txnErr"></div>
+      </div>
+    </div>
+
+    <!-- SAVING DEPOSIT SECTION -->
+    <div id="txn-saving-section" style="display:none;">
+      ${!accOpts?`<div class="info-chip a">⚠️ Please add an account first.</div>`:
+      `<div class="fg"><div class="fl">Transfer From Account</div><select class="fi" id="savAccId">${accOpts}</select></div>`}
+      <div class="fg"><div class="fl">Choose Savings Goal</div>
+        <div class="cat-sel-list" id="savGoalList">${savItems||'<div style="color:var(--t3);padding:12px;">No savings goals. Add one in Savings.</div>'}</div>
+      </div>
+      <div id="savDepositForm" style="display:none;">
+        <div class="info-chip g" id="savGoalChip"></div>
+        <div class="fr">
+          <div class="fg"><div class="fl">Deposit Amount (${S.currency})</div><input type="number" class="fi" id="savDepAmt" placeholder="0.00" min="1" step="1" autofocus /></div>
+          <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="savDepDate" value="${today()}" /></div>
+        </div>
+        <div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="savDepNote" placeholder="e.g. Monthly saving, Bonus..." /></div>
+        <div class="em" id="savDepErr"></div>
+      </div>
+    </div>
+
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="submitAnyTxn()">Save</button>
+    </div>
+  `);
+}
+
+function switchTxnType(type){
+  _txnType=type;
+  document.getElementById('ttab-expense').classList.toggle('active',type==='expense');
+  document.getElementById('ttab-saving').classList.toggle('active',type==='saving');
+  document.getElementById('txn-expense-section').style.display=type==='expense'?'block':'none';
+  document.getElementById('txn-saving-section').style.display=type==='saving'?'block':'none';
+}
+
+let _selSavGoalId=null;
+function selSavGoal(id){
+  _selSavGoalId=id;
+  document.querySelectorAll('[id^="savsel-"]').forEach(e=>e.classList.remove('on'));
+  const el=document.getElementById('savsel-'+id);if(el)el.classList.add('on');
+  const sv=(S.savings||[]).find(s=>s.id===id);if(!sv)return;
+  const remaining=sv.target-sv.current;
+  document.getElementById('savGoalChip').innerHTML=`💎 ${esc(sv.name)} — ${S.currency} ${fmt(sv.current)} saved · ${fmt(remaining)} to reach goal`;
+  document.getElementById('savDepositForm').style.display='block';
+}
+
+function submitAnyTxn(){
+  if(_txnType==='saving'){submitSavingDeposit();}
+  else{submitTxn();}
+}
+
+function submitSavingDeposit(){
+  const err=document.getElementById('savDepErr');
+  if(!_selSavGoalId){if(err)err.textContent='Please select a savings goal.';return;}
+  const amount=parseFloat(document.getElementById('savDepAmt')?.value)||0;
+  const date=document.getElementById('savDepDate')?.value||today();
+  const note=document.getElementById('savDepNote')?.value.trim()||'';
+  const accountId=document.getElementById('savAccId')?.value||null;
+  if(amount<=0){if(err)err.textContent='Please enter a valid amount.';return;}
+  const sv=(S.savings||[]).find(s=>s.id===_selSavGoalId);
+  if(!sv){if(err)err.textContent='Goal not found.';return;}
+  // Add to savings balance
+  sv.current=(sv.current||0)+amount;
+  // Deduct from account
+  const acc=(S.accounts||[]).find(a=>a.id===accountId);
+  if(acc)acc.balance=Math.max(0,(acc.balance||0)-amount);
+  // Record as a saving transaction log
+  if(!sv.transactions)sv.transactions=[];
+  sv.transactions.push({id:uid(),amount,date,note,month:CM,accountId,type:'deposit'});
+  saveState();closeModal();render();
+}
+
+// Quick deposit from savings card
+function openSavDeposit(savId){
+  _selSavGoalId=savId;
+  const sv=(S.savings||[]).find(s=>s.id===savId);if(!sv)return;
+  const accOpts=(S.accounts||[]).map(a=>`<option value="${a.id}">${esc(a.icon)} ${esc(a.name)} — ${esc(a.bank)}</option>`).join('');
+  openModal(`Deposit to: ${sv.name}`,`${sv.icon} ${S.currency} ${fmt(sv.current)} saved · Goal: ${fmt(sv.target)}`,`
+    ${accOpts?`<div class="fg"><div class="fl">Transfer From Account</div><select class="fi" id="savAccId">${accOpts}</select></div>`:''}
+    <div class="info-chip g">💎 ${S.currency} ${fmt(sv.target-sv.current)} remaining to reach goal</div>
+    <div class="fr">
+      <div class="fg"><div class="fl">Deposit Amount (${S.currency})</div><input type="number" class="fi" id="savDepAmt" placeholder="0.00" min="1" step="1" autofocus /></div>
+      <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="savDepDate" value="${today()}" /></div>
+    </div>
+    <div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="savDepNote" placeholder="e.g. Monthly saving, Bonus..." /></div>
+    <div class="em" id="savDepErr"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="submitSavingDeposit()">Deposit</button>
+    </div>`);
+}
+
+function openTxnForSc(cId,scId){
+  _cid=cId;_sid=scId;
+  const cat=S.categories.find(c=>c.id===cId);
+  const sc=(cat?.subcategories||[]).find(s=>s.id===scId);
+  if(!sc)return;
+  const actual=gA(sc),rem=sc.budget-actual,rp=pc(actual,sc.budget);
+  const chipCl=rem<=0?'r':rem<sc.budget*.25?'a':'g';
+  const accOpts=(S.accounts||[]).map(a=>`<option value="${a.id}">${esc(a.icon)} ${esc(a.name)} — ${esc(a.bank)}</option>`).join('');
+  const savOpts=(S.savings||[]).map(s=>`<option value="${s.id}">${esc(s.icon)} ${esc(s.name)}</option>`).join('');
+
+  openModal(`Add to: ${sc.name}`,`${cat.icon} ${cat.name} · Budget: ${S.currency} ${fmt(sc.budget)}`,`
+    <div class="info-chip ${chipCl}">${rem<=0?'⛔ Budget fully used — no more spending allowed.':rem<sc.budget*.25?`⚠️ Only ${S.currency} ${fmt(rem)} remaining (${100-rp}% left)`:`✓ ${S.currency} ${fmt(rem)} available of ${fmt(sc.budget)} budget`}</div>
+    ${rem<=0?`<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Close</button></div>`:`
+      ${accOpts?`<div class="fg"><div class="fl">Pay From Account</div><select class="fi" id="txnAccId">${accOpts}</select></div>`:''}
+      <div class="fr">
+        <div class="fg"><div class="fl">Amount (${S.currency})</div><input type="number" class="fi" id="txnAmt" placeholder="0.00" min="1" max="${rem}" step="1" oninput="validateAmt2(${rem})" autofocus /></div>
+        <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="txnDate" value="${today()}" /></div>
+      </div>
+      <div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="txnNote" placeholder="e.g. Monthly rent, Weekly grocery run..." /></div>
+      ${savOpts?`<div class="toggle-row">
+        <div><div style="font-size:13px;font-weight:600;color:var(--t1);">Link to Savings Goal</div><div style="font-size:12px;color:var(--t2);margin-top:2px;">Deduct from a savings goal balance</div></div>
+        <label class="tgl"><input type="checkbox" id="savToggle" onchange="document.getElementById('savPickerWrap').style.display=this.checked?'block':'none'"><span class="tgl-track"></span></label>
+      </div>
+      <div id="savPickerWrap" style="display:none;" class="fg"><div class="fl">Select Savings Goal</div><select class="fi" id="txnSavId">${savOpts}</select></div>`:''}
+      <div class="em" id="txnErr"></div>
+      <div class="modal-actions">
+        <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+        <button class="btn btn-green" onclick="submitTxn()">Save Transaction</button>
+      </div>
+    `}
+  `);
+}
+
+function selCat(cId){
+  _cid=cId;_sid=null;
+  document.querySelectorAll('.cat-sel-item').forEach(e=>e.classList.remove('on'));
+  const el=document.getElementById('csel-'+cId);if(el)el.classList.add('on');
+  const cat=S.categories.find(c=>c.id===cId);if(!cat)return;
+  const scSec=document.getElementById('scSection');
+  const scList=document.getElementById('scSelList');
+  scList.innerHTML=(cat.subcategories||[]).map(sc=>{
+    const a=gA(sc),p=pc(a,sc.budget),rem=sc.budget-a;
+    return`<div class="cat-sel-item" id="scsel-${sc.id}" onclick="selSc('${sc.id}')">
+      <div class="csi-body" style="flex:1;">
+        <div style="display:flex;justify-content:space-between;align-items:center;">
+          <div class="csi-name">${esc(sc.name)}</div>
+          ${badge(p)}
+        </div>
+        <div class="csi-meta">${S.currency} ${fmt(a)} of ${fmt(sc.budget)} · ${rem<=0?'<span style="color:var(--red);">Budget reached</span>':'Rem: '+fmt(rem)}</div>
+        ${pb(p,pcol(p),'4')}
+      </div>
+    </div>`;}).join('')||'<div style="color:var(--t3);">No subcategories. Add from the Budget page.</div>';
+  scSec.style.display='block';
+  document.getElementById('txnFormSection').style.display='none';
+}
+
+function selSc(scId){
+  _sid=scId;
+  document.querySelectorAll('[id^="scsel-"]').forEach(e=>e.classList.remove('on'));
+  const el=document.getElementById('scsel-'+scId);if(el)el.classList.add('on');
+  const cat=S.categories.find(c=>c.id===_cid);
+  const sc=(cat?.subcategories||[]).find(s=>s.id===scId);if(!sc)return;
+  const actual=gA(sc),rem=sc.budget-actual,rp=pc(actual,sc.budget);
+  const chipCl=rem<=0?'r':rem<sc.budget*.25?'a':'g';
+  const chip=document.getElementById('budChip');
+  chip.innerHTML=`<div class="info-chip ${chipCl}">${rem<=0?'⛔ Budget fully used':rem<sc.budget*.25?`⚠️ Only ${S.currency} ${fmt(rem)} remaining`:`✓ ${S.currency} ${fmt(rem)} available of ${fmt(sc.budget)}`}</div>`;
+  document.getElementById('txnFormSection').style.display=rem<=0?'none':'block';
+  if(rem<=0)chip.innerHTML+=`<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Close</button></div>`;
+}
+
+function validateAmt(){
+  const cat=S.categories.find(c=>c.id===_cid);
+  const sc=(cat?.subcategories||[]).find(s=>s.id===_sid);
+  if(!sc)return;
+  const rem=sc.budget-gA(sc),val=parseFloat(document.getElementById('txnAmt')?.value)||0;
+  const el=document.getElementById('txnErr');
+  if(el)el.textContent=val>rem?`Exceeds remaining budget of ${S.currency} ${fmt(rem)}!`:'';
+}
+function validateAmt2(rem){
+  const val=parseFloat(document.getElementById('txnAmt')?.value)||0;
+  const el=document.getElementById('txnErr');
+  if(el)el.textContent=val>rem?`Exceeds remaining budget of ${S.currency} ${fmt(rem)}!`:'';
+}
+
+function submitTxn(){
+  const cat=S.categories.find(c=>c.id===_cid);
+  const sc=(cat?.subcategories||[]).find(s=>s.id===_sid);
+  const err=document.getElementById('txnErr');
+  if(!sc){if(err)err.textContent='Please select a category and subcategory.';return;}
+  const amount=parseFloat(document.getElementById('txnAmt')?.value)||0;
+  const date=document.getElementById('txnDate')?.value||today();
+  const note=document.getElementById('txnNote')?.value.trim()||'';
+  const accountId=document.getElementById('txnAccId')?.value||null;
+  const rem=sc.budget-gA(sc);
+  if(amount<=0){if(err)err.textContent='Please enter a valid amount.';return;}
+  if(amount>rem){if(err)err.textContent=`Amount exceeds remaining budget of ${S.currency} ${fmt(rem)}.`;return;}
+  if(!sc.transactions)sc.transactions=[];
+  let linkedSavingId=null;
+  const savChk=document.getElementById('savToggle');
+  if(savChk?.checked){
+    const savId=document.getElementById('txnSavId')?.value;
+    const sav=(S.savings||[]).find(s=>s.id===savId);
+    if(sav){sav.current=Math.max(0,(sav.current||0)-amount);linkedSavingId=savId;}
+  }
+  const acc=(S.accounts||[]).find(a=>a.id===accountId);
+  if(acc)acc.balance=Math.max(0,(acc.balance||0)-amount);
+  sc.transactions.push({id:uid(),amount,date,note,month:CM,accountId,linkedSavingId});
+  saveState();closeModal();render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  CATEGORY FORMS
+// ═══════════════════════════════════════════════════════
+const CI=['🏠','🍽️','🚗','🏥','🎬','📚','✈️','👗','🐾','💊','🏋️','🛒','📱','🎮','💼','🔧','🌿','🎓','🏄','🎸','💡','🧴','👶','🎁','🎭','🍺','🐕','⚽'];
+const CC=['#3b82f6','#f97316','#8b5cf6','#ec4899','#14b8a6','#eab308','#06b6d4','#10b981','#f43f5e','#84cc16','#6366f1','#d97706','#0ea5e9','#ef4444','#a855f7'];
+
+function openAddCategory(){
+  _catIcon='🏠';_catColor='#3b82f6';
+  openModal('New Budget Category','Create a category with a monthly spending limit',`
+    <div class="fg"><div class="fl">Category Name</div><input type="text" class="fi" id="catName" placeholder="e.g. Housing, Food & Dining, Transport..." autofocus /></div>
+    <div class="fg"><div class="fl">Icon</div><div class="ipicker">${CI.map(i=>`<span class="iopt${i==='🏠'?' on':''}" onclick="_catIcon='${i}';selI(this)">${i}</span>`).join('')}</div></div>
+    <div class="fg"><div class="fl">Color</div><div class="cpicker">${CC.map(c=>`<span class="copt${c==='#3b82f6'?' on':''}" style="background:${c};" onclick="_catColor='${c}';selC(this)"></span>`).join('')}</div></div>
+    <div class="em" id="catErr"></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-green" onclick="submitCat()">Add Category</button></div>`);
+}
+function selI(el){document.querySelectorAll('.iopt').forEach(e=>e.classList.remove('on'));el.classList.add('on');}
+function selC(el){document.querySelectorAll('.copt').forEach(e=>e.classList.remove('on'));el.classList.add('on');}
+function submitCat(){
+  const name=document.getElementById('catName').value.trim();
+  if(!name){document.getElementById('catErr').textContent='Name is required.';return;}
+  S.categories.push({id:uid(),name,icon:_catIcon,color:_catColor,subcategories:[]});
+  saveState();closeModal();render();
+}
+
+function openAddSubcat(catId){
+  openModal('New Subcategory','Set a monthly budget for this item',`
+    <div class="fg"><div class="fl">Subcategory Name</div><input type="text" class="fi" id="scName" placeholder="e.g. Rent, Groceries, Fuel..." autofocus /></div>
+    <div class="fg"><div class="fl">Monthly Budget (${S.currency})</div><input type="number" class="fi" id="scBudget" placeholder="0" min="1" step="100" /></div>
+    <div class="em" id="scErr"></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-green" onclick="submitSubcat('${catId}')">Add</button></div>`);
+}
+function submitSubcat(cId){
+  const name=document.getElementById('scName').value.trim();
+  const budget=parseFloat(document.getElementById('scBudget').value)||0;
+  if(!name){document.getElementById('scErr').textContent='Name required.';return;}
+  if(budget<=0){document.getElementById('scErr').textContent='Budget must be > 0.';return;}
+  const cat=S.categories.find(c=>c.id===cId);
+  if(cat)cat.subcategories.push({id:uid(),name,budget,transactions:[]});
+  saveState();closeModal();render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  SAVINGS & INVESTMENT FORMS
+// ═══════════════════════════════════════════════════════
+const SCI=['🛡️','🏦','🏡','🎓','✈️','👶','💍','💊','🌟','🐣','🏋️','🌴','🚗','🎸','🖥️','💒','🎯','🏖️'];
+function openAddSaving(){
+  _savIcon='🛡️';
+  openModal('New Savings Goal','Set a target to work towards',`
+    <div class="fg"><div class="fl">Goal Name</div><input type="text" class="fi" id="savName" placeholder="e.g. Emergency Fund, House Down Payment..." autofocus /></div>
+    <div class="fg"><div class="fl">Icon</div><div class="ipicker">${SCI.map(i=>`<span class="iopt${i==='🛡️'?' on':''}" onclick="_savIcon='${i}';selI(this)">${i}</span>`).join('')}</div></div>
+    <div class="fr">
+      <div class="fg"><div class="fl">Target Amount (${S.currency})</div><input type="number" class="fi" id="savTarget" placeholder="0" min="1" /></div>
+      <div class="fg"><div class="fl">Current Balance (${S.currency})</div><input type="number" class="fi" id="savCurrent" placeholder="0" min="0" /></div>
+    </div>
+    <div class="fg"><div class="fl">Notes (optional)</div><input type="text" class="fi" id="savNotes" placeholder="e.g. 6 months of living expenses, for emergencies only..." /></div>
+    <div class="em" id="savErr"></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-green" onclick="submitSaving()">Add Goal</button></div>`);
+}
+function submitSaving(){
+  const name=document.getElementById('savName').value.trim();
+  const target=parseFloat(document.getElementById('savTarget').value)||0;
+  const current=parseFloat(document.getElementById('savCurrent').value)||0;
+  const notes=document.getElementById('savNotes').value.trim();
+  if(!name){document.getElementById('savErr').textContent='Name required.';return;}
+  if(target<=0){document.getElementById('savErr').textContent='Target must be > 0.';return;}
+  if(!S.savings)S.savings=[];
+  S.savings.push({id:uid(),name,icon:_savIcon,target,current,notes});
+  saveState();closeModal();render();
+}
+function openUpdSaving(id){
+  const sv=(S.savings||[]).find(s=>s.id===id);if(!sv)return;
+  openModal(`Update: ${sv.name}`,`${sv.icon} Current: ${S.currency} ${fmt(sv.current)} · Goal: ${fmt(sv.target)}`,`
+    <div class="fg"><div class="fl">New Current Balance (${S.currency})</div><input type="number" class="fi" id="svAmt" value="${sv.current}" min="0" autofocus /></div>
+    <div class="fg"><div class="fl">Update Target (${S.currency})</div><input type="number" class="fi" id="svTgt" value="${sv.target}" min="1" /></div>
+    <div class="fg"><div class="fl">Notes</div><input type="text" class="fi" id="svNotes" value="${esc(sv.notes||'')}" /></div>
+    <div class="em" id="svErr"></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-green" onclick="submitUpdSaving('${id}')">Save Changes</button></div>`);
+}
+function submitUpdSaving(id){
+  const sv=(S.savings||[]).find(s=>s.id===id);if(!sv)return;
+  const t=parseFloat(document.getElementById('svTgt').value)||0;
+  if(t<=0){document.getElementById('svErr').textContent='Target must be > 0.';return;}
+  sv.current=parseFloat(document.getElementById('svAmt').value)||0;
+  sv.target=t;sv.notes=document.getElementById('svNotes').value.trim();
+  saveState();closeModal();render();
+}
+
+const ITYPES=['stocks','bonds','mutual funds','fixed deposit','real estate','gold','crypto','other'];
+const IICOS=['📈','💹','📊','🏛️','🏘️','🥇','₿','💼','🌐','📉','🏢','🌾'];
+function openAddInvest(){
+  _invIcon='📈';
+  openModal('New Investment','Track a portfolio holding or asset',`
+    <div class="fg"><div class="fl">Investment Name</div><input type="text" class="fi" id="invName" placeholder="e.g. CSE Index Fund, Treasury Bills, Gold coins..." autofocus /></div>
+    <div class="fg"><div class="fl">Icon</div><div class="ipicker">${IICOS.map(i=>`<span class="iopt${i==='📈'?' on':''}" onclick="_invIcon='${i}';selI(this)">${i}</span>`).join('')}</div></div>
+    <div class="fr">
+      <div class="fg"><div class="fl">Type</div><select class="fi" id="invType">${ITYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
+      <div class="fg"><div class="fl">Current Value (${S.currency})</div><input type="number" class="fi" id="invVal" placeholder="0" min="0" /></div>
+    </div>
+    <div class="fg"><div class="fl">Notes (optional)</div><input type="text" class="fi" id="invNotes" placeholder="e.g. Blue chip equities on CSE, Annual FD at 12%..." /></div>
+    <div class="em" id="invErr"></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-green" onclick="submitInvest()">Add Investment</button></div>`);
+}
+function submitInvest(){
+  const name=document.getElementById('invName').value.trim();
+  const type=document.getElementById('invType').value;
+  const current=parseFloat(document.getElementById('invVal').value)||0;
+  const notes=document.getElementById('invNotes').value.trim();
+  if(!name){document.getElementById('invErr').textContent='Name required.';return;}
+  if(!S.investments)S.investments=[];
+  S.investments.push({id:uid(),name,icon:_invIcon,type,current,notes});
+  saveState();closeModal();render();
+}
+function openUpdInvest(id){
+  const iv=(S.investments||[]).find(i=>i.id===id);if(!iv)return;
+  openModal(`Update: ${iv.name}`,`${iv.icon} ${iv.type}`,`
+    <div class="fg"><div class="fl">Current Market Value (${S.currency})</div><input type="number" class="fi" id="ivAmt" value="${iv.current}" min="0" autofocus /></div>
+    <div class="fg"><div class="fl">Notes</div><input type="text" class="fi" id="ivNotes" value="${esc(iv.notes||'')}" /></div>
+    <div class="em" id="ivErr"></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-green" onclick="submitUpdInvest('${id}')">Save</button></div>`);
+}
+function submitUpdInvest(id){
+  const iv=(S.investments||[]).find(i=>i.id===id);if(!iv)return;
+  iv.current=parseFloat(document.getElementById('ivAmt').value)||0;
+  iv.notes=document.getElementById('ivNotes').value.trim();
+  saveState();closeModal();render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  ACCOUNT FORMS
+// ═══════════════════════════════════════════════════════
+const BANKS=['Bank of Ceylon','Peoples Bank','Commercial Bank','Hatton National Bank','Sampath Bank','Nations Trust Bank','Pan Asia Bank','Seylan Bank','NDB Bank','DFCC Bank','Union Bank','PayHere','FriMi','Cash','Other'];
+const ATYPES=['bank','savings account','current account','credit card','cash','digital wallet','investment account'];
+const AICOS=['🏦','💳','💵','💰','🏧','📱','🌐','💼','🏢'];
+const ACOLS=['#0f766e','#1e40af','#7c3aed','#9a3412','#166534','#9d174d','#1e3a5f','#78350f','#064e3b','#1e1b4b'];
+function openAddAcc(){
+  _accColor='#1e40af';
+  openModal('New Account','Add a bank account, wallet or cash',`
+    <div class="fg"><div class="fl">Account Nickname</div><input type="text" class="fi" id="accName" placeholder="e.g. My BOC Account, Petty Cash..." autofocus /></div>
+    <div class="fr">
+      <div class="fg"><div class="fl">Bank / Institution</div><select class="fi" id="accBank">${BANKS.map(b=>`<option>${b}</option>`).join('')}</select></div>
+      <div class="fg"><div class="fl">Account Type</div><select class="fi" id="accType">${ATYPES.map(t=>`<option>${t}</option>`).join('')}</select></div>
+    </div>
+    <div class="fg"><div class="fl">Opening Balance (${S.currency})</div><input type="number" class="fi" id="accBal" placeholder="0" min="0" /></div>
+    <div class="fg"><div class="fl">Icon</div><div class="ipicker">${AICOS.map(i=>`<span class="iopt${i==='🏦'?' on':''}" onclick="selI(this)">${i}</span>`).join('')}</div></div>
+    <div class="fg"><div class="fl">Card Color</div><div class="cpicker">${ACOLS.map(c=>`<span class="copt${c==='#1e40af'?' on':''}" style="background:${c};" onclick="_accColor='${c}';selC(this)"></span>`).join('')}</div></div>
+    <div class="em" id="accErr"></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-green" onclick="submitAcc()">Add Account</button></div>`);
+}
+function submitAcc(){
+  const name=document.getElementById('accName').value.trim();
+  const bank=document.getElementById('accBank').value;
+  const type=document.getElementById('accType').value;
+  const balance=parseFloat(document.getElementById('accBal').value)||0;
+  const icon=document.querySelector('.iopt.on')?.textContent||'🏦';
+  if(!name){document.getElementById('accErr').textContent='Name required.';return;}
+  if(!S.accounts)S.accounts=[];
+  S.accounts.push({id:uid(),name,bank,type,balance,icon,color:_accColor});
+  saveState();closeModal();render();
+}
+function openUpdAcc(id){
+  const acc=(S.accounts||[]).find(a=>a.id===id);if(!acc)return;
+  openModal(`Update: ${acc.name}`,`${acc.icon} ${acc.bank}`,`
+    <div class="fg"><div class="fl">Current Balance (${S.currency})</div><input type="number" class="fi" id="accBalUpd" value="${acc.balance}" min="0" autofocus /></div>
+    <div class="fg"><div class="fl">Account Name</div><input type="text" class="fi" id="accNameUpd" value="${esc(acc.name)}" /></div>
+    <div class="em" id="accUpdErr"></div>
+    <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Cancel</button><button class="btn btn-green" onclick="submitUpdAcc('${id}')">Save</button></div>`);
+}
+function submitUpdAcc(id){
+  const acc=(S.accounts||[]).find(a=>a.id===id);if(!acc)return;
+  acc.balance=parseFloat(document.getElementById('accBalUpd').value)||0;
+  const n=document.getElementById('accNameUpd').value.trim();
+  if(n)acc.name=n;
+  saveState();closeModal();render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  DELETES
+// ═══════════════════════════════════════════════════════
+function toggleCat(id){EXP.has(id)?EXP.delete(id):EXP.add(id);render();}
+function delCat(id){if(!confirm('Delete this category and all its data?'))return;S.categories=S.categories.filter(c=>c.id!==id);EXP.delete(id);saveState();render();}
+function delSubcat(cId,sId){if(!confirm('Remove this subcategory?'))return;const c=S.categories.find(x=>x.id===cId);if(c)c.subcategories=c.subcategories.filter(s=>s.id!==sId);saveState();render();}
+function delTxn(scId,txnId){for(const c of S.categories){const sc=(c.subcategories||[]).find(s=>s.id===scId);if(sc){sc.transactions=(sc.transactions||[]).filter(t=>t.id!==txnId);break;}}saveState();render();}
+function delSaving(id){if(!confirm('Delete this savings goal?'))return;S.savings=S.savings.filter(s=>s.id!==id);saveState();render();}
+function delInvest(id){if(!confirm('Delete this investment?'))return;S.investments=S.investments.filter(i=>i.id!==id);saveState();render();}
+function delAcc(id){if(!confirm('Delete this account?'))return;S.accounts=(S.accounts||[]).filter(a=>a.id!==id);saveState();render();}
+
+// ═══════════════════════════════════════════════════════
+//  BACKUP & RESTORE
+// ═══════════════════════════════════════════════════════
+function exportBackup(){
+  const data=JSON.stringify({version:1,exported:new Date().toISOString(),state:S},null,2);
+  const blob=new Blob([data],{type:'application/json'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');
+  const d=new Date().toISOString().split('T')[0];
+  a.href=url;a.download=`mindwallet-backup-${d}.json`;a.click();
+  URL.revokeObjectURL(url);
+  setSyncStatus('ok','Backup exported!');
+  setTimeout(()=>setSyncStatus('ok','All changes saved'),2500);
+}
+function importBackup(event){
+  const file=event.target.files[0];if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    try{
+      const parsed=JSON.parse(e.target.result);
+      const state=parsed.state||parsed;
+      if(!state.categories&&!state.accounts){alert('Invalid backup file.');return;}
+      if(!confirm('Restore this backup? Your current data will be replaced.'))return;
+      S=state;
+      saveState();render();
+      setSyncStatus('ok','Backup restored!');
+      setTimeout(()=>setSyncStatus('ok','All changes saved'),2500);
+    }catch(err){alert('Could not read backup file. Make sure it\'s a valid Mind Wallet JSON backup.');}
+  };
+  reader.readAsText(file);
+  event.target.value='';
+}
+
+// ═══════════════════════════════════════════════════════
+//  INIT — Supabase Auth listener
+// ═══════════════════════════════════════════════════════
+_sb.auth.onAuthStateChange(async (event, session) => {
+  const user = session?.user || null;
+  if(user){
+    _currentUser = user;
+    updateUserUI(user);
+    document.getElementById('authScreen').style.display = 'none';
+    document.getElementById('appLayout').style.display = 'flex';
+    await loadState();
+    render();
+  } else {
+    _currentUser = null;
+    document.getElementById('authScreen').style.display = 'flex';
+    document.getElementById('appLayout').style.display = 'none';
+  }
+});
+
+// Check for existing session on page load
+(async () => {
+  const {data:{session}} = await _sb.auth.getSession();
+  if(!session){
+    // No session — show auth screen
+    document.getElementById('authScreen').style.display = 'flex';
+    document.getElementById('appLayout').style.display = 'none';
+  }
+  // onAuthStateChange will handle the rest
+})();
+</script>
+</body>
+</html>
