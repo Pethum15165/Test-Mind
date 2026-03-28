@@ -1648,9 +1648,9 @@ function openTxnModal(){
     <div id="txn-invest-section" style="display:none;">
       <div class="fg"><div class="fl">Transfer From Account</div><select class="fi" id="invAccId">${accOpts}</select></div>
       <div class="fg"><div class="fl">Choose Investment</div>
-        <div class="cat-sel-list" id="invGoalList">${(S.investments||[]).map(iv=>`<div class="cat-sel-item" id="invsel-\${iv.id}" onclick="selInvGoal('\${iv.id}')">
-          <div class="csi-ico" style="background:var(--purple-dim);">\${iv.icon||'📊'}</div>
-          <div class="csi-body"><div class="csi-name">\${esc(iv.name)}</div><div class="csi-meta">\${esc(iv.type)} · Current: \${S.currency} \${fmt(iv.current)}</div></div>
+        <div class="cat-sel-list" id="invGoalList">${(S.investments||[]).map(iv=>`<div class="cat-sel-item" id="invsel-${iv.id}" onclick="selInvGoal('${iv.id}')">
+          <div class="csi-ico" style="background:var(--purple-dim);">${iv.icon||'📊'}</div>
+          <div class="csi-body"><div class="csi-name">${esc(iv.name)}</div><div class="csi-meta">${esc(iv.type)} · Current: ${S.currency} ${fmt(iv.current)}</div></div>
         </div>`).join('')||'<div style="color:var(--t3);padding:12px;">No investments. Add one in Investments.</div>'}</div>
       </div>
       <div id="invDepositForm" style="display:none;">
@@ -1683,7 +1683,7 @@ function openTxnModal(){
       <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
       <button class="btn btn-green" onclick="submitAnyTxn()">Save</button>
     </div>
-  \`);
+  `);
 }
 
 function switchTxnType(type){
