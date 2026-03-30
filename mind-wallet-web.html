@@ -713,6 +713,18 @@ select.fi option{background:var(--bg3);color:var(--t1);}
   .topbar{padding:0 16px;}
   .add-txn-btn span{display:none;}
 }
+
+/* ══ COMPACT MODE ════════════════════════════ */
+body.compact .content{padding:16px;}
+body.compact .metric{padding:12px 16px;}
+body.compact .metric-value{font-size:22px;}
+body.compact .card{padding:14px;}
+body.compact .cat-card{padding:12px 16px;margin-bottom:8px;}
+body.compact .sv-card{padding:14px;}
+body.compact .grid-4{gap:10px;margin-bottom:14px;}
+body.compact .grid-3{gap:10px;margin-bottom:14px;}
+body.compact .grid-2{gap:10px;margin-bottom:14px;}
+
 </style>
 </head>
 <body>
@@ -777,10 +789,13 @@ select.fi option{background:var(--bg3);color:var(--t1);}
       <div class="nav-item" id="ni-savings" onclick="goTab('savings')"><span class="ni">💎</span> Savings</div>
       <div class="nav-item" id="ni-invest" onclick="goTab('invest')"><span class="ni">📈</span> Investments</div>
       <div class="nav-item" id="ni-accounts" onclick="goTab('accounts')"><span class="ni">🏦</span> Accounts</div>
+
+      <div class="nav-section-lbl">System</div>
+      <div class="nav-item" id="ni-settings" onclick="goTab('settings')"><span class="ni">⚙️</span> Settings</div>
     </nav>
 
     <div class="sidebar-footer">
-      <div class="currency-row">
+      <div class="currency-row" onclick="goTab('settings')" style="cursor:pointer;" title="Click to change currency">
         <span>Currency</span>
         <span class="currency-val" id="curLbl">LKR</span>
       </div>
@@ -813,6 +828,7 @@ select.fi option{background:var(--bg3);color:var(--t1);}
           </div>
           <div class="user-dropdown" id="userDropdown">
             <div class="ud-email" id="udEmail">—</div>
+            <div class="ud-item" onclick="goTab('settings');toggleUserMenu()">⚙️ Settings</div>
             <div class="ud-item" onclick="exportBackup();toggleUserMenu()">⬇ Export Backup</div>
             <div class="ud-item" onclick="document.getElementById('restoreInput').click();toggleUserMenu()">⬆ Restore Backup</div>
             <div class="ud-item red" onclick="signOut()">🚪 Sign Out</div>
@@ -831,6 +847,7 @@ select.fi option{background:var(--bg3);color:var(--t1);}
       <div class="page" id="pg-savings"></div>
       <div class="page" id="pg-invest"></div>
       <div class="page" id="pg-accounts"></div>
+      <div class="page" id="pg-settings"></div>
     </div>
 
   </div>
@@ -845,7 +862,7 @@ select.fi option{background:var(--bg3);color:var(--t1);}
 // ═══════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════
-let S={accounts:[],categories:[],savings:[],investments:[],incomes:[],transfers:[],currency:'LKR'};
+let S={accounts:[],categories:[],savings:[],investments:[],incomes:[],transfers:[],currency:'LKR',settings:{theme:'dark',dateFormat:'en-US',startOfWeek:'monday',compactMode:false,showCents:false,defaultAccount:''}};
 let CM=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');})();
 let AT='home', EXP=new Set(), TF='all';
 let homeChart=null, txnChart=null;
@@ -853,7 +870,7 @@ let _cid=null,_sid=null,_catIcon='🏠',_catColor='#3b82f6',_savIcon='🛡️',_
 
 // ─── Utils ───────────────────────────────────────────
 const uid=()=>'x'+Math.random().toString(36).slice(2,9);
-const fmt=n=>new Intl.NumberFormat('en-US').format(Math.round(+n||0));
+const fmt=n=>{const v=+n||0;const cents=S?.settings?.showCents;return new Intl.NumberFormat('en-US',cents?{minimumFractionDigits:2,maximumFractionDigits:2}:{}).format(cents?v:Math.round(v));};
 const fmtFull=n=>new Intl.NumberFormat('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}).format(+n||0);
 const fmtDate=d=>new Date(d+'T00:00:00').toLocaleDateString('en-US',{weekday:'long',month:'short',day:'numeric'});
 const fmtDateShort=d=>new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:'short',day:'numeric'});
@@ -919,7 +936,7 @@ async function signOut(){
   toggleUserMenu();
   await _sb.auth.signOut();
   _currentUser=null;
-  S={accounts:[],categories:[],savings:[],investments:[],incomes:[],transfers:[],currency:'LKR'};
+  S={accounts:[],categories:[],savings:[],investments:[],incomes:[],transfers:[],currency:'LKR',settings:{theme:'dark',dateFormat:'en-US',startOfWeek:'monday',compactMode:false,showCents:false,defaultAccount:''}};
   document.getElementById('appLayout').style.display='none';
   document.getElementById('authScreen').style.display='flex';
 }
@@ -947,14 +964,41 @@ async function loadState(){
   try{
     const {data,error}=await _sb.from('wallet_data').select('data').eq('user_id',_currentUser.id).single();
     if(data?.data && Object.keys(data.data).length>0){
-      S={...defaultState(),...data.data};
+      // Deep merge: keep ALL saved user data, only fill in missing new fields
+      const saved=data.data;
+      const def=defaultState();
+      S={
+        accounts:    saved.accounts    ?? def.accounts,
+        categories:  saved.categories  ?? def.categories,
+        savings:     saved.savings     ?? def.savings,
+        investments: saved.investments ?? def.investments,
+        incomes:     saved.incomes     ?? def.incomes,
+        transfers:   saved.transfers   ?? def.transfers,
+        currency:    saved.currency    ?? def.currency,
+        settings:    saved.settings    ?? def.settings,
+      };
     } else {
       S=defaultState();
     }
   }catch(e){
-    // Try localStorage fallback
-    try{const raw=localStorage.getItem('mw_'+_currentUser.id);if(raw)S=JSON.parse(raw);}catch(e2){}
-    if(!S.categories)S=defaultState();
+    // localStorage fallback
+    try{
+      const raw=localStorage.getItem('mw_'+_currentUser.id);
+      if(raw){
+        const saved=JSON.parse(raw);
+        const def=defaultState();
+        S={
+          accounts:    saved.accounts    ?? def.accounts,
+          categories:  saved.categories  ?? def.categories,
+          savings:     saved.savings     ?? def.savings,
+          investments: saved.investments ?? def.investments,
+          incomes:     saved.incomes     ?? def.incomes,
+          transfers:   saved.transfers   ?? def.transfers,
+          currency:    saved.currency    ?? def.currency,
+          settings:    saved.settings    ?? def.settings,
+        };
+      } else { S=defaultState(); }
+    }catch(e2){ S=defaultState(); }
   }
   setSyncStatus('ok','Synced ☁️');
 }
@@ -1028,7 +1072,15 @@ function defaultState(){
     ],
     currency:'LKR',
     incomes:[],
-    transfers:[]
+    transfers:[],
+    settings:{
+      theme:'dark',
+      dateFormat:'en-US',
+      startOfWeek:'monday',
+      compactMode:false,
+      showCents:false,
+      defaultAccount:''
+    }
   };
 }
 
@@ -1037,7 +1089,7 @@ const PAGE_TITLES={
   home:['🏠','Dashboard'],budget:['📊','Budget'],
   txns:['📋','Transactions'],savings:['💎','Savings'],
   invest:['📈','Investments'],accounts:['🏦','Accounts'],
-  income:['💰','Income'],transfer:['🔄','Transfer']
+  income:['💰','Income'],transfer:['🔄','Transfer'],settings:['⚙️','Settings']
 };
 function goTab(tab){
   AT=tab;
@@ -1065,6 +1117,8 @@ function toggleSidebar(){
 function render(){
   document.getElementById('sidebarMonth').textContent=mLabel(CM);
   document.getElementById('curLbl').textContent=S.currency||'LKR';
+  // Apply compact mode
+  document.body.classList.toggle('compact',!!(S.settings?.compactMode));
   if(AT==='home') renderHome();
   else if(AT==='budget') renderBudget();
   else if(AT==='txns') renderTxns();
@@ -1072,6 +1126,7 @@ function render(){
   else if(AT==='invest') renderInvest();
   else if(AT==='income') renderIncome();
   else if(AT==='transfer') renderTransfer();
+  else if(AT==='settings') renderSettings();
   else renderAccounts();
 }
 
@@ -1568,7 +1623,8 @@ let _txnType='expense';
 let _curSc=null;
 function openTxnModal(){
   _cid=null;_sid=null;_curSc=null;_txnType='expense';
-  const accOpts=(S.accounts||[]).map(a=>`<option value="${a.id}">${esc(a.icon)} ${esc(a.name)} — ${esc(a.bank)}</option>`).join('');
+  const _defAcc=S.settings?.defaultAccount||'';
+  const accOpts=(S.accounts||[]).map(a=>`<option value="${a.id}"${a.id===_defAcc?' selected':''}>${esc(a.icon)} ${esc(a.name)} — ${esc(a.bank)}</option>`).join('');
   const catItems=S.categories.map(c=>`<div class="cat-sel-item" id="csel-${c.id}" onclick="selCat('${c.id}')">
     <div class="csi-ico" style="background:${c.color}18;">${c.icon}</div>
     <div class="csi-body"><div class="csi-name">${esc(c.name)}</div><div class="csi-meta">${(c.subcategories||[]).length} subcategories · Budget ${S.currency} ${fmt(cB(c))}</div></div>
@@ -1742,7 +1798,8 @@ function submitSavingDeposit(){
 function openSavDeposit(savId){
   _selSavGoalId=savId;
   const sv=(S.savings||[]).find(s=>s.id===savId);if(!sv)return;
-  const accOpts=(S.accounts||[]).map(a=>`<option value="${a.id}">${esc(a.icon)} ${esc(a.name)} — ${esc(a.bank)}</option>`).join('');
+  const _defAcc=S.settings?.defaultAccount||'';
+  const accOpts=(S.accounts||[]).map(a=>`<option value="${a.id}"${a.id===_defAcc?' selected':''}>${esc(a.icon)} ${esc(a.name)} — ${esc(a.bank)}</option>`).join('');
   openModal(`Deposit to: ${sv.name}`,`${sv.icon} ${S.currency} ${fmt(sv.current)} saved · Goal: ${fmt(sv.target)}`,`
     ${accOpts?`<div class="fg"><div class="fl">Transfer From Account</div><select class="fi" id="savAccId">${accOpts}</select></div>`:''}
     <div class="info-chip g">💎 ${S.currency} ${fmt(sv.target-sv.current)} remaining to reach goal</div>
@@ -1765,7 +1822,8 @@ function openTxnForSc(cId,scId){
   if(!sc)return;
   const actual=gA(sc),rem=sc.budget-actual,rp=pc(actual,sc.budget);
   const chipCl=rem<=0?'r':rem<sc.budget*.25?'a':'g';
-  const accOpts=(S.accounts||[]).map(a=>`<option value="${a.id}">${esc(a.icon)} ${esc(a.name)} — ${esc(a.bank)}</option>`).join('');
+  const _defAcc=S.settings?.defaultAccount||'';
+  const accOpts=(S.accounts||[]).map(a=>`<option value="${a.id}"${a.id===_defAcc?' selected':''}>${esc(a.icon)} ${esc(a.name)} — ${esc(a.bank)}</option>`).join('');
   const savOpts=(S.savings||[]).map(s=>`<option value="${s.id}">${esc(s.icon)} ${esc(s.name)}</option>`).join('');
 
   openModal(`Add to: ${sc.name}`,`${cat.icon} ${cat.name} · Budget: ${S.currency} ${fmt(sc.budget)}`,`
@@ -2306,6 +2364,182 @@ function openAccSummary(id){
       <button class="btn btn-outline" onclick="closeModal()">Close</button>
       <button class="btn btn-green" onclick="closeModal();openUpdAcc('${id}')">Edit Account</button>
     </div>`);
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  SETTINGS PAGE
+// ═══════════════════════════════════════════════════════
+const CURRENCIES=[
+  {code:'LKR',name:'Sri Lankan Rupee',symbol:'Rs'},
+  {code:'USD',name:'US Dollar',symbol:'$'},
+  {code:'EUR',name:'Euro',symbol:'€'},
+  {code:'GBP',name:'British Pound',symbol:'£'},
+  {code:'INR',name:'Indian Rupee',symbol:'₹'},
+  {code:'AUD',name:'Australian Dollar',symbol:'A$'},
+  {code:'CAD',name:'Canadian Dollar',symbol:'C$'},
+  {code:'SGD',name:'Singapore Dollar',symbol:'S$'},
+  {code:'AED',name:'UAE Dirham',symbol:'AED'},
+  {code:'JPY',name:'Japanese Yen',symbol:'¥'},
+  {code:'CNY',name:'Chinese Yuan',symbol:'¥'},
+  {code:'MYR',name:'Malaysian Ringgit',symbol:'RM'},
+  {code:'THB',name:'Thai Baht',symbol:'฿'},
+  {code:'PKR',name:'Pakistani Rupee',symbol:'₨'},
+  {code:'BDT',name:'Bangladeshi Taka',symbol:'৳'},
+  {code:'NPR',name:'Nepalese Rupee',symbol:'₨'},
+  {code:'QAR',name:'Qatari Riyal',symbol:'QR'},
+  {code:'SAR',name:'Saudi Riyal',symbol:'SR'},
+  {code:'KWD',name:'Kuwaiti Dinar',symbol:'KD'},
+  {code:'CHF',name:'Swiss Franc',symbol:'Fr'},
+  {code:'HKD',name:'Hong Kong Dollar',symbol:'HK$'},
+  {code:'NZD',name:'New Zealand Dollar',symbol:'NZ$'},
+  {code:'ZAR',name:'South African Rand',symbol:'R'},
+  {code:'BTC',name:'Bitcoin',symbol:'₿'},
+];
+
+function getSetting(key,def){return(S.settings&&S.settings[key]!==undefined)?S.settings[key]:def;}
+function setSetting(key,val){if(!S.settings)S.settings={};S.settings[key]=val;saveState();render();}
+
+function renderSettings(){
+  const cur=S.currency||'LKR';
+  const st=S.settings||{};
+  const accOpts=(S.accounts||[]).map(a=>`<option value="${a.id}"${st.defaultAccount===a.id?' selected':''}>${esc(a.icon)} ${esc(a.name)}</option>`).join('');
+
+  const curCards=CURRENCIES.map(cu=>`
+    <div onclick="changeCurrency('${cu.code}')" style="
+      padding:12px 14px;border-radius:10px;cursor:pointer;
+      border:2px solid ${cu.code===cur?'var(--green)':'var(--border)'};
+      background:${cu.code===cur?'var(--green-dim)':'var(--bg3)'};
+      transition:all .15s;display:flex;align-items:center;gap:10px;">
+      <div style="font-size:18px;font-weight:700;min-width:32px;text-align:center;
+        color:${cu.code===cur?'var(--green)':'var(--t2)'};">${cu.symbol}</div>
+      <div>
+        <div style="font-size:13px;font-weight:600;color:${cu.code===cur?'var(--green)':'var(--t1)'};">${cu.code}</div>
+        <div style="font-size:11px;color:var(--t3);">${cu.name}</div>
+      </div>
+      ${cu.code===cur?'<div style="margin-left:auto;color:var(--green);font-size:16px;">✓</div>':''}
+    </div>`).join('');
+
+  document.getElementById('pg-settings').innerHTML=`
+    <!-- PROFILE SECTION -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title">👤 Profile</div>
+      <div style="display:flex;align-items:center;gap:16px;padding:8px 0;">
+        <div style="width:56px;height:56px;border-radius:50%;
+          background:linear-gradient(135deg,var(--green),var(--green2));
+          display:flex;align-items:center;justify-content:center;
+          font-size:22px;font-weight:700;color:#000;" id="settingsAvatar">P</div>
+        <div>
+          <div style="font-size:16px;font-weight:700;color:var(--t1);" id="settingsName">User</div>
+          <div style="font-size:13px;color:var(--t2);" id="settingsEmail">—</div>
+          <div style="font-size:11px;color:var(--green);margin-top:3px;">☁️ Cloud sync active</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CURRENCY SECTION -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title">💱 Currency
+        <span style="font-size:12px;color:var(--t2);font-weight:400;">Currently: <strong style="color:var(--green);">${cur}</strong></span>
+      </div>
+      <div style="font-size:12px;color:var(--t2);margin-bottom:14px;">Choose your display currency. All amounts will show in this currency.</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:8px;">
+        ${curCards}
+      </div>
+    </div>
+
+    <!-- DISPLAY SECTION -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title">🎨 Display & Format</div>
+
+      <div class="toggle-row">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--t1);">Compact Mode</div>
+          <div style="font-size:12px;color:var(--t2);">Smaller cards and tighter spacing</div>
+        </div>
+        <label class="tgl">
+          <input type="checkbox" ${st.compactMode?'checked':''} onchange="setSetting('compactMode',this.checked)">
+          <span class="tgl-track"></span>
+        </label>
+      </div>
+
+      <div class="toggle-row">
+        <div>
+          <div style="font-size:13px;font-weight:600;color:var(--t1);">Show Cents / Decimals</div>
+          <div style="font-size:12px;color:var(--t2);">Display 2 decimal places on amounts</div>
+        </div>
+        <label class="tgl">
+          <input type="checkbox" ${st.showCents?'checked':''} onchange="setSetting('showCents',this.checked)">
+          <span class="tgl-track"></span>
+        </label>
+      </div>
+
+      <div class="fg" style="margin-top:16px;margin-bottom:0;">
+        <div class="fl">Default Account for Transactions</div>
+        <select class="fi" onchange="setSetting('defaultAccount',this.value)">
+          <option value="">— None (ask every time) —</option>
+          ${accOpts}
+        </select>
+      </div>
+    </div>
+
+    <!-- DATA SECTION -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title">💾 Data & Backup</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="background:var(--bg3);border-radius:10px;padding:16px;">
+          <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:6px;">Export Backup</div>
+          <div style="font-size:12px;color:var(--t2);margin-bottom:12px;">Download all your data as a JSON file</div>
+          <button class="btn btn-outline" style="width:100%;" onclick="exportBackup()">⬇ Download Backup</button>
+        </div>
+        <div style="background:var(--bg3);border-radius:10px;padding:16px;">
+          <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:6px;">Restore Backup</div>
+          <div style="font-size:12px;color:var(--t2);margin-bottom:12px;">Upload a previous backup file</div>
+          <button class="btn btn-outline" style="width:100%;" onclick="document.getElementById('restoreInput').click()">⬆ Upload Backup</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- DANGER ZONE -->
+    <div class="card" style="border-color:var(--red-dim);">
+      <div class="card-title" style="color:var(--red);">⚠️ Danger Zone</div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+        <div style="background:var(--red-dim);border-radius:10px;padding:16px;">
+          <div style="font-size:13px;font-weight:600;color:var(--red);margin-bottom:6px;">Clear All Data</div>
+          <div style="font-size:12px;color:var(--t2);margin-bottom:12px;">Delete all transactions, accounts, budgets. Cannot be undone.</div>
+          <button class="btn" style="width:100%;background:var(--red-dim);color:var(--red);border:1px solid var(--red);" onclick="clearAllData()">🗑 Clear Everything</button>
+        </div>
+        <div style="background:var(--bg3);border-radius:10px;padding:16px;">
+          <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:6px;">Sign Out</div>
+          <div style="font-size:12px;color:var(--t2);margin-bottom:12px;">Sign out from this device. Your data stays safe in the cloud.</div>
+          <button class="btn btn-outline" style="width:100%;" onclick="signOut()">🚪 Sign Out</button>
+        </div>
+      </div>
+    </div>
+  `;
+
+  // Fill profile info
+  if(_currentUser){
+    const name=_currentUser.user_metadata?.full_name||_currentUser.email?.split('@')[0]||'User';
+    const initials=name.split(' ').map(w=>w[0]).join('').toUpperCase().slice(0,2);
+    const av=document.getElementById('settingsAvatar');if(av)av.textContent=initials;
+    const nm=document.getElementById('settingsName');if(nm)nm.textContent=name;
+    const em=document.getElementById('settingsEmail');if(em)em.textContent=_currentUser.email;
+  }
+}
+
+function changeCurrency(code){
+  S.currency=code;
+  saveState();
+  render();
+}
+
+function clearAllData(){
+  if(!confirm('⚠️ This will DELETE ALL your data permanently. Are you absolutely sure?'))return;
+  if(!confirm('Last warning — this cannot be undone. Delete everything?'))return;
+  const def=defaultState();
+  S={...def,currency:S.currency,settings:S.settings};
+  saveState();render();
 }
 
 // ═══════════════════════════════════════════════════════
