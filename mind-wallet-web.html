@@ -829,6 +829,7 @@ body.compact .grid-2{gap:10px;margin-bottom:14px;}
           <div class="user-dropdown" id="userDropdown">
             <div class="ud-email" id="udEmail">—</div>
             <div class="ud-item" onclick="goTab('settings');toggleUserMenu()">⚙️ Settings</div>
+            <div class="ud-item" onclick="forceSyncNow();toggleUserMenu()">🔄 Force Sync Now</div>
             <div class="ud-item" onclick="exportBackup();toggleUserMenu()">⬇ Export Backup</div>
             <div class="ud-item" onclick="document.getElementById('restoreInput').click();toggleUserMenu()">⬆ Restore Backup</div>
             <div class="ud-item red" onclick="signOut()">🚪 Sign Out</div>
@@ -958,70 +959,132 @@ function updateUserUI(user){
 }
 
 // ─── Cloud Storage ─────────────────────────────────────
+function _mergeState(saved){
+  const def=defaultState();
+  return {
+    accounts:    saved.accounts    ?? def.accounts,
+    categories:  saved.categories  ?? def.categories,
+    savings:     saved.savings     ?? def.savings,
+    investments: saved.investments ?? def.investments,
+    incomes:     saved.incomes     ?? def.incomes,
+    transfers:   saved.transfers   ?? def.transfers,
+    currency:    saved.currency    ?? def.currency,
+    settings:    saved.settings    ?? def.settings,
+  };
+}
+
 async function loadState(){
   if(!_currentUser){S=defaultState();return;}
   setSyncStatus('pulse','Loading…');
+
+  // 1. Load from localStorage instantly so UI is never blank
   try{
-    const {data,error}=await _sb.from('wallet_data').select('data').eq('user_id',_currentUser.id).single();
+    const raw=localStorage.getItem('mw_'+_currentUser.id);
+    if(raw){S=_mergeState(JSON.parse(raw));render();}
+  }catch(e){}
+
+  // 2. Then fetch from Supabase and update if newer/available
+  try{
+    const {data,error}=await _sb.from('wallet_data')
+      .select('data')
+      .eq('user_id',_currentUser.id)
+      .single();
+
+    if(error){
+      // PGRST116 = no row found yet (new user) — that's fine
+      if(error.code==='PGRST116'){
+        console.log('New user — no cloud data yet.');
+        if(!S.categories)S=defaultState();
+        setSyncStatus('ok','Synced ☁️');
+        return;
+      }
+      console.error('Supabase load error:',error);
+      setSyncStatus('err','Load failed — using local data');
+      _showSyncError('Could not load from cloud: '+error.message);
+      if(!S.categories)S=defaultState();
+      return;
+    }
+
     if(data?.data && Object.keys(data.data).length>0){
-      // Deep merge: keep ALL saved user data, only fill in missing new fields
-      const saved=data.data;
-      const def=defaultState();
-      S={
-        accounts:    saved.accounts    ?? def.accounts,
-        categories:  saved.categories  ?? def.categories,
-        savings:     saved.savings     ?? def.savings,
-        investments: saved.investments ?? def.investments,
-        incomes:     saved.incomes     ?? def.incomes,
-        transfers:   saved.transfers   ?? def.transfers,
-        currency:    saved.currency    ?? def.currency,
-        settings:    saved.settings    ?? def.settings,
-      };
+      S=_mergeState(data.data);
+      // Also update localStorage with cloud data
+      try{localStorage.setItem('mw_'+_currentUser.id, JSON.stringify(S));}catch(e){}
+      setSyncStatus('ok','Synced ☁️');
     } else {
-      S=defaultState();
+      // Cloud row exists but empty — push local data up
+      if(S.accounts?.length||S.categories?.length){
+        console.log('Cloud empty, pushing local data up…');
+        await _pushToCloud();
+      } else {
+        S=defaultState();
+        setSyncStatus('ok','Synced ☁️');
+      }
     }
   }catch(e){
-    // localStorage fallback
-    try{
-      const raw=localStorage.getItem('mw_'+_currentUser.id);
-      if(raw){
-        const saved=JSON.parse(raw);
-        const def=defaultState();
-        S={
-          accounts:    saved.accounts    ?? def.accounts,
-          categories:  saved.categories  ?? def.categories,
-          savings:     saved.savings     ?? def.savings,
-          investments: saved.investments ?? def.investments,
-          incomes:     saved.incomes     ?? def.incomes,
-          transfers:   saved.transfers   ?? def.transfers,
-          currency:    saved.currency    ?? def.currency,
-          settings:    saved.settings    ?? def.settings,
-        };
-      } else { S=defaultState(); }
-    }catch(e2){ S=defaultState(); }
+    console.error('Network error loading:',e);
+    setSyncStatus('err','No connection — using local data');
+    if(!S.categories)S=defaultState();
   }
-  setSyncStatus('ok','Synced ☁️');
 }
 let _saveTimer=null;
+let _saveRetries=0;
 async function saveState(){
-  // Immediate localStorage write (instant, no spinner)
+  // Always write to localStorage immediately (works offline)
   if(_currentUser){
     try{localStorage.setItem('mw_'+_currentUser.id, JSON.stringify(S));}catch(e){}
   }
   setSyncStatus('pulse','Saving…');
   clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(async()=>{
-    if(!_currentUser){setSyncStatus('ok','Saved locally');return;}
-    try{
-      await _sb.from('wallet_data').upsert({user_id:_currentUser.id,data:S,updated_at:new Date().toISOString()},{onConflict:'user_id'});
-      setSyncStatus('ok','Synced ☁️');
-    }catch(e){setSyncStatus('ok','Saved locally');}
-  }, 800);
+  _saveTimer=setTimeout(()=>_pushToCloud(), 800);
+}
+
+async function _pushToCloud(retry=0){
+  if(!_currentUser){setSyncStatus('warn','Not signed in');return;}
+  try{
+    const payload={user_id:_currentUser.id, data:S, updated_at:new Date().toISOString()};
+    const {error}=await _sb.from('wallet_data').upsert(payload,{onConflict:'user_id'});
+    if(error){
+      console.error('Supabase save error:',error);
+      if(retry<3){
+        // Retry up to 3 times with backoff
+        setTimeout(()=>_pushToCloud(retry+1), 2000*(retry+1));
+        setSyncStatus('warn',`Retrying… (${retry+1}/3)`);
+      } else {
+        setSyncStatus('err','Sync failed — data saved locally');
+        _showSyncError(error.message);
+      }
+      return;
+    }
+    _saveRetries=0;
+    setSyncStatus('ok','Synced ☁️');
+  }catch(e){
+    console.error('Network error saving:',e);
+    if(retry<3){
+      setTimeout(()=>_pushToCloud(retry+1), 2000*(retry+1));
+      setSyncStatus('warn',`Retrying… (${retry+1}/3)`);
+    } else {
+      setSyncStatus('err','No connection — saved locally');
+    }
+  }
+}
+
+function _showSyncError(msg){
+  // Show a non-blocking toast so user knows sync failed
+  let toast=document.getElementById('syncToast');
+  if(!toast){
+    toast=document.createElement('div');
+    toast.id='syncToast';
+    toast.style.cssText='position:fixed;bottom:24px;right:24px;background:#ef4444;color:#fff;padding:12px 18px;border-radius:10px;font-size:13px;font-weight:600;z-index:9999;max-width:300px;box-shadow:0 4px 20px rgba(0,0,0,.4);';
+    document.body.appendChild(toast);
+  }
+  toast.innerHTML='⚠️ Cloud sync failed<br><span style="font-weight:400;font-size:12px;">'+msg+'<br>Your data is safe locally.</span>';
+  toast.style.display='block';
+  setTimeout(()=>{if(toast)toast.style.display='none';},6000);
 }
 function setSyncStatus(t,l){
   const d=document.getElementById('syncDot');
   const lb=document.getElementById('syncLbl');
-  if(d){d.className='sync-dot'+(t==='ok'?' ok':t==='pulse'?' pulse':'');}
+  if(d){d.className='sync-dot'+(t==='ok'?' ok':t==='pulse'?' pulse':t==='warn'?' pulse':t==='err'?' err':'');}
   if(lb)lb.textContent=l;
 }
 
@@ -2421,6 +2484,15 @@ function renderSettings(){
     </div>`).join('');
 
   document.getElementById('pg-settings').innerHTML=`
+    <!-- SYNC STATUS BANNER -->
+    <div id="settingsSyncBanner" style="margin-bottom:16px;padding:12px 16px;border-radius:10px;background:var(--green-dim);border:1px solid var(--green);display:flex;align-items:center;justify-content:space-between;">
+      <div style="display:flex;align-items:center;gap:10px;">
+        <div class="sync-dot ok" id="settingsSyncDot"></div>
+        <span style="font-size:13px;font-weight:600;color:var(--green);" id="settingsSyncLbl">Checking sync status…</span>
+      </div>
+      <button class="btn-xs green" onclick="forceSyncNow()">Force Sync</button>
+    </div>
+
     <!-- PROFILE SECTION -->
     <div class="card" style="margin-bottom:20px;">
       <div class="card-title">👤 Profile</div>
@@ -2496,6 +2568,11 @@ function renderSettings(){
           <div style="font-size:13px;font-weight:600;color:var(--t1);margin-bottom:6px;">Restore Backup</div>
           <div style="font-size:12px;color:var(--t2);margin-bottom:12px;">Upload a previous backup file</div>
           <button class="btn btn-outline" style="width:100%;" onclick="document.getElementById('restoreInput').click()">⬆ Upload Backup</button>
+        </div>
+        <div style="background:var(--green-dim);border:1px solid var(--green);border-radius:10px;padding:16px;">
+          <div style="font-size:13px;font-weight:600;color:var(--green);margin-bottom:6px;">🔄 Force Cloud Sync</div>
+          <div style="font-size:12px;color:var(--t2);margin-bottom:12px;">Manually push all data to Supabase cloud right now</div>
+          <button class="btn btn-green" style="width:100%;" onclick="forceSyncNow()">Sync Now</button>
         </div>
       </div>
     </div>
@@ -2573,6 +2650,30 @@ function delTxn(scId,txnId){
 function delSaving(id){if(!confirm('Delete this savings goal?'))return;S.savings=S.savings.filter(s=>s.id!==id);saveState();render();}
 function delInvest(id){if(!confirm('Delete this investment?'))return;S.investments=S.investments.filter(i=>i.id!==id);saveState();render();}
 function delAcc(id){if(!confirm('Delete this account?'))return;S.accounts=(S.accounts||[]).filter(a=>a.id!==id);saveState();render();}
+
+
+// Force sync — user-triggered manual sync
+async function forceSyncNow(){
+  if(!_currentUser){alert('Please sign in first.');return;}
+  setSyncStatus('pulse','Syncing…');
+  try{
+    const payload={user_id:_currentUser.id, data:S, updated_at:new Date().toISOString()};
+    const {error}=await _sb.from('wallet_data').upsert(payload,{onConflict:'user_id'});
+    if(error){
+      setSyncStatus('err','Sync failed');
+      alert('Sync failed: '+error.message+'\n\nMake sure your Supabase project is active at supabase.com/dashboard');
+    } else {
+      setSyncStatus('ok','Synced ☁️');
+      // Also reload from cloud to confirm
+      await loadState();
+      render();
+      alert('✅ Sync successful! Your data is saved to the cloud.');
+    }
+  }catch(e){
+    setSyncStatus('err','No connection');
+    alert('Could not connect to Supabase.\n\nCheck:\n1. Your Supabase project is active (not paused)\n2. Your internet connection\n\nYour data is safe locally.');
+  }
+}
 
 // ═══════════════════════════════════════════════════════
 //  BACKUP & RESTORE
