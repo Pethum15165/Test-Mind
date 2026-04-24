@@ -980,10 +980,15 @@ async function loadState(){
   // 1. Load from localStorage instantly so UI is never blank
   try{
     const raw=localStorage.getItem('mw_'+_currentUser.id);
-    if(raw){S=_mergeState(JSON.parse(raw));render();}
+    if(raw){
+      S=_mergeState(JSON.parse(raw));
+      _lastSavedHash=_hashState(); // Mark as already synced locally
+      render();
+      setSyncStatus('ok','Loading from cloud…');
+    }
   }catch(e){}
 
-  // 2. Then fetch from Supabase and update if newer/available
+  // 2. Then fetch from Supabase in background
   try{
     const {data,error}=await _sb.from('wallet_data')
       .select('data')
@@ -1007,8 +1012,9 @@ async function loadState(){
 
     if(data?.data && Object.keys(data.data).length>0){
       S=_mergeState(data.data);
-      // Also update localStorage with cloud data
+      // Update localStorage with latest cloud data
       try{localStorage.setItem('mw_'+_currentUser.id, JSON.stringify(S));}catch(e){}
+      _lastSavedHash=_hashState(); // Mark as synced — avoid redundant push
       setSyncStatus('ok','Synced ☁️');
     } else {
       // Cloud row exists but empty — push local data up
@@ -1027,15 +1033,32 @@ async function loadState(){
   }
 }
 let _saveTimer=null;
-let _saveRetries=0;
+let _lastSavedHash='';
+
+// Fast hash to detect if data actually changed
+function _hashState(){
+  const s=JSON.stringify(S);
+  let h=0;
+  for(let i=0;i<s.length;i++){h=(Math.imul(31,h)+s.charCodeAt(i))|0;}
+  return h.toString();
+}
+
 async function saveState(){
-  // Always write to localStorage immediately (works offline)
+  // 1. Write to localStorage instantly — app feels instant
+  const json=JSON.stringify(S);
   if(_currentUser){
-    try{localStorage.setItem('mw_'+_currentUser.id, JSON.stringify(S));}catch(e){}
+    try{localStorage.setItem('mw_'+_currentUser.id,json);}catch(e){}
   }
-  setSyncStatus('pulse','Saving…');
+  setSyncStatus('ok','Saved ✓');
+
+  // 2. Debounce cloud sync — only push after user stops making changes
   clearTimeout(_saveTimer);
-  _saveTimer=setTimeout(()=>_pushToCloud(), 800);
+  _saveTimer=setTimeout(async()=>{
+    const hash=_hashState();
+    if(hash===_lastSavedHash){return;} // Nothing changed — skip cloud save
+    _lastSavedHash=hash;
+    await _pushToCloud();
+  }, 300); // 300ms — fast but batches rapid changes
 }
 
 async function _pushToCloud(retry=0){
@@ -1050,6 +1073,7 @@ async function _pushToCloud(retry=0){
       _showSyncError(error.code+': '+error.message+(error.hint?'\nHint: '+error.hint:''));
       return;
     }
+    _lastSavedHash=_hashState(); // Confirm saved
     setSyncStatus('ok','Synced ☁️');
   }catch(e){
     console.error('Network error saving:',e);
