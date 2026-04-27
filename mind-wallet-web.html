@@ -1482,8 +1482,12 @@ function renderTxns(scIdFilter=null){
         </div></td>
         <td><div style="font-size:12px;color:var(--t2);">${acc?esc(acc.name):''}</div><div class="txn-bank">${acc?esc(acc.bank):'—'}</div></td>
         <td><span class="badge b-g" style="font-size:11px;">${esc(t.catName)}</span></td>
-        <td style="text-align:right;"><div class="txn-amt">−${S.currency} ${fmt(t.amount)}</div></td>
         <td style="text-align:right;">
+          <div class="txn-amt">−${S.currency} ${fmt(t.amount)}</div>
+          ${t.charge?`<div style="font-size:10px;color:var(--amber);">+${S.currency} ${fmt(t.charge)} charge</div>`:''}
+        </td>
+        <td style="text-align:right;display:flex;gap:4px;justify-content:flex-end;align-items:center;padding-top:10px;">
+          <button class="btn-xs" onclick="editTxn('${t.scId}','${t.id}')">Edit</button>
           <button class="btn-xs red" onclick="delTxn('${t.scId}','${t.id}')">Delete</button>
         </td>
       </tr>`;}).join('');
@@ -1797,6 +1801,7 @@ function openTxnModal(){
         <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="incDate" value="${today()}" /></div>
       </div>
       <div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="incNote" placeholder="e.g. Monthly salary, Client payment..." /></div>
+      <div class="fg"><div class="fl">Bank Charges (optional)</div><input type="number" class="fi" id="incCharge" placeholder="0.00 — deducted from account after deposit" min="0" step="1" /></div>
       <div class="em" id="incErr"></div>
     </div>
 
@@ -1832,6 +1837,7 @@ function openTxnModal(){
         <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="trDate" value="${today()}" /></div>
       </div>
       <div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="trNote" placeholder="e.g. Move to savings account..." /></div>
+      <div class="fg"><div class="fl">Bank Charges (optional)</div><input type="number" class="fi" id="trCharge" placeholder="0.00 — deducted from source account" min="0" step="1" /></div>
       <div class="em" id="trErr"></div>
     </div>
 
@@ -2023,8 +2029,12 @@ function submitTxn(){
     const sav=(S.savings||[]).find(s=>s.id===savId);
     if(sav){sav.current=Math.max(0,(sav.current||0)-amount);linkedSavingId=savId;}
   }
-  if(acc)acc.balance=(acc.balance||0)-amount;
-  sc.transactions.push({id:uid(),amount,date,note,month:CM,accountId,linkedSavingId});
+  const charge=parseFloat(document.getElementById('txnCharge')?.value)||0;
+  if(acc){
+    acc.balance=(acc.balance||0)-amount;
+    if(charge>0)acc.balance=(acc.balance||0)-charge;
+  }
+  sc.transactions.push({id:uid(),amount,date,note,charge,month:CM,accountId,linkedSavingId});
   saveState();closeModal();render();
 }
 
@@ -2231,8 +2241,14 @@ function renderIncome(){
       <td><div class="txn-name">${esc(i.source)}</div><div class="txn-sub">${i.note?esc(i.note):''}</div></td>
       <td><div style="font-size:12px;color:var(--t2);">${acc?esc(acc.name):'—'}</div></td>
       <td><div style="font-size:12px;color:var(--t2);">${fmtDateShort(i.date)}</div></td>
-      <td style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--green);">+${S.currency} ${fmt(i.amount)}</div></td>
-      <td style="text-align:right;"><button class="btn-xs red" onclick="delIncome('${i.id}')">Delete</button></td>
+      <td style="text-align:right;">
+        <div style="font-size:15px;font-weight:700;color:var(--green);">+${S.currency} ${fmt(i.amount)}</div>
+        ${i.charge?`<div style="font-size:10px;color:var(--amber);">+${S.currency} ${fmt(i.charge)} charge</div>`:''}
+      </td>
+      <td style="text-align:right;display:flex;gap:4px;justify-content:flex-end;align-items:center;padding-top:10px;">
+        <button class="btn-xs" onclick="editIncome('${i.id}')">Edit</button>
+        <button class="btn-xs red" onclick="delIncome('${i.id}')">Delete</button>
+      </td>
     </tr>`;}).join('');
   const srcRows=Object.entries(bySource).sort((a,b)=>b[1]-a[1]).map(([src,amt])=>`
     <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid var(--border);">
@@ -2284,9 +2300,13 @@ function submitIncome(){
   if(amount<=0){if(err)err.textContent='Please enter a valid amount.';return;}
   // Add to account balance
   const acc=(S.accounts||[]).find(a=>a.id===accountId);
-  if(acc)acc.balance=(acc.balance||0)+amount;
+  const charge=parseFloat(document.getElementById('incCharge')?.value)||0;
+  if(acc){
+    acc.balance=(acc.balance||0)+amount;
+    if(charge>0)acc.balance=(acc.balance||0)-charge;
+  }
   if(!S.incomes)S.incomes=[];
-  S.incomes.push({id:uid(),source,amount,date,note,month:CM,accountId});
+  S.incomes.push({id:uid(),source,amount,date,note,charge,month:CM,accountId});
   saveState();closeModal();render();
 }
 function delIncome(id){
@@ -2294,7 +2314,7 @@ function delIncome(id){
   const inc=(S.incomes||[]).find(i=>i.id===id);
   if(inc){
     const acc=(S.accounts||[]).find(a=>a.id===inc.accountId);
-    if(acc)acc.balance=Math.max(0,(acc.balance||0)-inc.amount);
+    if(acc)acc.balance=Math.max(0,(acc.balance||0)-inc.amount+(inc.charge||0));
   }
   S.incomes=(S.incomes||[]).filter(i=>i.id!==id);
   saveState();render();
@@ -2313,8 +2333,14 @@ function renderTransfer(){
       <td><div class="txn-icon" style="background:var(--blue-dim);">🔄</div></td>
       <td><div class="txn-name">${from?esc(from.name):'?'} → ${to?esc(to.name):'?'}</div><div class="txn-sub">${t.note?esc(t.note):''}</div></td>
       <td><div style="font-size:12px;color:var(--t2);">${fmtDateShort(t.date)}</div></td>
-      <td style="text-align:right;"><div style="font-size:15px;font-weight:700;color:var(--blue);">${S.currency} ${fmt(t.amount)}</div></td>
-      <td style="text-align:right;"><button class="btn-xs red" onclick="delTransfer('${t.id}')">Delete</button></td>
+      <td style="text-align:right;">
+        <div style="font-size:15px;font-weight:700;color:var(--blue);">${S.currency} ${fmt(t.amount)}</div>
+        ${t.charge?`<div style="font-size:10px;color:var(--amber);">+${S.currency} ${fmt(t.charge)} charge</div>`:''}
+      </td>
+      <td style="text-align:right;display:flex;gap:4px;justify-content:flex-end;align-items:center;padding-top:10px;">
+        <button class="btn-xs" onclick="editTransfer('${t.id}')">Edit</button>
+        <button class="btn-xs red" onclick="delTransfer('${t.id}')">Delete</button>
+      </td>
     </tr>`;}).join('');
   document.getElementById('pg-transfer').innerHTML=`
     <div class="grid-2" style="margin-bottom:20px;">
@@ -2363,10 +2389,12 @@ function submitTransfer(){
   const from=getAcc(fromId),to=getAcc(toId);
   if(!from||!to){if(err)err.textContent='Invalid accounts.';return;}
   if(from.balance<amount){if(err)err.textContent=`⛔ Insufficient balance! ${esc(from.name)} only has ${S.currency} ${fmt(from.balance)}.`;return;}
+  const charge=parseFloat(document.getElementById('trCharge')?.value)||0;
   from.balance=(from.balance||0)-amount;
   to.balance=(to.balance||0)+amount;
+  if(charge>0)from.balance=(from.balance||0)-charge;
   if(!S.transfers)S.transfers=[];
-  S.transfers.push({id:uid(),fromId,toId,amount,date,note,month:CM});
+  S.transfers.push({id:uid(),fromId,toId,amount,date,note,charge,month:CM});
   saveState();closeModal();render();
 }
 function delTransfer(id){
@@ -2374,7 +2402,7 @@ function delTransfer(id){
   const tr=(S.transfers||[]).find(t=>t.id===id);
   if(tr){
     const from=getAcc(tr.fromId),to=getAcc(tr.toId);
-    if(from)from.balance=(from.balance||0)+tr.amount;
+    if(from)from.balance=(from.balance||0)+tr.amount+(tr.charge||0);
     if(to)to.balance=Math.max(0,(to.balance||0)-tr.amount);
   }
   S.transfers=(S.transfers||[]).filter(t=>t.id!==id);
@@ -2656,6 +2684,182 @@ function clearAllData(){
   saveState();render();
 }
 
+
+// ═══════════════════════════════════════════════════════
+//  EDIT TRANSACTION
+// ═══════════════════════════════════════════════════════
+function editTxn(scId, txnId){
+  let foundCat=null, foundSc=null, foundTxn=null;
+  for(const cat of S.categories){
+    const sc=(cat.subcategories||[]).find(s=>s.id===scId);
+    if(sc){
+      const txn=(sc.transactions||[]).find(t=>t.id===txnId);
+      if(txn){foundCat=cat;foundSc=sc;foundTxn=txn;break;}
+    }
+  }
+  if(!foundTxn)return;
+  const accOpts=(S.accounts||[]).map(a=>`<option value="${a.id}"${a.id===foundTxn.accountId?' selected':''}>${esc(a.icon)} ${esc(a.name)} — ${esc(a.bank)}</option>`).join('');
+  openModal('Edit Transaction',`${foundSc.name} · ${foundCat.name}`,`
+    <div class="info-chip g">Editing will reverse the original amounts and apply the new ones.</div>
+    <div class="fg"><div class="fl">Account</div><select class="fi" id="etAccId">${accOpts}</select></div>
+    <div class="fr">
+      <div class="fg"><div class="fl">Amount (${S.currency})</div><input type="number" class="fi" id="etAmt" value="${foundTxn.amount}" min="1" step="1" /></div>
+      <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="etDate" value="${foundTxn.date}" /></div>
+    </div>
+    <div class="fg"><div class="fl">Note</div><input type="text" class="fi" id="etNote" value="${esc(foundTxn.note||'')}" placeholder="Optional note..." /></div>
+    <div class="fg"><div class="fl">Bank Charges (${S.currency})</div><input type="number" class="fi" id="etCharge" value="${foundTxn.charge||0}" min="0" step="1" /></div>
+    <div class="em" id="etErr"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="saveEditTxn('${scId}','${txnId}')">Save Changes</button>
+    </div>`);
+}
+function saveEditTxn(scId, txnId){
+  const err=document.getElementById('etErr');
+  let foundSc=null, foundTxn=null;
+  for(const cat of S.categories){
+    const sc=(cat.subcategories||[]).find(s=>s.id===scId);
+    if(sc){const txn=(sc.transactions||[]).find(t=>t.id===txnId);if(txn){foundSc=sc;foundTxn=txn;break;}}
+  }
+  if(!foundTxn){if(err)err.textContent='Transaction not found.';return;}
+  const newAmt=parseFloat(document.getElementById('etAmt')?.value)||0;
+  const newDate=document.getElementById('etDate')?.value||today();
+  const newNote=document.getElementById('etNote')?.value.trim()||'';
+  const newAccId=document.getElementById('etAccId')?.value||foundTxn.accountId;
+  const newCharge=parseFloat(document.getElementById('etCharge')?.value)||0;
+  if(newAmt<=0){if(err)err.textContent='Please enter a valid amount.';return;}
+  // Reverse original on old account
+  const oldAcc=getAcc(foundTxn.accountId);
+  if(oldAcc)oldAcc.balance=(oldAcc.balance||0)+foundTxn.amount+(foundTxn.charge||0);
+  // Check new account has enough
+  const newAcc=getAcc(newAccId);
+  if(newAcc&&newAcc.balance<newAmt+newCharge){
+    // Restore old balance before rejecting
+    if(oldAcc)oldAcc.balance=(oldAcc.balance||0)-foundTxn.amount-(foundTxn.charge||0);
+    if(err)err.textContent=`⛔ Insufficient balance in new account.`;return;
+  }
+  // Apply new amounts
+  if(newAcc){newAcc.balance=(newAcc.balance||0)-newAmt-newCharge;}
+  // Update the transaction record
+  foundTxn.amount=newAmt;
+  foundTxn.date=newDate;
+  foundTxn.note=newNote;
+  foundTxn.accountId=newAccId;
+  foundTxn.charge=newCharge;
+  saveState();closeModal();render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  EDIT TRANSFER
+// ═══════════════════════════════════════════════════════
+function editTransfer(id){
+  const tr=(S.transfers||[]).find(t=>t.id===id);
+  if(!tr)return;
+  const accOpts=(accs)=>S.accounts.map(a=>`<option value="${a.id}"${a.id===accs?' selected':''}>${esc(a.icon)} ${esc(a.name)} — ${esc(a.bank)}</option>`).join('');
+  openModal('Edit Transfer','Editing reverses original transfer and applies new values',`
+    <div class="info-chip a">⚠️ Editing will undo the original transfer and apply the new one.</div>
+    <div class="fr">
+      <div class="fg"><div class="fl">From Account</div><select class="fi" id="etFromId">${accOpts(tr.fromId)}</select></div>
+      <div class="fg"><div class="fl">To Account</div><select class="fi" id="etToId">${accOpts(tr.toId)}</select></div>
+    </div>
+    <div class="fr">
+      <div class="fg"><div class="fl">Amount (${S.currency})</div><input type="number" class="fi" id="etTrAmt" value="${tr.amount}" min="1" step="1" /></div>
+      <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="etTrDate" value="${tr.date}" /></div>
+    </div>
+    <div class="fg"><div class="fl">Note</div><input type="text" class="fi" id="etTrNote" value="${esc(tr.note||'')}" /></div>
+    <div class="fg"><div class="fl">Bank Charges (${S.currency})</div><input type="number" class="fi" id="etTrCharge" value="${tr.charge||0}" min="0" step="1" /></div>
+    <div class="em" id="etTrErr"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="saveEditTransfer('${id}')">Save Changes</button>
+    </div>`);
+}
+function saveEditTransfer(id){
+  const err=document.getElementById('etTrErr');
+  const tr=(S.transfers||[]).find(t=>t.id===id);
+  if(!tr){if(err)err.textContent='Transfer not found.';return;}
+  const newFromId=document.getElementById('etFromId')?.value;
+  const newToId=document.getElementById('etToId')?.value;
+  const newAmt=parseFloat(document.getElementById('etTrAmt')?.value)||0;
+  const newDate=document.getElementById('etTrDate')?.value||today();
+  const newNote=document.getElementById('etTrNote')?.value.trim()||'';
+  const newCharge=parseFloat(document.getElementById('etTrCharge')?.value)||0;
+  if(newFromId===newToId){if(err)err.textContent='⛔ From and To must be different.';return;}
+  if(newAmt<=0){if(err)err.textContent='Please enter a valid amount.';return;}
+  // Reverse original
+  const oldFrom=getAcc(tr.fromId),oldTo=getAcc(tr.toId);
+  if(oldFrom)oldFrom.balance=(oldFrom.balance||0)+tr.amount+(tr.charge||0);
+  if(oldTo)oldTo.balance=Math.max(0,(oldTo.balance||0)-tr.amount);
+  // Check new from account
+  const newFrom=getAcc(newFromId),newTo=getAcc(newToId);
+  if(!newFrom||!newTo){
+    // Restore
+    if(oldFrom)oldFrom.balance=(oldFrom.balance||0)-tr.amount-(tr.charge||0);
+    if(oldTo)oldTo.balance=(oldTo.balance||0)+tr.amount;
+    if(err)err.textContent='Invalid accounts.';return;
+  }
+  if(newFrom.balance<newAmt+newCharge){
+    if(oldFrom)oldFrom.balance=(oldFrom.balance||0)-tr.amount-(tr.charge||0);
+    if(oldTo)oldTo.balance=(oldTo.balance||0)+tr.amount;
+    if(err)err.textContent=`⛔ Insufficient balance! ${esc(newFrom.name)} only has ${S.currency} ${fmt(newFrom.balance)}.`;return;
+  }
+  // Apply new
+  newFrom.balance=(newFrom.balance||0)-newAmt-newCharge;
+  newTo.balance=(newTo.balance||0)+newAmt;
+  // Update record
+  tr.fromId=newFromId; tr.toId=newToId;
+  tr.amount=newAmt; tr.date=newDate;
+  tr.note=newNote; tr.charge=newCharge;
+  saveState();closeModal();render();
+}
+
+// ═══════════════════════════════════════════════════════
+//  EDIT INCOME
+// ═══════════════════════════════════════════════════════
+function editIncome(id){
+  const inc=(S.incomes||[]).find(i=>i.id===id);
+  if(!inc)return;
+  const accOpts=S.accounts.map(a=>`<option value="${a.id}"${a.id===inc.accountId?' selected':''}>${esc(a.icon)} ${esc(a.name)} — ${esc(a.bank)}</option>`).join('');
+  openModal('Edit Income Record',`Editing will reverse original income and apply new values`,`
+    <div class="fg"><div class="fl">Income Source</div><input type="text" class="fi" id="etIncSource" value="${esc(inc.source||'')}" placeholder="e.g. Salary, Freelance..." /></div>
+    <div class="fg"><div class="fl">Account</div><select class="fi" id="etIncAccId">${accOpts}</select></div>
+    <div class="fr">
+      <div class="fg"><div class="fl">Amount (${S.currency})</div><input type="number" class="fi" id="etIncAmt" value="${inc.amount}" min="1" step="1" /></div>
+      <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="etIncDate" value="${inc.date}" /></div>
+    </div>
+    <div class="fg"><div class="fl">Note</div><input type="text" class="fi" id="etIncNote" value="${esc(inc.note||'')}" placeholder="Optional note..." /></div>
+    <div class="fg"><div class="fl">Bank Charges (${S.currency})</div><input type="number" class="fi" id="etIncCharge" value="${inc.charge||0}" min="0" step="1" /></div>
+    <div class="em" id="etIncErr"></div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="saveEditIncome('${id}')">Save Changes</button>
+    </div>`);
+}
+function saveEditIncome(id){
+  const err=document.getElementById('etIncErr');
+  const inc=(S.incomes||[]).find(i=>i.id===id);
+  if(!inc){if(err)err.textContent='Income not found.';return;}
+  const newSource=document.getElementById('etIncSource')?.value.trim();
+  const newAccId=document.getElementById('etIncAccId')?.value||inc.accountId;
+  const newAmt=parseFloat(document.getElementById('etIncAmt')?.value)||0;
+  const newDate=document.getElementById('etIncDate')?.value||today();
+  const newNote=document.getElementById('etIncNote')?.value.trim()||'';
+  const newCharge=parseFloat(document.getElementById('etIncCharge')?.value)||0;
+  if(!newSource){if(err)err.textContent='Please enter an income source.';return;}
+  if(newAmt<=0){if(err)err.textContent='Please enter a valid amount.';return;}
+  // Reverse original
+  const oldAcc=getAcc(inc.accountId);
+  if(oldAcc)oldAcc.balance=Math.max(0,(oldAcc.balance||0)-inc.amount+(inc.charge||0));
+  // Apply new
+  const newAcc=getAcc(newAccId);
+  if(newAcc){newAcc.balance=(newAcc.balance||0)+newAmt-newCharge;}
+  // Update record
+  inc.source=newSource; inc.accountId=newAccId;
+  inc.amount=newAmt; inc.date=newDate;
+  inc.note=newNote; inc.charge=newCharge;
+  saveState();closeModal();render();
+}
+
 // ═══════════════════════════════════════════════════════
 //  DELETES
 // ═══════════════════════════════════════════════════════
@@ -2669,9 +2873,9 @@ function delTxn(scId,txnId){
     if(sc){
       const txn=(sc.transactions||[]).find(t=>t.id===txnId);
       if(txn){
-        // Undo account deduction
+        // Undo account deduction + charges
         const acc=(S.accounts||[]).find(a=>a.id===txn.accountId);
-        if(acc)acc.balance=(acc.balance||0)+txn.amount;
+        if(acc){acc.balance=(acc.balance||0)+txn.amount+(txn.charge||0);}
         // Undo savings deduction if linked
         if(txn.linkedSavingId){
           const sav=(S.savings||[]).find(s=>s.id===txn.linkedSavingId);
