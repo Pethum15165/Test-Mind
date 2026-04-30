@@ -1403,7 +1403,11 @@ function renderBudget(){
         <div class="cat-icon" style="background:${cat.color}18;">${cat.icon}</div>
         <div class="cat-meta">
           <div class="cat-name">${esc(cat.name)}</div>
-          <div class="cat-amounts">${S.currency} ${fmt(a)} of ${fmt(b)} · <span style="font-size:10px;padding:2px 7px;border-radius:99px;font-weight:700;background:${cat.type==='saving'?'var(--green-dim)':cat.type==='investment'?'var(--purple-dim)':'var(--red-dim)'};color:${cat.type==='saving'?'var(--green)':cat.type==='investment'?'var(--purple)':'var(--red)'}">${cat.type==='saving'?'💎 Saving':cat.type==='investment'?'📈 Investment':'💸 Expense'}</span></div>
+          <div class="cat-amounts">
+            ${S.currency} ${fmt(a)} of ${fmt(b)}
+            · <span style="font-size:10px;padding:2px 7px;border-radius:99px;font-weight:700;background:${cat.type==='saving'?'var(--green-dim)':cat.type==='investment'?'var(--purple-dim)':'var(--red-dim)'};color:${cat.type==='saving'?'var(--green)':cat.type==='investment'?'var(--purple)':'var(--red)'}">${cat.type==='saving'?'💎 Saving':cat.type==='investment'?'📈 Investment':'💸 Expense'}</span>
+            ${a>b?`<span style="font-size:10px;padding:2px 7px;border-radius:99px;font-weight:700;background:var(--red);color:#fff;">🚨 +${S.currency} ${fmt(a-b)} over</span>`:''}
+          </div>
           <div style="margin-top:8px;">${pb(p,pcol(p),'5')}</div>
         </div>
         <div class="cat-right">
@@ -1478,7 +1482,11 @@ function renderTxns(scIdFilter=null){
       return`<tr>
         <td><div style="display:flex;align-items:center;gap:12px;">
           <div class="txn-icon" style="background:${t.catColor}18;">${t.catIcon}</div>
-          <div><div class="txn-name">${esc(t.scName)}</div><div class="txn-sub">${esc(t.catName)}${t.note?' · '+esc(t.note):''}${t.linkedSavingId?' · 💎 Savings':''}</div></div>
+          <div>
+            <div class="txn-name">${esc(t.scName)}${t.overBudget?` <span style="font-size:9px;background:var(--red);color:#fff;padding:1px 5px;border-radius:99px;vertical-align:middle;font-weight:700;">OVER BUDGET</span>`:''}
+            </div>
+            <div class="txn-sub">${esc(t.catName)}${t.note?' · '+esc(t.note):''}${t.linkedSavingId?' · 💎 Savings':''}</div>
+          </div>
         </div></td>
         <td><div style="font-size:12px;color:var(--t2);">${acc?esc(acc.name):''}</div><div class="txn-bank">${acc?esc(acc.bank):'—'}</div></td>
         <td><span class="badge b-g" style="font-size:11px;">${esc(t.catName)}</span></td>
@@ -1984,21 +1992,83 @@ function selSc(scId){
   const el=document.getElementById('scsel-'+scId);if(el)el.classList.add('on');
   const cat=S.categories.find(c=>c.id===_cid);
   const sc=(cat?.subcategories||[]).find(s=>s.id===scId);if(!sc)return;
-  const actual=gA(sc),rem=sc.budget-actual,rp=pc(actual,sc.budget);
-  const chipCl=rem<=0?'r':rem<sc.budget*.25?'a':'g';
+  const actual=gA(sc),rem=sc.budget-actual;
+  const exceeded=rem<0,overBy=Math.abs(rem),overPct=sc.budget>0?Math.round((actual/sc.budget)*100):100;
   const chip=document.getElementById('budChip');
-  chip.innerHTML=`<div class="info-chip ${chipCl}">${rem<=0?'⛔ Budget fully used':rem<sc.budget*.25?`⚠️ Only ${S.currency} ${fmt(rem)} remaining`:`✓ ${S.currency} ${fmt(rem)} available of ${fmt(sc.budget)}`}</div>`;
-  document.getElementById('txnFormSection').style.display=rem<=0?'none':'block';
-  if(rem<=0)chip.innerHTML+=`<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Close</button></div>`;
+  if(exceeded){
+    // Over budget — show warning but ALLOW entry
+    chip.innerHTML=`
+      <div style="background:var(--red-dim);border:1px solid var(--red);border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+          <span style="font-size:18px;">🚨</span>
+          <span style="font-size:13px;font-weight:700;color:var(--red);">Budget Exceeded!</span>
+          <span style="margin-left:auto;background:var(--red);color:#fff;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;">${overPct}% used</span>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;">
+          <div style="background:rgba(0,0,0,.2);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Budget</div>
+            <div style="font-size:14px;font-weight:700;color:var(--t1);">${S.currency} ${fmt(sc.budget)}</div>
+          </div>
+          <div style="background:rgba(240,82,82,.15);border-radius:8px;padding:10px;text-align:center;">
+            <div style="font-size:10px;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:4px;">Exceeded by</div>
+            <div style="font-size:14px;font-weight:700;color:var(--red);">+${S.currency} ${fmt(overBy)}</div>
+          </div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--t2);">⚠️ You can still add this transaction — it will be marked as over-budget.</div>
+      </div>`;
+  } else if(rem<sc.budget*.25){
+    // Nearly at limit — amber warning
+    const usedPct=sc.budget>0?Math.round((actual/sc.budget)*100):0;
+    chip.innerHTML=`
+      <div style="background:var(--amber-dim);border:1px solid var(--amber);border-radius:10px;padding:12px 14px;margin-bottom:8px;">
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;">
+          <span style="font-size:13px;font-weight:700;color:var(--amber);">⚠️ Almost at budget limit</span>
+          <span style="background:var(--amber);color:#000;font-size:11px;font-weight:700;padding:2px 8px;border-radius:99px;">${usedPct}% used</span>
+        </div>
+        <div style="font-size:12px;color:var(--t2);">Only <strong style="color:var(--amber);">${S.currency} ${fmt(rem)}</strong> remaining of ${S.currency} ${fmt(sc.budget)} budget.</div>
+      </div>`;
+  } else {
+    // Healthy budget
+    const usedPct=sc.budget>0?Math.round((actual/sc.budget)*100):0;
+    chip.innerHTML=`
+      <div style="background:var(--green-dim);border:1px solid var(--green);border-radius:10px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+        <span style="font-size:12px;color:var(--green);font-weight:600;">✓ ${S.currency} ${fmt(rem)} available</span>
+        <span style="font-size:11px;color:var(--t2);">${usedPct}% of ${S.currency} ${fmt(sc.budget)} used</span>
+      </div>`;
+  }
+  // Always show the form — never block entry
+  document.getElementById('txnFormSection').style.display='block';
 }
 
 function validateAmt(){
   const cat=S.categories.find(c=>c.id===_cid);
   const sc=(cat?.subcategories||[]).find(s=>s.id===_sid);
   if(!sc)return;
-  const rem=sc.budget-gA(sc),val=parseFloat(document.getElementById('txnAmt')?.value)||0;
+  const actual=gA(sc),rem=sc.budget-actual;
+  const val=parseFloat(document.getElementById('txnAmt')?.value)||0;
   const el=document.getElementById('txnErr');
-  if(el)el.textContent=val>rem?`Exceeds remaining budget of ${S.currency} ${fmt(rem)}!`:'';
+  if(!el)return;
+  if(val<=0){el.innerHTML='';return;}
+  const newTotal=actual+val;
+  const newPct=sc.budget>0?Math.round((newTotal/sc.budget)*100):100;
+  const overBy=newTotal-sc.budget;
+  if(overBy>0){
+    el.innerHTML=`<div style="background:var(--red-dim);border:1px solid var(--red);border-radius:8px;padding:10px 12px;margin-top:4px;">
+      <div style="font-size:12px;font-weight:700;color:var(--red);margin-bottom:4px;">🚨 This will exceed budget by ${S.currency} ${fmt(overBy)}</div>
+      <div style="display:flex;gap:12px;font-size:11px;color:var(--t2);">
+        <span>Budget: ${S.currency} ${fmt(sc.budget)}</span>
+        <span>After this: <strong style="color:var(--red);">${newPct}% used</strong></span>
+      </div>
+      <div style="font-size:11px;color:var(--amber);margin-top:4px;">Transaction will be saved and marked as over-budget.</div>
+    </div>`;
+  } else if(val>rem*.75&&rem>0){
+    const remAfter=rem-val;
+    el.innerHTML=`<div style="background:var(--amber-dim);border:1px solid var(--amber);border-radius:8px;padding:8px 12px;margin-top:4px;font-size:11px;color:var(--amber);">
+      ⚠️ After this transaction only <strong>${S.currency} ${fmt(remAfter)}</strong> will remain (${newPct}% used)
+    </div>`;
+  } else {
+    el.innerHTML='';
+  }
 }
 function validateAmt2(rem){
   const val=parseFloat(document.getElementById('txnAmt')?.value)||0;
@@ -2015,9 +2085,9 @@ function submitTxn(){
   const date=document.getElementById('txnDate')?.value||today();
   const note=document.getElementById('txnNote')?.value.trim()||'';
   const accountId=document.getElementById('txnAccId')?.value||null;
-  const rem=sc.budget-gA(sc);
-  if(amount<=0){if(err)err.textContent='Please enter a valid amount.';return;}
-  if(amount>rem){if(err)err.textContent=`Amount exceeds remaining budget of ${S.currency} ${fmt(rem)}.`;return;}
+  const actual=gA(sc),rem=sc.budget-actual;
+  const overBudget=amount>rem; // flag but don't block
+  if(amount<=0){if(err)err.innerHTML='Please enter a valid amount.';return;}
   // Check account has enough balance
   const acc=(S.accounts||[]).find(a=>a.id===accountId);
   if(acc&&acc.balance<amount){if(err)err.textContent=`⛔ Insufficient balance! ${esc(acc.name)} only has ${S.currency} ${fmt(acc.balance)}.`;return;}
@@ -2034,7 +2104,7 @@ function submitTxn(){
     acc.balance=(acc.balance||0)-amount;
     if(charge>0)acc.balance=(acc.balance||0)-charge;
   }
-  sc.transactions.push({id:uid(),amount,date,note,charge,month:CM,accountId,linkedSavingId});
+  sc.transactions.push({id:uid(),amount,date,note,charge,month:CM,accountId,linkedSavingId,overBudget});
   saveState();closeModal();render();
 }
 
