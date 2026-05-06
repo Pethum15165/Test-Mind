@@ -785,6 +785,7 @@ body.compact .grid-2{gap:10px;margin-bottom:14px;}
       <div class="nav-item" id="ni-income" onclick="goTab('income')"><span class="ni">💰</span> Income</div>
       <div class="nav-item" id="ni-transfer" onclick="goTab('transfer')"><span class="ni">🔄</span> Transfer</div>
       <div class="nav-item" id="ni-budget" onclick="goTab('budget')"><span class="ni">📊</span> Budget</div>
+      <div class="nav-item" id="ni-budgetperiods" onclick="goTab('budgetperiods')"><span class="ni">📅</span> Budget Periods</div>
       <div class="nav-item" id="ni-txns" onclick="goTab('txns')"><span class="ni">📋</span> Transactions</div>
       <div class="nav-item" id="ni-savings" onclick="goTab('savings')"><span class="ni">💎</span> Savings</div>
       <div class="nav-item" id="ni-invest" onclick="goTab('invest')"><span class="ni">📈</span> Investments</div>
@@ -842,6 +843,7 @@ body.compact .grid-2{gap:10px;margin-bottom:14px;}
     <div class="content">
       <div class="page active" id="pg-home"></div>
       <div class="page" id="pg-budget"></div>
+      <div class="page" id="pg-budgetperiods"></div>
       <div class="page" id="pg-txns"></div>
       <div class="page" id="pg-income"></div>
       <div class="page" id="pg-transfer"></div>
@@ -878,7 +880,13 @@ const fmtDateShort=d=>new Date(d+'T00:00:00').toLocaleDateString('en-US',{month:
 const mLabel=ym=>{const[y,m]=ym.split('-');return new Date(+y,+m-1,1).toLocaleDateString('en-US',{month:'long',year:'numeric'});};
 const today=()=>new Date().toISOString().split('T')[0];
 const esc=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-const gA=sc=>(sc.transactions||[]).filter(t=>t.month===CM).reduce((s,t)=>s+t.amount,0);
+const gA=sc=>{
+  const p=getActivePeriod();
+  if(p){
+    return(sc.transactions||[]).filter(t=>t.date>=p.startDate&&t.date<=p.endDate).reduce((s,t)=>s+t.amount,0);
+  }
+  return(sc.transactions||[]).filter(t=>t.month===CM).reduce((s,t)=>s+t.amount,0);
+};
 const cA=c=>(c.subcategories||[]).reduce((s,sc)=>s+gA(sc),0);
 const cB=c=>(c.subcategories||[]).reduce((s,sc)=>s+(sc.budget||0),0);
 const pc=(a,b)=>b>0?Math.min(Math.round(a/b*100),100):0;
@@ -962,14 +970,16 @@ function updateUserUI(user){
 function _mergeState(saved){
   const def=defaultState();
   return {
-    accounts:    saved.accounts    ?? def.accounts,
-    categories:  saved.categories  ?? def.categories,
-    savings:     saved.savings     ?? def.savings,
-    investments: saved.investments ?? def.investments,
-    incomes:     saved.incomes     ?? def.incomes,
-    transfers:   saved.transfers   ?? def.transfers,
-    currency:    saved.currency    ?? def.currency,
-    settings:    saved.settings    ?? def.settings,
+    accounts:       saved.accounts       ?? def.accounts,
+    categories:     saved.categories     ?? def.categories,
+    savings:        saved.savings        ?? def.savings,
+    investments:    saved.investments    ?? def.investments,
+    incomes:        saved.incomes        ?? def.incomes,
+    transfers:      saved.transfers      ?? def.transfers,
+    currency:       saved.currency       ?? def.currency,
+    settings:       saved.settings       ?? def.settings,
+    budgetPeriods:  saved.budgetPeriods  ?? def.budgetPeriods,
+    budgetSettings: saved.budgetSettings ?? def.budgetSettings,
   };
 }
 
@@ -1173,6 +1183,11 @@ function defaultState(){
     currency:'LKR',
     incomes:[],
     transfers:[],
+    budgetPeriods:[],   // [{id, label, startDate, endDate, status:'active'|'done', snapshot:[]}]
+    budgetSettings:{
+      periodType:'monthly',   // 'monthly' | 'custom'
+      startDay:1,             // 1-28, day of month period starts
+    },
     settings:{
       theme:'dark',
       dateFormat:'en-US',
@@ -1180,7 +1195,9 @@ function defaultState(){
       compactMode:false,
       showCents:false,
       defaultAccount:''
-    }
+    },
+    budgetPeriods:[],
+    budgetSettings:{startDay:1}
   };
 }
 
@@ -1189,7 +1206,7 @@ const PAGE_TITLES={
   home:['🏠','Dashboard'],budget:['📊','Budget'],
   txns:['📋','Transactions'],savings:['💎','Savings'],
   invest:['📈','Investments'],accounts:['🏦','Accounts'],
-  income:['💰','Income'],transfer:['🔄','Transfer'],settings:['⚙️','Settings']
+  income:['💰','Income'],transfer:['🔄','Transfer'],settings:['⚙️','Settings'],budgetperiods:['📅','Budget Periods']
 };
 function goTab(tab){
   AT=tab;
@@ -1227,6 +1244,7 @@ function render(){
   else if(AT==='income') renderIncome();
   else if(AT==='transfer') renderTransfer();
   else if(AT==='settings') renderSettings();
+  else if(AT==='budgetperiods') renderBudgetPeriods();
   else renderAccounts();
 }
 
@@ -1447,6 +1465,26 @@ function renderBudget(){
         <div class="metric-sub">${totA>totB?'⛔ Over budget!':'Available to spend'}</div>
       </div>
     </div>
+
+    <!-- Period status banner -->
+    ${(()=>{
+      const p=getActivePeriod();
+      if(!p) return `<div style="background:var(--amber-dim);border:1px solid var(--amber);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div style="font-size:13px;color:var(--amber);">⚠️ No active budget period. <span style="color:var(--t2);">Budgets are shown for the selected month.</span></div>
+        <button class="btn-xs" style="background:var(--amber);color:#000;" onclick="goTab('budgetperiods')">Set Up Periods →</button>
+      </div>`;
+      const isDone=p.status==='done';
+      return `<div style="background:${isDone?'var(--bg4)':'var(--green-dim)'};border:1px solid ${isDone?'var(--border2)':'var(--green)'};border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+        <div>
+          <div style="font-size:13px;font-weight:700;color:${isDone?'var(--t3)':'var(--green)'};">${isDone?'🔒':'📅'} ${periodLabel(p.startDate,p.endDate)}</div>
+          <div style="font-size:11px;color:var(--t2);margin-top:2px;">${isDone?'Period is locked — no new transactions allowed':'Active budget period'}</div>
+        </div>
+        <div style="display:flex;gap:8px;">
+          ${!isDone?`<button class="btn-xs" onclick="openBulkEditBudget()">✏️ Edit Budgets</button><button class="btn-xs" style="background:var(--amber);color:#000;" onclick="markPeriodDone()">🔒 Mark Done</button>`:''}
+          <button class="btn-xs" onclick="goTab('budgetperiods')">View History →</button>
+        </div>
+      </div>`;
+    })()}
 
     <div class="sec-hdr">
       <div class="sec-title">Categories</div>
@@ -2088,6 +2126,12 @@ function submitTxn(){
   const actual=gA(sc),rem=sc.budget-actual;
   const overBudget=amount>rem; // flag but don't block
   if(amount<=0){if(err)err.innerHTML='Please enter a valid amount.';return;}
+  // Check if date falls in a locked (Done) period
+  const txDate=document.getElementById('txnDate')?.value||today();
+  if(checkPeriodLock(txDate)){
+    if(err)err.innerHTML=`<div style="background:var(--red-dim);border:1px solid var(--red);border-radius:8px;padding:10px;color:var(--red);font-size:12px;">🔒 This date falls in a <strong>locked period</strong>. Mark a new period as active to add transactions.</div>`;
+    return;
+  }
   // Check account has enough balance
   const acc=(S.accounts||[]).find(a=>a.id===accountId);
   if(acc&&acc.balance<amount){if(err)err.textContent=`⛔ Insufficient balance! ${esc(acc.name)} only has ${S.currency} ${fmt(acc.balance)}.`;return;}
@@ -2368,6 +2412,12 @@ function submitIncome(){
   const accountId=document.getElementById('incAccId')?.value||null;
   if(!source){if(err)err.textContent='Please enter an income source.';return;}
   if(amount<=0){if(err)err.textContent='Please enter a valid amount.';return;}
+  // Check period lock
+  const incDate=document.getElementById('incDate')?.value||today();
+  if(checkPeriodLock(incDate)){
+    if(err)err.innerHTML=`<div style="background:var(--red-dim);border:1px solid var(--red);border-radius:8px;padding:10px;color:var(--red);font-size:12px;">🔒 This date falls in a <strong>locked period</strong>. Mark a new period as active to add income.</div>`;
+    return;
+  }
   // Add to account balance
   const acc=(S.accounts||[]).find(a=>a.id===accountId);
   const charge=parseFloat(document.getElementById('incCharge')?.value)||0;
@@ -2984,6 +3034,410 @@ async function forceSyncNow(){
     setSyncStatus('err','No connection');
     alert('Could not connect to Supabase.\n\nCheck:\n1. Your Supabase project is active (not paused)\n2. Your internet connection\n\nYour data is safe locally.');
   }
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  BUDGET PERIOD SYSTEM
+// ═══════════════════════════════════════════════════════
+
+function getBudgetSettings(){
+  return S.budgetSettings || {periodType:'monthly', startDay:1};
+}
+
+function getActivePeriod(){
+  if(!S.budgetPeriods||!S.budgetPeriods.length) return null;
+  return S.budgetPeriods.find(p=>p.status==='active')||null;
+}
+
+function getPeriodForDate(dateStr){
+  if(!S.budgetPeriods) return null;
+  return S.budgetPeriods.find(p=>dateStr>=p.startDate&&dateStr<=p.endDate)||null;
+}
+
+// Generate period label from dates
+function periodLabel(startDate, endDate){
+  const s=new Date(startDate+'T00:00:00');
+  const e=new Date(endDate+'T00:00:00');
+  const sm=s.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+  const em=e.toLocaleDateString('en-US',{month:'short',day:'numeric',year:'numeric'});
+  return sm+' – '+em;
+}
+
+// Calculate period start/end based on settings
+function calcPeriodDates(fromDate){
+  const bs=getBudgetSettings();
+  const d=fromDate?new Date(fromDate+'T00:00:00'):new Date();
+  const startDay=Math.min(bs.startDay||1,28);
+  // Find start of current period
+  let s=new Date(d.getFullYear(), d.getMonth(), startDay);
+  if(d<s){ s=new Date(s.getFullYear(), s.getMonth()-1, startDay); }
+  const startDate=s.toISOString().split('T')[0];
+  // End = one day before next period starts
+  let e=new Date(s.getFullYear(), s.getMonth()+1, startDay);
+  e.setDate(e.getDate()-1);
+  const endDate=e.toISOString().split('T')[0];
+  return {startDate, endDate};
+}
+
+// Calculate NEXT period after a given end date
+function calcNextPeriodDates(afterEndDate){
+  const bs=getBudgetSettings();
+  const startDay=Math.min(bs.startDay||1,28);
+  const prev=new Date(afterEndDate+'T00:00:00');
+  const s=new Date(prev.getFullYear(), prev.getMonth()+1, startDay);
+  // Edge case: if prev end was already the day before next start
+  const startDate=s.toISOString().split('T')[0];
+  let e=new Date(s.getFullYear(), s.getMonth()+1, startDay);
+  e.setDate(e.getDate()-1);
+  const endDate=e.toISOString().split('T')[0];
+  return {startDate, endDate};
+}
+
+// Check if a date falls in the active (locked) period
+function isDateInDonePeriod(dateStr){
+  if(!S.budgetPeriods) return false;
+  return S.budgetPeriods.some(p=>p.status==='done'&&dateStr>=p.startDate&&dateStr<=p.endDate);
+}
+
+// Check if current view period is locked
+function isCurrentPeriodDone(){
+  const p=getActivePeriod();
+  if(p&&p.status==='done') return true;
+  // Also check if the CM month falls in a done period
+  const cmDate=CM+'-15';
+  return isDateInDonePeriod(cmDate);
+}
+
+// ── Render Budget Periods page ──────────────────────────
+function renderBudgetPeriods(){
+  if(!S.budgetPeriods) S.budgetPeriods=[];
+  const bs=getBudgetSettings();
+  const active=getActivePeriod();
+  const done=S.budgetPeriods.filter(p=>p.status==='done').sort((a,b)=>b.startDate.localeCompare(a.startDate));
+
+  const historyRows=done.map(p=>{
+    const snap=p.snapshot||[];
+    const totBudget=snap.reduce((s,cat)=>s+(cat.subcategories||[]).reduce((ss,sc)=>ss+sc.budget,0),0);
+    const totActual=p.totalExpenses||snap.reduce((s,cat)=>s+(cat.subcategories||[]).reduce((ss,sc)=>ss+sc.actual,0),0);
+    const pct=pc(totActual,totBudget);
+    const over=totActual>totBudget;
+    const income=p.totalIncome||0;
+    const net=p.netSavings!=null?p.netSavings:(income-totActual);
+    return`<div class="cat-card" style="margin-bottom:12px;cursor:pointer;" onclick="viewPeriodDetail('${p.id}')">
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:10px;margin-bottom:10px;">
+        <div>
+          <div style="font-size:14px;font-weight:700;color:var(--t1);">${periodLabel(p.startDate,p.endDate)}</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px;">Locked ${new Date(p.doneAt).toLocaleDateString()}</div>
+        </div>
+        <div style="display:flex;gap:6px;align-items:center;">
+          <span style="font-size:11px;padding:3px 10px;border-radius:99px;background:var(--bg4);color:var(--t3);font-weight:600;">🔒 Done</span>
+          <button class="btn-xs" onclick="event.stopPropagation();viewPeriodDetail('${p.id}')">View →</button>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;">
+        <div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:3px;">Budget</div>
+          <div style="font-size:13px;font-weight:700;color:var(--t1);">${S.currency} ${fmt(totBudget)}</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:3px;">Spent</div>
+          <div style="font-size:13px;font-weight:700;color:${over?'var(--red)':'var(--t1)'};">${S.currency} ${fmt(totActual)}</div>
+        </div>
+        <div style="background:var(--bg3);border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:3px;">Income</div>
+          <div style="font-size:13px;font-weight:700;color:var(--green);">${S.currency} ${fmt(income)}</div>
+        </div>
+        <div style="background:${net>=0?'var(--green-dim)':'var(--red-dim)'};border-radius:8px;padding:8px;text-align:center;">
+          <div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:3px;">Net</div>
+          <div style="font-size:13px;font-weight:700;color:${net>=0?'var(--green)':'var(--red)'};">${net>=0?'+':''}${S.currency} ${fmt(net)}</div>
+        </div>
+      </div>
+      ${pb(pct,pcol(pct),'5')}
+      <div style="font-size:11px;color:${over?'var(--red)':'var(--t3)'};margin-top:6px;">${over?`🚨 Over budget by ${S.currency} ${fmt(totActual-totBudget)} (${pct}%)`:`✓ ${pct}% of budget used · ${S.currency} ${fmt(totBudget-totActual)} under budget`}</div>
+    </div>`;}).join('');
+
+  document.getElementById('pg-budgetperiods').innerHTML=`
+    <!-- Period Settings -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title">⚙️ Budget Period Settings</div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:16px;">Set when your budget period starts each month. Example: if you set day 25, each period runs from the 25th to the 24th of next month.</div>
+      <div style="display:flex;align-items:center;gap:16px;flex-wrap:wrap;">
+        <div class="fg" style="margin-bottom:0;flex:1;min-width:180px;">
+          <div class="fl">Period Start Day (1–28)</div>
+          <input type="number" class="fi" id="bpStartDay" value="${bs.startDay||1}" min="1" max="28" placeholder="1" style="margin-top:6px;" />
+        </div>
+        <div style="padding-top:22px;">
+          <button class="btn btn-green" onclick="saveBudgetSettings()">Save Settings</button>
+        </div>
+      </div>
+      ${active?`<div style="margin-top:12px;padding:10px 14px;background:var(--green-dim);border-radius:8px;font-size:12px;color:var(--green);">
+        ✓ Active period: <strong>${periodLabel(active.startDate,active.endDate)}</strong>
+      </div>`:''}
+    </div>
+
+    <!-- Active Period -->
+    <div class="card" style="margin-bottom:20px;">
+      <div class="card-title">📅 Current Period
+        ${active?`<span style="font-size:11px;padding:3px 10px;border-radius:99px;background:var(--green-dim);color:var(--green);font-weight:700;margin-left:8px;">● Active</span>`:''}
+      </div>
+      ${active?(()=>{
+        const snap=active.snapshot||[];
+        const totB=snap.reduce((s,cat)=>s+(cat.subcategories||[]).reduce((ss,sc)=>ss+sc.budget,0),0);
+        // Live actuals from transactions in period
+        let totA=0;
+        S.categories.forEach(cat=>{
+          (cat.subcategories||[]).forEach(sc=>{
+            totA+=(sc.transactions||[]).filter(t=>t.date>=active.startDate&&t.date<=active.endDate).reduce((s,t)=>s+t.amount,0);
+          });
+        });
+        const totInc=(S.incomes||[]).filter(i=>i.date>=active.startDate&&i.date<=active.endDate).reduce((s,i)=>s+i.amount,0);
+        const pct=pc(totA,totB);
+        const daysLeft=Math.ceil((new Date(active.endDate)-new Date())/(1000*60*60*24));
+        return `
+        <div style="margin-bottom:16px;">
+          <div style="font-size:16px;font-weight:700;color:var(--t1);margin-bottom:4px;">${periodLabel(active.startDate,active.endDate)}</div>
+          <div style="font-size:12px;color:var(--t2);">
+            ${(active.snapshot||[]).length} expense categories · 
+            <span style="color:${daysLeft<=3?'var(--red)':daysLeft<=7?'var(--amber)':'var(--t2)'};">
+              ${daysLeft>0?daysLeft+' days remaining':'Period ends today'}
+            </span>
+          </div>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:16px;">
+          <div style="background:var(--bg3);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:4px;">Budget</div>
+            <div style="font-size:15px;font-weight:700;color:var(--t1);">${S.currency} ${fmt(totB)}</div>
+          </div>
+          <div style="background:${totA>totB?'var(--red-dim)':'var(--bg3)'};border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:4px;">Spent</div>
+            <div style="font-size:15px;font-weight:700;color:${totA>totB?'var(--red)':'var(--t1)'};">${S.currency} ${fmt(totA)}</div>
+          </div>
+          <div style="background:var(--green-dim);border-radius:10px;padding:12px;text-align:center;">
+            <div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:4px;">Income</div>
+            <div style="font-size:15px;font-weight:700;color:var(--green);">${S.currency} ${fmt(totInc)}</div>
+          </div>
+        </div>
+        <div style="margin-bottom:16px;">
+          ${pb(pct,pcol(pct),'8')}
+          <div style="display:flex;justify-content:space-between;font-size:11px;color:var(--t2);margin-top:4px;">
+            <span>${pct}% of budget used</span>
+            <span>${totA>totB?`🚨 Over by ${S.currency} ${fmt(totA-totB)}`:`${S.currency} ${fmt(totB-totA)} remaining`}</span>
+          </div>
+        </div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap;">
+          <button class="btn btn-outline" onclick="openBulkEditBudget()">✏️ Edit All Budgets</button>
+          <button class="btn" style="background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber);" onclick="markPeriodDone()">🔒 Mark as Done</button>
+        </div>
+        <div style="margin-top:10px;font-size:11px;color:var(--t3);">⚠️ Once marked Done, no new expense/income transactions can be added for this period and budgets cannot be edited.</div>
+        `})():`
+        <div style="text-align:center;padding:24px 0;">
+          <div style="font-size:32px;margin-bottom:10px;">📅</div>
+          <div style="font-size:14px;color:var(--t2);margin-bottom:8px;">No active budget period. Start one to begin tracking.</div>
+          ${(S.budgetPeriods||[]).filter(p=>p.status==='done').length>0?
+            `<div style="font-size:12px;color:var(--green);margin-bottom:16px;">Previous period budgets will be carried forward automatically.</div>`:''}
+          <button class="btn btn-green" onclick="startNewPeriod()">▶ Start New Budget Period</button>
+        </div>
+      `}
+    </div>
+
+    <!-- History -->
+    <div class="card">
+      <div class="card-title">📜 Period History <span style="font-size:12px;color:var(--t2);font-weight:400;">${done.length} completed periods</span></div>
+      ${historyRows||'<div class="empty" style="padding:20px 0;"><div class="empty-ico">📋</div><div class="empty-text">No completed periods yet.</div></div>'}
+    </div>
+  `;
+}
+
+function saveBudgetSettings(){
+  const day=parseInt(document.getElementById('bpStartDay')?.value)||1;
+  if(day<1||day>28){alert('Start day must be between 1 and 28.');return;}
+  if(!S.budgetSettings) S.budgetSettings={};
+  S.budgetSettings.startDay=day;
+  saveState();render();
+  alert('✅ Budget period settings saved!');
+}
+
+function startNewPeriod(){
+  if(getActivePeriod()){alert('There is already an active period. Mark it as Done first.');return;}
+  if(!S.budgetPeriods) S.budgetPeriods=[];
+  // Find last done period to calculate next dates
+  const lastDone=S.budgetPeriods.filter(p=>p.status==='done').sort((a,b)=>b.endDate.localeCompare(a.endDate))[0];
+  const {startDate,endDate}=lastDone?calcNextPeriodDates(lastDone.endDate):calcPeriodDates();
+  const id=uid();
+  // Snapshot current categories — carry forward budgets from last period if available
+  const snapshot=S.categories
+    .filter(cat=>cat.type==='expense'||cat.type==='income'||!cat.type)
+    .map(cat=>{
+      const lastCat=lastDone?(lastDone.snapshot||[]).find(lc=>lc.id===cat.id):null;
+      return{
+        id:cat.id, name:cat.name, icon:cat.icon, color:cat.color, type:cat.type||'expense',
+        subcategories:(cat.subcategories||[]).map(sc=>{
+          const lastSc=lastCat?(lastCat.subcategories||[]).find(ls=>ls.id===sc.id):null;
+          // Carry forward last period budget if exists, else use current
+          const budget=lastSc?lastSc.budget:sc.budget;
+          return{id:sc.id, name:sc.name, budget, actual:0};
+        })
+      };
+    });
+  S.budgetPeriods.push({id,startDate,endDate,status:'active',snapshot,createdAt:new Date().toISOString()});
+  saveState();render();
+  alert(`✅ New budget period started!\n${periodLabel(startDate,endDate)}\n\nBudget amounts carried forward from previous period.`);
+}
+
+function markPeriodDone(){
+  const p=getActivePeriod();
+  if(!p){alert('No active period.');return;}
+  if(!confirm(`Mark this period as Done?\n${periodLabel(p.startDate,p.endDate)}\n\nAfter this:\n• No new expense/income transactions can be added for this period\n• Budgets cannot be edited\n• Period is archived for history\n\nAre you sure?`))return;
+  // Calculate expense actuals per subcategory
+  p.snapshot=(p.snapshot||[]).map(cat=>{
+    const liveCat=S.categories.find(lc=>lc.id===cat.id);
+    return{...cat, subcategories:(cat.subcategories||[]).map(sc=>{
+      const liveSc=(liveCat?.subcategories||[]).find(ls=>ls.id===sc.id);
+      const actual=liveSc?(liveSc.transactions||[])
+        .filter(t=>t.date>=p.startDate&&t.date<=p.endDate)
+        .reduce((s,t)=>s+t.amount+(t.charge||0),0):0;
+      return{...sc,actual};
+    })};
+  });
+  // Calculate total income for this period
+  const totalIncome=(S.incomes||[])
+    .filter(i=>i.date>=p.startDate&&i.date<=p.endDate)
+    .reduce((s,i)=>s+i.amount,0);
+  p.totalIncome=totalIncome;
+  // Net = income - expenses
+  const totalExpenses=p.snapshot.reduce((s,cat)=>s+(cat.subcategories||[]).reduce((ss,sc)=>ss+sc.actual,0),0);
+  p.totalExpenses=totalExpenses;
+  p.netSavings=totalIncome-totalExpenses;
+  p.status='done';
+  p.doneAt=new Date().toISOString();
+  saveState();render();
+  alert(`✅ Period locked!\n\nIncome: ${S.currency} ${fmt(totalIncome)}\nExpenses: ${S.currency} ${fmt(totalExpenses)}\nNet: ${S.currency} ${fmt(p.netSavings)}\n\nStart a new period to continue budgeting.`);
+}
+
+function openBulkEditBudget(){
+  const p=getActivePeriod();
+  if(!p){alert('No active period to edit.');return;}
+  // Build rows for every subcategory
+  const rows=S.categories.map(cat=>`
+    <div style="margin-bottom:16px;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border);">
+        <span style="font-size:16px;">${cat.icon}</span>
+        <span style="font-size:14px;font-weight:700;color:var(--t1);">${esc(cat.name)}</span>
+        <span style="font-size:10px;padding:2px 7px;border-radius:99px;font-weight:700;background:${cat.type==='saving'?'var(--green-dim)':cat.type==='investment'?'var(--purple-dim)':'var(--red-dim)'};color:${cat.type==='saving'?'var(--green)':cat.type==='investment'?'var(--purple)':'var(--red)'};">${cat.type||'expense'}</span>
+      </div>
+      ${(cat.subcategories||[]).map(sc=>`
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;">
+          <div style="flex:1;font-size:13px;color:var(--t2);">${esc(sc.name)}</div>
+          <div style="display:flex;align-items:center;gap:6px;">
+            <span style="font-size:12px;color:var(--t3);">${S.currency}</span>
+            <input type="number" class="fi" style="width:120px;padding:6px 10px;"
+              id="be_${sc.id}" value="${sc.budget}" min="0" step="100" />
+          </div>
+        </div>`).join('')}
+    </div>`).join('');
+
+  openModal('✏️ Edit All Budgets',`Active period: ${periodLabel(p.startDate,p.endDate)}`,`
+    <div style="font-size:12px;color:var(--amber);background:var(--amber-dim);padding:8px 12px;border-radius:8px;margin-bottom:16px;">
+      ⚠️ Changes apply to this period's budget amounts. Once the period is marked Done, editing is locked forever.
+    </div>
+    <div style="max-height:400px;overflow-y:auto;padding-right:4px;">
+      ${rows}
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="saveBulkEdit()">Save All Budgets</button>
+    </div>`);
+}
+
+function saveBulkEdit(){
+  S.categories.forEach(cat=>{
+    (cat.subcategories||[]).forEach(sc=>{
+      const inp=document.getElementById('be_'+sc.id);
+      if(inp){const v=parseFloat(inp.value)||0;sc.budget=v;}
+    });
+  });
+  // Also update snapshot budgets
+  const p=getActivePeriod();
+  if(p){
+    p.snapshot=(p.snapshot||[]).map(cat=>({...cat,
+      subcategories:(cat.subcategories||[]).map(sc=>{
+        const liveSc=S.categories.flatMap(c=>c.subcategories||[]).find(ls=>ls.id===sc.id);
+        return{...sc, budget:liveSc?liveSc.budget:sc.budget};
+      })
+    }));
+  }
+  saveState();closeModal();render();
+}
+
+function viewPeriodDetail(pid){
+  const p=(S.budgetPeriods||[]).find(x=>x.id===pid);
+  if(!p)return;
+  const totB=(p.snapshot||[]).reduce((s,cat)=>s+(cat.subcategories||[]).reduce((ss,sc)=>ss+sc.budget,0),0);
+  const totA=p.totalExpenses||(p.snapshot||[]).reduce((s,cat)=>s+(cat.subcategories||[]).reduce((ss,sc)=>ss+sc.actual,0),0);
+  const totInc=p.totalIncome||0;
+  const net=p.netSavings!=null?p.netSavings:(totInc-totA);
+  const pct=pc(totA,totB);
+
+  // Income rows for this period
+  const incList=(S.incomes||[]).filter(i=>i.date>=p.startDate&&i.date<=p.endDate)
+    .sort((a,b)=>b.date.localeCompare(a.date));
+  const incRows=incList.map(i=>'<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">'+
+    '<div><div style="font-size:12px;font-weight:600;color:var(--t1);">'+esc(i.source)+'</div>'+
+    '<div style="font-size:11px;color:var(--t3);">'+fmtDateShort(i.date)+(i.note?' · '+esc(i.note):'')+'</div></div>'+
+    '<div style="font-size:13px;font-weight:700;color:var(--green);">+'+S.currency+' '+fmt(i.amount)+'</div></div>').join('');
+
+  // Category rows
+  const catRows=(p.snapshot||[]).map(cat=>{
+    const catTotB=(cat.subcategories||[]).reduce((s,sc)=>s+sc.budget,0);
+    const catTotA=(cat.subcategories||[]).reduce((s,sc)=>s+sc.actual,0);
+    const catPct=pc(catTotA,catTotB);
+    const scRows=(cat.subcategories||[]).map(sc=>'<div style="display:flex;align-items:center;gap:10px;padding:6px 0 6px 16px;border-bottom:1px solid rgba(255,255,255,.04);">'+
+      '<div style="flex:1;font-size:12px;color:var(--t2);">'+esc(sc.name)+'</div>'+
+      '<div style="font-size:12px;color:var(--t2);min-width:80px;text-align:right;">'+S.currency+' '+fmt(sc.budget)+'</div>'+
+      '<div style="font-size:12px;font-weight:600;min-width:80px;text-align:right;color:'+(sc.actual>sc.budget?'var(--red)':'var(--green)')+';">'+S.currency+' '+fmt(sc.actual)+'</div>'+
+      '<div style="font-size:11px;min-width:50px;text-align:right;color:var(--t3);">'+pc(sc.actual,sc.budget)+'%</div></div>').join('');
+    return '<div style="margin-bottom:12px;background:var(--bg3);border-radius:10px;overflow:hidden;">'+
+      '<div style="display:flex;align-items:center;gap:8px;padding:10px 14px;background:var(--bg4);">'+
+      '<span>'+cat.icon+'</span>'+
+      '<span style="font-size:13px;font-weight:700;color:var(--t1);flex:1;">'+esc(cat.name)+'</span>'+
+      '<span style="font-size:12px;color:var(--t2);">'+S.currency+' '+fmt(catTotA)+' / '+fmt(catTotB)+'</span>'+
+      (catTotA>catTotB?'<span style="font-size:10px;background:var(--red);color:#fff;padding:2px 6px;border-radius:99px;">OVER</span>':
+        '<span style="font-size:10px;background:var(--green-dim);color:var(--green);padding:2px 6px;border-radius:99px;">'+catPct+'%</span>')+
+      '</div>'+scRows+'</div>';}).join('');
+
+  const overUnder=totA>totB?
+    '🚨 Over budget by '+S.currency+' '+fmt(totA-totB):
+    S.currency+' '+fmt(totB-totA)+' under budget';
+
+  const incSection=incRows?
+    '<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:14px 14px 6px;border-top:1px solid var(--border);margin-top:8px;">Income Records</div>'+
+    '<div style="padding:0 14px;">'+incRows+'</div>':'';
+
+  openModal('📅 Period Details',periodLabel(p.startDate,p.endDate),
+    '<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px;">'+
+      '<div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:3px;">Budget</div><div style="font-size:14px;font-weight:700;color:var(--t1);">'+S.currency+' '+fmt(totB)+'</div></div>'+
+      '<div style="background:'+(totA>totB?'var(--red-dim)':'var(--bg3)')+';border-radius:8px;padding:10px;text-align:center;"><div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:3px;">Spent</div><div style="font-size:14px;font-weight:700;color:'+(totA>totB?'var(--red)':'var(--t1)')+';">'+S.currency+' '+fmt(totA)+'</div></div>'+
+      '<div style="background:var(--green-dim);border-radius:8px;padding:10px;text-align:center;"><div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:3px;">Income</div><div style="font-size:14px;font-weight:700;color:var(--green);">'+S.currency+' '+fmt(totInc)+'</div></div>'+
+      '<div style="background:'+(net>=0?'var(--green-dim)':'var(--red-dim)')+';border-radius:8px;padding:10px;text-align:center;"><div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:3px;">Net</div><div style="font-size:14px;font-weight:700;color:'+(net>=0?'var(--green)':'var(--red)')+';">'+(net>=0?'+':'')+S.currency+' '+fmt(net)+'</div></div>'+
+    '</div>'+
+    pb(pct,pcol(pct),'6')+
+    '<div style="font-size:11px;color:var(--t2);margin:6px 0 14px;">'+pct+'% of budget used · '+overUnder+'</div>'+
+    '<div style="max-height:380px;overflow-y:auto;">'+
+      '<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;padding:6px 14px;margin-bottom:4px;">Expense Breakdown</div>'+
+      '<div style="display:flex;padding:4px 14px;font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;"><span style="flex:1;">Subcategory</span><span style="min-width:80px;text-align:right;">Budget</span><span style="min-width:80px;text-align:right;">Actual</span><span style="min-width:50px;text-align:right;">%</span></div>'+
+      catRows+
+      incSection+
+    '</div>'+
+    '<div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Close</button></div>');
+}
+
+// ── Check period lock before adding transaction ──────────
+function checkPeriodLock(dateStr){
+  // Returns true if the date falls in a DONE period (blocked)
+  const p=getPeriodForDate(dateStr);
+  if(p&&p.status==='done') return true;
+  return false;
 }
 
 // ═══════════════════════════════════════════════════════
