@@ -3133,6 +3133,7 @@ function renderBudgetPeriods(){
         <div style="display:flex;gap:6px;align-items:center;">
           <span style="font-size:11px;padding:3px 10px;border-radius:99px;background:var(--bg4);color:var(--t3);font-weight:600;">🔒 Done</span>
           <button class="btn-xs" onclick="event.stopPropagation();viewPeriodDetail('${p.id}')">View →</button>
+          <button class="btn-xs red" onclick="event.stopPropagation();deletePeriod('${p.id}')">Delete</button>
         </div>
       </div>
       <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:10px;">
@@ -3228,6 +3229,7 @@ function renderBudgetPeriods(){
         <div style="display:flex;gap:10px;flex-wrap:wrap;">
           <button class="btn btn-outline" onclick="openBulkEditBudget()">✏️ Edit All Budgets</button>
           <button class="btn" style="background:var(--amber-dim);color:var(--amber);border:1px solid var(--amber);" onclick="markPeriodDone()">🔒 Mark as Done</button>
+          <button class="btn" style="background:var(--red-dim);color:var(--red);border:1px solid var(--red);" onclick="deletePeriod('${active.id}')">🗑 Delete Period</button>
         </div>
         <div style="margin-top:10px;font-size:11px;color:var(--t3);">⚠️ Once marked Done, no new expense/income transactions can be added for this period and budgets cannot be edited.</div>
         `})():`
@@ -3258,33 +3260,54 @@ function saveBudgetSettings(){
   alert('✅ Budget period settings saved!');
 }
 
+
+// ── Delete a budget period ────────────────────────────
+function deletePeriod(id){
+  const p=(S.budgetPeriods||[]).find(x=>x.id===id);
+  if(!p)return;
+  const isDone=p.status==='done';
+  const msg=isDone?
+    'Delete this completed period? '+periodLabel(p.startDate,p.endDate)+'\n\nThis only removes the period record. Your transactions are NOT deleted.':
+    'Delete this active period? '+periodLabel(p.startDate,p.endDate)+'\n\nThis removes the period. Your transactions are NOT deleted.';
+  if(!confirm(msg))return;
+  S.budgetPeriods=S.budgetPeriods.filter(x=>x.id!==id);
+  saveState();render();
+}
+
 function startNewPeriod(){
   if(getActivePeriod()){alert('There is already an active period. Mark it as Done first.');return;}
   if(!S.budgetPeriods) S.budgetPeriods=[];
-  // Find last done period to calculate next dates
-  const lastDone=S.budgetPeriods.filter(p=>p.status==='done').sort((a,b)=>b.endDate.localeCompare(a.endDate))[0];
-  const {startDate,endDate}=lastDone?calcNextPeriodDates(lastDone.endDate):calcPeriodDates();
+
+  // Always base on TODAY — never allow future periods
+  const todayStr=today();
+  const {startDate,endDate}=calcPeriodDates(todayStr);
+
+  // Block if this period is already done
+  const alreadyDone=S.budgetPeriods.find(p=>p.startDate===startDate&&p.status==='done');
+  if(alreadyDone){
+    alert('The current period ('+periodLabel(startDate,endDate)+') has already been marked as Done.\n\nYou cannot re-open a locked period. Wait until the next period starts.');
+    return;
+  }
+
   const id=uid();
-  // Snapshot current categories — carry forward budgets from last period if available
+  const lastDone=S.budgetPeriods.filter(p=>p.status==='done').sort((a,b)=>b.startDate.localeCompare(a.startDate))[0];
   const snapshot=S.categories
     .filter(cat=>cat.type==='expense'||cat.type==='income'||!cat.type)
     .map(cat=>{
       const lastCat=lastDone?(lastDone.snapshot||[]).find(lc=>lc.id===cat.id):null;
       return{
-        id:cat.id, name:cat.name, icon:cat.icon, color:cat.color, type:cat.type||'expense',
+        id:cat.id,name:cat.name,icon:cat.icon,color:cat.color,type:cat.type||'expense',
         subcategories:(cat.subcategories||[]).map(sc=>{
           const lastSc=lastCat?(lastCat.subcategories||[]).find(ls=>ls.id===sc.id):null;
-          // Carry forward last period budget if exists, else use current
           const budget=lastSc?lastSc.budget:sc.budget;
-          return{id:sc.id, name:sc.name, budget, actual:0};
+          return{id:sc.id,name:sc.name,budget,actual:0};
         })
       };
     });
   S.budgetPeriods.push({id,startDate,endDate,status:'active',snapshot,createdAt:new Date().toISOString()});
   saveState();render();
-  alert(`✅ New budget period started!\n${periodLabel(startDate,endDate)}\n\nBudget amounts carried forward from previous period.`);
+  alert('✅ Budget period started!\n'+periodLabel(startDate,endDate)+(lastDone?'\n\nBudgets carried forward from previous period.':'\n\nUse Edit All Budgets to set your amounts.'));
 }
-
 function markPeriodDone(){
   const p=getActivePeriod();
   if(!p){alert('No active period.');return;}
