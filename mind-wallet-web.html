@@ -1594,7 +1594,7 @@ function renderSavings(){
     const deposits=(sv.transactions||[]).filter(t=>t.type==='deposit').slice(-3).reverse();
     const depositLog=deposits.length?`<div style="border-top:1px solid var(--border);padding-top:10px;margin-top:4px;">
       <div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.6px;margin-bottom:6px;">Recent Deposits</div>
-      ${deposits.map(d=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;"><span style="color:var(--t2);">${fmtDateShort(d.date)}${d.note?' · '+esc(d.note):''}</span><span style="color:var(--green);font-weight:700;">+${S.currency} ${fmt(d.amount)}</span></div>`).join('')}
+      ${deposits.map(d=>`<div style="display:flex;justify-content:space-between;font-size:12px;padding:3px 0;"><span style="color:var(--t2);">${fmtDateShort(d.date)}${d.note?' · '+esc(d.note):''}</span><div style="text-align:right;"><div style="color:var(--green);font-weight:700;">+${S.currency} ${fmt(d.amount)}</div>${d.charge?`<div style="font-size:10px;color:var(--amber);">+${S.currency} ${fmt(d.charge)} charge</div>`:''}</div></div>`).join('')}}
     </div>`:'';
     return`<div class="sv-card">
       <div class="sv-top">
@@ -1811,6 +1811,7 @@ function openTxnModal(){
           <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="txnDate" value="${today()}" /></div>
         </div>
         <div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="txnNote" placeholder="e.g. Weekly groceries, Grab ride to office..." /></div>
+        <div class="fg"><div class="fl">Bank Charges (optional)</div><input type="number" class="fi" id="txnCharge" placeholder="0.00 — deducted from same account" min="0" step="1" /></div>
         ${savOpts?`<div class="toggle-row">
           <div><div style="font-size:13px;font-weight:600;color:var(--t1);">Link to a Savings Goal</div><div style="font-size:12px;color:var(--t2);margin-top:2px;">Automatically deduct from a savings balance</div></div>
           <label class="tgl"><input type="checkbox" id="savToggle" onchange="document.getElementById('savPickerWrap').style.display=this.checked?'block':'none'"><span class="tgl-track"></span></label>
@@ -1834,6 +1835,7 @@ function openTxnModal(){
           <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="savDepDate" value="${today()}" /></div>
         </div>
         <div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="savDepNote" placeholder="e.g. Monthly saving, Bonus..." /></div>
+        <div class="fg"><div class="fl">Bank Charges (optional)</div><input type="number" class="fi" id="savDepCharge" placeholder="0.00 — deducted from account" min="0" step="1" /></div>
         <div class="em" id="savDepErr"></div>
       </div>
     </div>
@@ -1867,6 +1869,7 @@ function openTxnModal(){
           <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="invDepDate" value="${today()}" /></div>
         </div>
         <div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="invDepNote" placeholder="e.g. Monthly top-up..." /></div>
+        <div class="fg"><div class="fl">Bank Charges (optional)</div><input type="number" class="fi" id="invDepCharge" placeholder="0.00 — deducted from account" min="0" step="1" /></div>
         <div class="em" id="invDepErr"></div>
       </div>
     </div>
@@ -1929,20 +1932,21 @@ function submitSavingDeposit(){
   const amount=parseFloat(document.getElementById('savDepAmt')?.value)||0;
   const date=document.getElementById('savDepDate')?.value||today();
   const note=document.getElementById('savDepNote')?.value.trim()||'';
+  const charge=parseFloat(document.getElementById('savDepCharge')?.value)||0;
   const accountId=document.getElementById('savAccId')?.value||null;
   if(amount<=0){if(err)err.textContent='Please enter a valid amount.';return;}
   const sv=(S.savings||[]).find(s=>s.id===_selSavGoalId);
   if(!sv){if(err)err.textContent='Goal not found.';return;}
   // Check account balance
   const acc=(S.accounts||[]).find(a=>a.id===accountId);
-  if(acc&&acc.balance<amount){if(err)err.textContent=`⛔ Insufficient balance! ${esc(acc.name)} only has ${S.currency} ${fmt(acc.balance)}.`;return;}
+  if(acc&&acc.balance<amount+charge){if(err)err.textContent=`⛔ Insufficient balance! ${esc(acc.name)} only has ${S.currency} ${fmt(acc.balance)}.`;return;}
   // Add to savings balance
   sv.current=(sv.current||0)+amount;
-  // Deduct from account
-  if(acc)acc.balance=(acc.balance||0)-amount;
+  // Deduct amount + charges from account
+  if(acc)acc.balance=(acc.balance||0)-amount-charge;
   // Record as a saving transaction log
   if(!sv.transactions)sv.transactions=[];
-  sv.transactions.push({id:uid(),amount,date,note,month:CM,accountId,type:'deposit'});
+  sv.transactions.push({id:uid(),amount,date,note,charge,month:CM,accountId,type:'deposit'});
   saveState();closeModal();render();
 }
 
@@ -1960,6 +1964,7 @@ function openSavDeposit(savId){
       <div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="savDepDate" value="${today()}" /></div>
     </div>
     <div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="savDepNote" placeholder="e.g. Monthly saving, Bonus..." /></div>
+      <div class="fg"><div class="fl">Bank Charges (optional)</div><input type="number" class="fi" id="savDepCharge" placeholder="0.00 — deducted from account" min="0" step="1" /></div>
     <div class="em" id="savDepErr"></div>
     <div class="modal-actions">
       <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
@@ -2547,16 +2552,17 @@ function submitInvestDeposit(){
   const amount=parseFloat(document.getElementById('invDepAmt')?.value)||0;
   const date=document.getElementById('invDepDate')?.value||today();
   const note=document.getElementById('invDepNote')?.value.trim()||'';
+  const charge=parseFloat(document.getElementById('invDepCharge')?.value)||0;
   const accountId=document.getElementById('invAccId')?.value||null;
   if(amount<=0){if(err)err.textContent='Please enter a valid amount.';return;}
   const acc=(S.accounts||[]).find(a=>a.id===accountId);
-  if(acc&&acc.balance<amount){if(err)err.textContent=`⛔ Insufficient balance! ${esc(acc.name)} only has ${S.currency} ${fmt(acc.balance)}.`;return;}
+  if(acc&&acc.balance<amount+charge){if(err)err.textContent=`⛔ Insufficient balance! ${esc(acc.name)} only has ${S.currency} ${fmt(acc.balance)}.`;return;}
   const iv=(S.investments||[]).find(i=>i.id===_selInvGoalId);
   if(!iv){if(err)err.textContent='Investment not found.';return;}
   iv.current=(iv.current||0)+amount;
-  if(acc)acc.balance=(acc.balance||0)-amount;
+  if(acc)acc.balance=(acc.balance||0)-amount-charge;
   if(!iv.transactions)iv.transactions=[];
-  iv.transactions.push({id:uid(),amount,date,note,month:CM,accountId,type:'deposit'});
+  iv.transactions.push({id:uid(),amount,date,note,charge,month:CM,accountId,type:'deposit'});
   saveState();closeModal();render();
 }
 
