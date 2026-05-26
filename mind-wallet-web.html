@@ -892,7 +892,31 @@ const cB=c=>(c.subcategories||[]).reduce((s,sc)=>s+(sc.budget||0),0);
 const pc=(a,b)=>b>0?Math.min(Math.round(a/b*100),100):0;
 const pcol=p=>p>=100?'var(--red)':p>=80?'var(--amber)':'var(--green)';
 const badge=(p,extra='')=>{const c=p>=100?'b-r':p>=80?'b-a':'b-g';return`<span class="badge ${c}" ${extra}>${p}%</span>`;};
-const allTxns=()=>{const o=[];for(const c of S.categories)for(const sc of(c.subcategories||[]))for(const t of(sc.transactions||[]))o.push({...t,catName:c.name,catIcon:c.icon,catColor:c.color,scName:sc.name,scId:sc.id,catId:c.id});return o.sort((a,b)=>b.date.localeCompare(a.date));};
+const allTxns=()=>{
+  const o=[];
+  // 1. Expense transactions (from categories)
+  for(const cat of S.categories)
+    for(const sc of(cat.subcategories||[]))
+      for(const t of(sc.transactions||[]))
+        o.push({...t,type:'expense',catName:cat.name,catIcon:cat.icon,catColor:cat.color,scName:sc.name,scId:sc.id,catId:cat.id});
+  // 2. Savings deposits
+  for(const sv of(S.savings||[]))
+    for(const t of(sv.transactions||[]))
+      o.push({...t,type:'saving',catName:'Savings',catIcon:'💎',catColor:'#10b981',scName:sv.name,scId:sv.id,catId:'savings'});
+  // 3. Investment deposits
+  for(const iv of(S.investments||[]))
+    for(const t of(iv.transactions||[]))
+      o.push({...t,type:'investment',catName:'Investments',catIcon:iv.icon||'📈',catColor:'#8b5cf6',scName:iv.name,scId:iv.id,catId:'investments'});
+  // 4. Transfers
+  for(const t of(S.transfers||[])){
+    const from=getAcc(t.fromId),to=getAcc(t.toId);
+    o.push({...t,type:'transfer',catName:'Transfer',catIcon:'🔄',catColor:'#3b82f6',scName:(from?from.name:'?')+' → '+(to?to.name:'?'),scId:t.id,catId:'transfers'});
+  }
+  // 5. Incomes
+  for(const t of(S.incomes||[]))
+    o.push({...t,type:'income',catName:'Income',catIcon:'💰',catColor:'#10b981',scName:t.source,scId:t.id,catId:'incomes'});
+  return o.sort((a,b)=>b.date.localeCompare(a.date));
+};
 const getAcc=id=>(S.accounts||[]).find(a=>a.id===id);
 
 function pb(p,col,h='5'){
@@ -1506,35 +1530,60 @@ function renderTxns(scIdFilter=null){
   if(scIdFilter)txns=txns.filter(t=>t.scId===scIdFilter);
   else if(TF==='today')txns=txns.filter(t=>t.date===td);
   else if(TF==='week')txns=txns.filter(t=>t.date>=wkS);
+  else if(['expense','income','saving','investment','transfer'].includes(TF)){txns=txns.filter(t=>t.type===TF);}
   else if(TF!=='all'){const cat=S.categories.find(c=>c.id===TF);if(cat)txns=txns.filter(t=>t.catId===TF);}
 
   const groups={};
   for(const t of txns){if(!groups[t.date])groups[t.date]=[];groups[t.date].push(t);}
   const dates=Object.keys(groups).sort((a,b)=>b.localeCompare(a));
-  const total=txns.reduce((s,t)=>s+t.amount,0);
+  const totalExp=txns.filter(t=>t.type==='expense'||t.type==='saving'||t.type==='investment').reduce((s,t)=>s+t.amount,0);
+  const totalInc=txns.filter(t=>t.type==='income').reduce((s,t)=>s+t.amount,0);
+  const total=totalExp; // kept for backward compat
 
   const rows=dates.map(date=>{
     const dt=groups[date].reduce((s,t)=>s+t.amount,0);
     const dayRows=groups[date].map(t=>{
       const acc=getAcc(t.accountId);
+      // Type-specific colour and sign
+      const isIncome=t.type==='income';
+      const isTransfer=t.type==='transfer';
+      const isSaving=t.type==='saving';
+      const isInvest=t.type==='investment';
+      const amtColor=isIncome?'var(--green)':isTransfer?'var(--blue)':isSaving?'var(--green)':isInvest?'var(--purple)':'var(--red)';
+      const amtSign=isIncome?'+':isTransfer?'':isSaving?'-':isInvest?'-':'-';
+      // Type badge
+      const typeBadge=isIncome?'<span style="font-size:9px;background:var(--green-dim);color:var(--green);padding:2px 6px;border-radius:99px;font-weight:700;">INCOME</span>':
+                      isTransfer?'<span style="font-size:9px;background:var(--blue-dim);color:var(--blue);padding:2px 6px;border-radius:99px;font-weight:700;">TRANSFER</span>':
+                      isSaving?'<span style="font-size:9px;background:var(--green-dim);color:var(--green);padding:2px 6px;border-radius:99px;font-weight:700;">SAVINGS</span>':
+                      isInvest?'<span style="font-size:9px;background:var(--purple-dim);color:var(--purple);padding:2px 6px;border-radius:99px;font-weight:700;">INVEST</span>':
+                      t.overBudget?'<span style="font-size:9px;background:var(--red);color:#fff;padding:1px 5px;border-radius:99px;font-weight:700;">OVER BUDGET</span>':'';
+      // Edit/delete actions per type
+      const actions=t.type==='expense'?
+        `<button class="btn-xs" onclick="editTxn('${t.scId}','${t.id}')">Edit</button><button class="btn-xs red" onclick="delTxn('${t.scId}','${t.id}')">Delete</button>`:
+        t.type==='transfer'?
+        `<button class="btn-xs" onclick="editTransfer('${t.id}')">Edit</button><button class="btn-xs red" onclick="delTransfer('${t.id}')">Delete</button>`:
+        t.type==='income'?
+        `<button class="btn-xs" onclick="editIncome('${t.id}')">Edit</button><button class="btn-xs red" onclick="delIncome('${t.id}')">Delete</button>`:
+        t.type==='saving'?
+        `<button class="btn-xs red" onclick="delSavingDeposit('${t.scId}','${t.id}')">Delete</button>`:
+        t.type==='investment'?
+        `<button class="btn-xs red" onclick="delInvestDeposit('${t.scId}','${t.id}')">Delete</button>`:'';
       return`<tr>
         <td><div style="display:flex;align-items:center;gap:12px;">
           <div class="txn-icon" style="background:${t.catColor}18;">${t.catIcon}</div>
           <div>
-            <div class="txn-name">${esc(t.scName)}${t.overBudget?` <span style="font-size:9px;background:var(--red);color:#fff;padding:1px 5px;border-radius:99px;vertical-align:middle;font-weight:700;">OVER BUDGET</span>`:''}
-            </div>
+            <div class="txn-name">${esc(t.scName)} ${typeBadge}</div>
             <div class="txn-sub">${esc(t.catName)}${t.note?' · '+esc(t.note):''}${t.linkedSavingId?' · 💎 Savings':''}</div>
           </div>
         </div></td>
         <td><div style="font-size:12px;color:var(--t2);">${acc?esc(acc.name):''}</div><div class="txn-bank">${acc?esc(acc.bank):'—'}</div></td>
         <td><span class="badge b-g" style="font-size:11px;">${esc(t.catName)}</span></td>
         <td style="text-align:right;">
-          <div class="txn-amt">−${S.currency} ${fmt(t.amount)}</div>
+          <div style="font-size:15px;font-weight:700;color:${amtColor};">${amtSign}${S.currency} ${fmt(t.amount)}</div>
           ${t.charge?`<div style="font-size:10px;color:var(--amber);">+${S.currency} ${fmt(t.charge)} charge</div>`:''}
         </td>
         <td style="text-align:right;display:flex;gap:4px;justify-content:flex-end;align-items:center;padding-top:10px;">
-          <button class="btn-xs" onclick="editTxn('${t.scId}','${t.id}')">Edit</button>
-          <button class="btn-xs red" onclick="delTxn('${t.scId}','${t.id}')">Delete</button>
+          ${actions}
         </td>
       </tr>`;}).join('');
     const lbl=date===td?'Today — '+fmtDate(date):fmtDate(date);
@@ -1543,6 +1592,10 @@ function renderTxns(scIdFilter=null){
   }).join('');
 
   const filters=['all','today','week'].map(f=>`<button class="filter-pill${TF===f?' active':''}" onclick="setTF('${f}')">${f==='all'?'This Month':f==='today'?'Today':'This Week'}</button>`).join('');
+  const typeFilters=[
+    ['expense','💸 Expenses'],['income','💰 Income'],
+    ['saving','💎 Savings'],['investment','📈 Investments'],['transfer','🔄 Transfers']
+  ].map(([k,l])=>`<button class="filter-pill${TF===k?' active':''}" onclick="setTF('${k}')">${l}</button>`).join('');
   const catFilters=S.categories.map(c=>`<button class="filter-pill${TF===c.id?' active':''}" style="${TF===c.id?'background:'+c.color+';border-color:'+c.color+';color:#000;':''}" onclick="setTF('${c.id}')">${c.icon} ${esc(c.name)}</button>`).join('');
 
   document.getElementById('pg-txns').innerHTML=`
@@ -1566,7 +1619,7 @@ function renderTxns(scIdFilter=null){
 
     <div class="card">
       <div class="card-title" style="margin-bottom:12px;">Filter Transactions</div>
-      <div class="filter-bar">${filters} ${catFilters}</div>
+      <div class="filter-bar">${filters} ${typeFilters} ${catFilters}</div>
     </div>
 
     <div class="card" style="margin-top:16px;">
@@ -2984,6 +3037,39 @@ function saveEditIncome(id){
   inc.amount=newAmt; inc.date=newDate;
   inc.note=newNote; inc.charge=newCharge;
   saveState();closeModal();render();
+}
+
+
+// ── Delete saving deposit (from transactions list) ───
+function delSavingDeposit(svId, txnId){
+  if(!confirm('Delete this savings deposit? Account and savings balances will be restored.'))return;
+  const sv=(S.savings||[]).find(s=>s.id===svId);
+  if(sv){
+    const txn=(sv.transactions||[]).find(t=>t.id===txnId);
+    if(txn){
+      sv.current=Math.max(0,(sv.current||0)-txn.amount);
+      const acc=getAcc(txn.accountId);
+      if(acc)acc.balance=(acc.balance||0)+txn.amount+(txn.charge||0);
+    }
+    sv.transactions=(sv.transactions||[]).filter(t=>t.id!==txnId);
+  }
+  saveState();render();
+}
+
+// ── Delete investment deposit (from transactions list) ─
+function delInvestDeposit(ivId, txnId){
+  if(!confirm('Delete this investment deposit? Account and investment balances will be restored.'))return;
+  const iv=(S.investments||[]).find(i=>i.id===ivId);
+  if(iv){
+    const txn=(iv.transactions||[]).find(t=>t.id===txnId);
+    if(txn){
+      iv.current=Math.max(0,(iv.current||0)-txn.amount);
+      const acc=getAcc(txn.accountId);
+      if(acc)acc.balance=(acc.balance||0)+txn.amount+(txn.charge||0);
+    }
+    iv.transactions=(iv.transactions||[]).filter(t=>t.id!==txnId);
+  }
+  saveState();render();
 }
 
 // ═══════════════════════════════════════════════════════
