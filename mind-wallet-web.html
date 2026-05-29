@@ -865,7 +865,7 @@ body.compact .grid-2{gap:10px;margin-bottom:14px;}
 // ═══════════════════════════════════════════════════════
 //  STATE
 // ═══════════════════════════════════════════════════════
-let S={accounts:[],categories:[],savings:[],investments:[],incomes:[],transfers:[],currency:'LKR',settings:{theme:'dark',dateFormat:'en-US',startOfWeek:'monday',compactMode:false,showCents:false,defaultAccount:''}};
+let S={accounts:[],categories:[],savings:[],investments:[],incomes:[],transfers:[],interests:[],currency:'LKR',settings:{theme:'dark',dateFormat:'en-US',startOfWeek:'monday',compactMode:false,showCents:false,defaultAccount:''}};
 let CM=(()=>{const d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0');})();
 let AT='home', EXP=new Set(), TF='all';
 let homeChart=null, txnChart=null;
@@ -915,6 +915,13 @@ const allTxns=()=>{
   // 5. Incomes
   for(const t of(S.incomes||[]))
     o.push({...t,type:'income',catName:'Income',catIcon:'💰',catColor:'#10b981',scName:t.source,scId:t.id,catId:'incomes'});
+  // 6. Interest earnings
+  for(const t of(S.interests||[])){
+    const srcLabel=t.sourceType==='account'?'Bank Interest':t.sourceType==='saving'?'Savings Interest':'Investment Interest';
+    const srcIcon=t.sourceType==='account'?'🏦':t.sourceType==='saving'?'💎':'📈';
+    const srcColor=t.sourceType==='account'?'#3b82f6':t.sourceType==='saving'?'#10b981':'#8b5cf6';
+    o.push({...t,type:'interest',catName:srcLabel,catIcon:srcIcon,catColor:srcColor,scName:t.sourceName||srcLabel,scId:t.id,catId:'interests'});
+  }
   return o.sort((a,b)=>b.date.localeCompare(a.date));
 };
 const getAcc=id=>(S.accounts||[]).find(a=>a.id===id);
@@ -969,7 +976,7 @@ async function signOut(){
   toggleUserMenu();
   await _sb.auth.signOut();
   _currentUser=null;
-  S={accounts:[],categories:[],savings:[],investments:[],incomes:[],transfers:[],currency:'LKR',settings:{theme:'dark',dateFormat:'en-US',startOfWeek:'monday',compactMode:false,showCents:false,defaultAccount:''}};
+  S={accounts:[],categories:[],savings:[],investments:[],incomes:[],transfers:[],interests:[],currency:'LKR',settings:{theme:'dark',dateFormat:'en-US',startOfWeek:'monday',compactMode:false,showCents:false,defaultAccount:''}};
   document.getElementById('appLayout').style.display='none';
   document.getElementById('authScreen').style.display='flex';
 }
@@ -1549,13 +1556,15 @@ function renderTxns(scIdFilter=null){
       const isTransfer=t.type==='transfer';
       const isSaving=t.type==='saving';
       const isInvest=t.type==='investment';
-      const amtColor=isIncome?'var(--green)':isTransfer?'var(--blue)':isSaving?'var(--green)':isInvest?'var(--purple)':'var(--red)';
-      const amtSign=isIncome?'+':isTransfer?'':isSaving?'-':isInvest?'-':'-';
+      const isInterest=t.type==='interest';
+      const amtColor=isIncome||isInterest?'var(--green)':isTransfer?'var(--blue)':isSaving?'var(--green)':isInvest?'var(--purple)':'var(--red)';
+      const amtSign=isIncome||isInterest?'+':isTransfer?'':isSaving?'-':isInvest?'-':'-';
       // Type badge
       const typeBadge=isIncome?'<span style="font-size:9px;background:var(--green-dim);color:var(--green);padding:2px 6px;border-radius:99px;font-weight:700;">INCOME</span>':
                       isTransfer?'<span style="font-size:9px;background:var(--blue-dim);color:var(--blue);padding:2px 6px;border-radius:99px;font-weight:700;">TRANSFER</span>':
                       isSaving?'<span style="font-size:9px;background:var(--green-dim);color:var(--green);padding:2px 6px;border-radius:99px;font-weight:700;">SAVINGS</span>':
                       isInvest?'<span style="font-size:9px;background:var(--purple-dim);color:var(--purple);padding:2px 6px;border-radius:99px;font-weight:700;">INVEST</span>':
+                      isInterest?'<span style="font-size:9px;background:var(--green-dim);color:var(--green);padding:2px 6px;border-radius:99px;font-weight:700;">✨ INTEREST</span>':
                       t.overBudget?'<span style="font-size:9px;background:var(--red);color:#fff;padding:1px 5px;border-radius:99px;font-weight:700;">OVER BUDGET</span>':'';
       // Edit/delete actions per type
       const actions=t.type==='expense'?
@@ -1567,7 +1576,9 @@ function renderTxns(scIdFilter=null){
         t.type==='saving'?
         `<button class="btn-xs red" onclick="delSavingDeposit('${t.scId}','${t.id}')">Delete</button>`:
         t.type==='investment'?
-        `<button class="btn-xs red" onclick="delInvestDeposit('${t.scId}','${t.id}')">Delete</button>`:'';
+        `<button class="btn-xs red" onclick="delInvestDeposit('${t.scId}','${t.id}')">Delete</button>`:
+        t.type==='interest'?
+        `<button class="btn-xs red" onclick="delInterest('${t.id}')">Delete</button>`:'';
       return`<tr>
         <td><div style="display:flex;align-items:center;gap:12px;">
           <div class="txn-icon" style="background:${t.catColor}18;">${t.catIcon}</div>
@@ -1664,11 +1675,15 @@ function renderSavings(){
           <span class="sv-target">Goal: ${S.currency} ${fmt(sv.target)}</span>
         </div>
         ${pb(p,'var(--green)','6')}
-        <div style="font-size:11px;color:var(--t3);margin-top:4px;">${S.currency} ${fmt(sv.target-sv.current)} remaining to goal</div>
+        <div style="display:flex;justify-content:space-between;margin-top:4px;">
+          <div style="font-size:11px;color:var(--t3);">${S.currency} ${fmt(sv.target-sv.current)} remaining</div>
+          ${(()=>{const totInt=(S.interests||[]).filter(i=>i.sourceType==='saving'&&i.sourceId===sv.id).reduce((s,i)=>s+i.amount,0);return totInt?`<div style="font-size:11px;color:var(--amber);">✨ ${S.currency} ${fmt(totInt)} earned</div>`:''})()}
+        </div>
       </div>
       ${depositLog}
       <div class="sv-actions">
         <button class="btn-xs green" onclick="openSavDeposit('${sv.id}')">+ Deposit</button>
+        <button class="btn-xs" style="border-color:var(--amber);color:var(--amber);" onclick="openInterestModal('saving','${sv.id}','${esc(sv.name)}')">✨ Interest</button>
         <button class="btn-xs" onclick="openUpdSaving('${sv.id}')">Update</button>
         <button class="btn-xs red" onclick="delSaving('${sv.id}')">Delete</button>
       </div>
@@ -1693,6 +1708,7 @@ function renderSavings(){
         <div class="metric-sub">To reach all goals</div>
       </div>
     </div>
+    ${(()=>{const totInt=(S.interests||[]).filter(i=>i.sourceType==='saving').reduce((s,i)=>s+i.amount,0);return totInt?`<div style="background:var(--amber-dim);border:1px solid var(--amber);border-radius:10px;padding:12px 16px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;"><div style="font-size:13px;color:var(--amber);font-weight:600;">✨ Total Savings Interest Earned</div><div style="font-size:18px;font-weight:700;color:var(--amber);">+${S.currency} ${fmt(totInt)}</div></div>`:''})()}
 
     <div class="sec-hdr">
       <div class="sec-title">Savings Goals</div>
@@ -1721,9 +1737,11 @@ function renderInvest(){
       <div style="text-align:center;padding:16px 0;border-top:1px solid var(--border);">
         <div style="font-family:'DM Serif Display',serif;font-size:30px;color:var(--purple);">${S.currency} ${fmt(iv.current)}</div>
         <div style="font-size:12px;color:var(--t3);margin-top:4px;">Current market value</div>
+        ${(()=>{const totInt=(S.interests||[]).filter(i=>i.sourceType==='investment'&&i.sourceId===iv.id).reduce((s,i)=>s+i.amount,0);return totInt?`<div style="font-size:12px;color:var(--amber);margin-top:4px;">✨ ${S.currency} ${fmt(totInt)} interest earned</div>`:''})()}
       </div>
       <div class="sv-actions">
         <button class="btn-xs" style="border-color:var(--purple);color:var(--purple);" onclick="openUpdInvest('${iv.id}')">Update Value</button>
+        <button class="btn-xs" style="border-color:var(--amber);color:var(--amber);" onclick="openInterestModal('investment','${iv.id}','${esc(iv.name)}')">✨ Interest</button>
         <button class="btn-xs red" onclick="delInvest('${iv.id}')">Delete</button>
       </div>
     </div>`).join('');
@@ -3039,6 +3057,101 @@ function saveEditIncome(id){
   saveState();closeModal();render();
 }
 
+
+
+// ═══════════════════════════════════════════════════════
+//  INTEREST RECORDING
+// ═══════════════════════════════════════════════════════
+function openInterestModal(sourceType, sourceId, sourceName){
+  const accOpts=(S.accounts||[]).map(a=>'<option value="'+a.id+'">'+esc(a.icon)+' '+esc(a.name)+' — '+esc(a.bank)+'</option>').join('');
+  const sourceIcon=sourceType==='account'?'🏦':sourceType==='saving'?'💎':'📈';
+  const sourceColor=sourceType==='account'?'var(--blue)':sourceType==='saving'?'var(--green)':'var(--purple)';
+  const history=(S.interests||[]).filter(i=>i.sourceType===sourceType&&i.sourceId===sourceId).sort((a,b)=>b.date.localeCompare(a.date)).slice(0,5);
+  const totalInterest=(S.interests||[]).filter(i=>i.sourceType===sourceType&&i.sourceId===sourceId).reduce((s,i)=>s+i.amount,0);
+  const histRows=history.map(i=>
+    '<div style="display:flex;justify-content:space-between;align-items:center;padding:6px 0;border-bottom:1px solid var(--border);">'+
+    '<div><div style="font-size:12px;font-weight:600;color:var(--t1);">'+fmtDateShort(i.date)+'</div>'+
+    '<div style="font-size:11px;color:var(--t3);">'+(i.note?esc(i.note):i.freq||'—')+'</div></div>'+
+    '<div style="text-align:right;"><div style="font-size:13px;font-weight:700;color:var(--green);">+'+S.currency+' '+fmt(i.amount)+'</div>'+
+    '<button onclick="delInterest(this.dataset.id)" data-id="'+i.id+'" style="font-size:10px;color:var(--red);background:none;border:none;cursor:pointer;padding:0;">delete</button></div>'+
+    '</div>').join('');
+  const creditSection=sourceType!=='account'?
+    '<div class="fg"><div class="fl">Also credit to Bank Account (optional)</div><select class="fi" id="intAccId"><option value="">— Do not credit to account —</option>'+accOpts+'</select></div>':'';
+  const histSection=histRows?
+    '<div style="margin-top:16px;border-top:1px solid var(--border);padding-top:12px;">'+
+    '<div style="font-size:11px;font-weight:700;color:var(--t3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px;">Recent Interest Records</div>'+
+    histRows+'</div>':'';
+  openModal(
+    sourceIcon+' Record Interest',
+    'Source: '+esc(sourceName),
+    '<div style="background:var(--green-dim);border:1px solid var(--green);border-radius:10px;padding:12px 14px;margin-bottom:16px;display:flex;align-items:center;justify-content:space-between;">'+
+      '<div style="font-size:12px;color:var(--t2);">Total interest earned from this source</div>'+
+      '<div style="font-size:16px;font-weight:700;color:var(--green);">+'+S.currency+' '+fmt(totalInterest)+'</div>'+
+    '</div>'+
+    '<div class="fg"><div class="fl">Interest Amount ('+S.currency+')</div><input type="number" class="fi" id="intAmt" placeholder="0.00" min="0.01" step="0.01" autofocus /></div>'+
+    '<div class="fr">'+
+      '<div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="intDate" value="'+today()+'" /></div>'+
+      '<div class="fg"><div class="fl">Frequency</div><select class="fi" id="intFreq">'+
+        '<option value="once">One-time</option>'+
+        '<option value="daily">Daily</option>'+
+        '<option value="weekly">Weekly</option>'+
+        '<option value="monthly" selected>Monthly</option>'+
+        '<option value="quarterly">Quarterly</option>'+
+        '<option value="annual">Annual</option>'+
+      '</select></div>'+
+    '</div>'+
+    '<div class="fg"><div class="fl">Note (optional)</div><input type="text" class="fi" id="intNote" placeholder="e.g. FD interest, Savings account interest..." /></div>'+
+    creditSection+
+    '<div class="em" id="intErr"></div>'+
+    histSection+
+    '<div class="modal-actions">'+
+      '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'+
+      '<button class="btn btn-green" onclick="saveInterest(this.dataset.t,this.dataset.s,this.dataset.n)" data-t="'+sourceType+'" data-s="'+sourceId+'" data-n="'+esc(sourceName)+'">Record Interest</button>'+
+    '</div>'
+  );
+}
+
+function saveInterest(sourceType, sourceId, sourceName){
+  const err=document.getElementById('intErr');
+  const amount=parseFloat(document.getElementById('intAmt')?.value)||0;
+  const date=document.getElementById('intDate')?.value||today();
+  const note=document.getElementById('intNote')?.value.trim()||'';
+  const freq=document.getElementById('intFreq')?.value||'monthly';
+  const accId=document.getElementById('intAccId')?.value||null;
+  if(amount<=0){if(err)err.textContent='Please enter a valid interest amount.';return;}
+  // Add to source balance
+  if(sourceType==='account'){
+    const acc=(S.accounts||[]).find(a=>a.id===sourceId);
+    if(acc)acc.balance=(acc.balance||0)+amount;
+  } else if(sourceType==='saving'){
+    const sv=(S.savings||[]).find(s=>s.id===sourceId);
+    if(sv)sv.current=(sv.current||0)+amount;
+  } else if(sourceType==='investment'){
+    const iv=(S.investments||[]).find(i=>i.id===sourceId);
+    if(iv)iv.current=(iv.current||0)+amount;
+  }
+  // Also credit to bank account if selected
+  if(accId&&sourceType!=='account'){
+    const acc=(S.accounts||[]).find(a=>a.id===accId);
+    if(acc)acc.balance=(acc.balance||0)+amount;
+  }
+  if(!S.interests)S.interests=[];
+  S.interests.push({id:uid(),sourceType,sourceId,sourceName,amount,date,note,freq,month:CM,creditedToAccount:accId||null,createdAt:new Date().toISOString()});
+  saveState();closeModal();render();
+}
+
+function delInterest(id){
+  if(!confirm('Delete this interest record? Balances will be reversed.'))return;
+  const int=(S.interests||[]).find(i=>i.id===id);
+  if(int){
+    if(int.sourceType==='account'){const acc=getAcc(int.sourceId);if(acc)acc.balance=Math.max(0,(acc.balance||0)-int.amount);}
+    else if(int.sourceType==='saving'){const sv=(S.savings||[]).find(s=>s.id===int.sourceId);if(sv)sv.current=Math.max(0,(sv.current||0)-int.amount);}
+    else if(int.sourceType==='investment'){const iv=(S.investments||[]).find(i=>i.id===int.sourceId);if(iv)iv.current=Math.max(0,(iv.current||0)-int.amount);}
+    if(int.creditedToAccount){const acc=getAcc(int.creditedToAccount);if(acc)acc.balance=Math.max(0,(acc.balance||0)-int.amount);}
+  }
+  S.interests=(S.interests||[]).filter(i=>i.id!==id);
+  saveState();render();
+}
 
 // ── Delete saving deposit (from transactions list) ───
 function delSavingDeposit(svId, txnId){
