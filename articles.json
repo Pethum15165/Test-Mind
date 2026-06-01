@@ -6,17 +6,26 @@
       "description": "Small daily habits that add up to hundreds or thousands of dollars a year.",
       "url": "article-finance-tips.html",
       "section": "tips",
-      "tags": ["saving", "daily habits", "budgeting"],
+      "tags": [
+        "saving",
+        "daily habits",
+        "budgeting"
+      ],
       "readTime": 4,
       "level": "Beginner"
     },
     {
       "id": "tips-02",
       "title": "5 Habits That Stop You From Building Wealth",
-      "description": "Quiet daily habits that drain wealth as fast as it arrives — and how to break them.",
+      "description": "Quiet daily habits that drain wealth as fast as it arrives \u2014 and how to break them.",
       "url": "tips-wealth-habits.html",
       "section": "tips",
-      "tags": ["habits", "wealth", "lifestyle inflation", "investing"],
+      "tags": [
+        "habits",
+        "wealth",
+        "lifestyle inflation",
+        "investing"
+      ],
       "readTime": 5,
       "level": "All levels"
     },
@@ -26,17 +35,27 @@
       "description": "Five systems that fight impulse buying without relying on willpower.",
       "url": "tips-impulse-buying.html",
       "section": "tips",
-      "tags": ["impulse buying", "spending", "habits", "budgeting"],
+      "tags": [
+        "impulse buying",
+        "spending",
+        "habits",
+        "budgeting"
+      ],
       "readTime": 5,
       "level": "All levels"
     },
     {
       "id": "tips-04",
       "title": "7 Ways to Lower Your Monthly Bills",
-      "description": "Most monthly bills are negotiable. A single afternoon of auditing saves $150–$400/month.",
+      "description": "Most monthly bills are negotiable. A single afternoon of auditing saves $150\u2013$400/month.",
       "url": "tips-lower-bills.html",
       "section": "tips",
-      "tags": ["bills", "saving", "expenses", "negotiation"],
+      "tags": [
+        "bills",
+        "saving",
+        "expenses",
+        "negotiation"
+      ],
       "readTime": 5,
       "level": "All levels"
     },
@@ -46,7 +65,12 @@
       "description": "A bonus or tax refund managed well can change your financial trajectory.",
       "url": "tips-windfalls.html",
       "section": "tips",
-      "tags": ["windfall", "bonus", "investing", "debt"],
+      "tags": [
+        "windfall",
+        "bonus",
+        "investing",
+        "debt"
+      ],
       "readTime": 5,
       "level": "All levels"
     },
@@ -56,7 +80,12 @@
       "description": "Your twenties have the longest compound runway of your life. Make these five moves early.",
       "url": "tips-before-30.html",
       "section": "tips",
-      "tags": ["twenties", "investing", "emergency fund", "compound interest"],
+      "tags": [
+        "twenties",
+        "investing",
+        "emergency fund",
+        "compound interest"
+      ],
       "readTime": 5,
       "level": "All levels"
     },
@@ -66,7 +95,12 @@
       "description": "A story about lifestyle inflation and the quiet mistake millions make every time their salary goes up.",
       "url": "article-story.html",
       "section": "stories",
-      "tags": ["lifestyle inflation", "debt", "budgeting", "savings"],
+      "tags": [
+        "lifestyle inflation",
+        "debt",
+        "budgeting",
+        "savings"
+      ],
       "readTime": 5,
       "level": "All levels"
     },
@@ -76,27 +110,42 @@
       "description": "Not a windfall. Not a second job. Just a system applied with brutal consistency.",
       "url": "story-teacher-debt.html",
       "section": "stories",
-      "tags": ["debt payoff", "budgeting", "avalanche method", "teacher"],
+      "tags": [
+        "debt payoff",
+        "budgeting",
+        "avalanche method",
+        "teacher"
+      ],
       "readTime": 6,
       "level": "All levels"
     },
     {
       "id": "story-03",
       "title": "He Retired at 52 With No Inheritance",
-      "description": "No family money, no lucky break. Just 25 years of the same boring decisions — consistently made.",
+      "description": "No family money, no lucky break. Just 25 years of the same boring decisions \u2014 consistently made.",
       "url": "story-early-retirement.html",
       "section": "stories",
-      "tags": ["early retirement", "index funds", "investing", "compound interest"],
+      "tags": [
+        "early retirement",
+        "index funds",
+        "investing",
+        "compound interest"
+      ],
       "readTime": 6,
       "level": "All levels"
     },
     {
       "id": "story-04",
-      "title": "I Lost Everything at 40 — and Rebuilt in 5 Years",
+      "title": "I Lost Everything at 40 \u2014 and Rebuilt in 5 Years",
       "description": "Divorce, a failed business, and $47,000 in debt. What rebuilding from zero looks like.",
       "url": "story-rebuild-at-40.html",
       "section": "stories",
-      "tags": ["debt", "recovery", "business", "rebuilding"],
+      "tags": [
+        "debt",
+        "recovery",
+        "business",
+        "rebuilding"
+      ],
       "readTime": 6,
       "level": "All levels"
     },
@@ -106,7 +155,12 @@
       "description": "Combined $90K income, high-cost city, no family help. They did it in three years.",
       "url": "story-first-home.html",
       "section": "stories",
-      "tags": ["home buying", "saving", "deposit", "couple"],
+      "tags": [
+        "home buying",
+        "saving",
+        "deposit",
+        "couple"
+      ],
       "readTime": 6,
       "level": "All levels"
     },
@@ -116,217 +170,326 @@
       "description": "Four-year university degree. Zero student loans at graduation. The choices she made at 17.",
       "url": "story-no-student-debt.html",
       "section": "stories",
-      "tags": ["student debt", "university", "scholarships", "planning"],
+      "tags": [
+        "student debt",
+        "university",
+        "scholarships",
+        "planning"
+      ],
       "readTime": 6,
       "level": "All levels"
     },
     {
       "id": "concept-01",
       "title": "What Is Inflation?",
-      "description": "Why your money buys less every year — and how to protect yourself from it.",
+      "description": "Why your money buys less every year \u2014 and how to protect yourself from it.",
       "url": "article-concept.html",
       "section": "concept",
-      "tags": ["inflation", "economics", "purchasing power"],
+      "tags": [
+        "inflation",
+        "economics",
+        "purchasing power"
+      ],
       "readTime": 5,
       "level": "Beginner"
     },
     {
       "id": "concept-02",
       "title": "What Is an Interest Rate?",
-      "description": "The cost of borrowing — or the reward for saving. Every financial decision involves this.",
+      "description": "The cost of borrowing \u2014 or the reward for saving. Every financial decision involves this.",
       "url": "concept-interest-rate.html",
       "section": "concept",
-      "tags": ["interest rate", "borrowing", "savings", "central bank"],
+      "tags": [
+        "interest rate",
+        "borrowing",
+        "savings",
+        "central bank"
+      ],
       "readTime": 5,
       "level": "Beginner"
     },
     {
       "id": "concept-03",
       "title": "What Is Compound Interest?",
-      "description": "Earning interest on your interest — the most powerful force in personal finance.",
+      "description": "Earning interest on your interest \u2014 the most powerful force in personal finance.",
       "url": "concept-compound-interest.html",
       "section": "concept",
-      "tags": ["compound interest", "investing", "time", "savings"],
+      "tags": [
+        "compound interest",
+        "investing",
+        "time",
+        "savings"
+      ],
       "readTime": 5,
       "level": "Beginner"
     },
     {
       "id": "concept-04",
       "title": "What Is a Stock Market?",
-      "description": "A marketplace where you buy ownership in real companies — and how long-term investing builds wealth.",
+      "description": "A marketplace where you buy ownership in real companies \u2014 and how long-term investing builds wealth.",
       "url": "concept-stock-market.html",
       "section": "concept",
-      "tags": ["stock market", "investing", "shares", "index funds"],
+      "tags": [
+        "stock market",
+        "investing",
+        "shares",
+        "index funds"
+      ],
       "readTime": 6,
       "level": "Beginner"
     },
     {
       "id": "concept-05",
       "title": "What Is GDP?",
-      "description": "The economy's scoreboard — and why it directly affects your job, wages, and financial security.",
+      "description": "The economy's scoreboard \u2014 and why it directly affects your job, wages, and financial security.",
       "url": "concept-gdp.html",
       "section": "concept",
-      "tags": ["GDP", "economics", "economy", "growth"],
+      "tags": [
+        "GDP",
+        "economics",
+        "economy",
+        "growth"
+      ],
       "readTime": 5,
       "level": "Beginner"
     },
     {
       "id": "concept-06",
       "title": "What Is a Recession?",
-      "description": "When an economy contracts — what causes it, how long it lasts, and how to protect yourself.",
+      "description": "When an economy contracts \u2014 what causes it, how long it lasts, and how to protect yourself.",
       "url": "concept-recession.html",
       "section": "concept",
-      "tags": ["recession", "economics", "economy", "unemployment"],
+      "tags": [
+        "recession",
+        "economics",
+        "economy",
+        "unemployment"
+      ],
       "readTime": 5,
       "level": "Beginner"
     },
     {
       "id": "words-01",
       "title": "What Are Assets?",
-      "description": "Everything you own that holds or grows in value — the building blocks of wealth.",
+      "description": "Everything you own that holds or grows in value \u2014 the building blocks of wealth.",
       "url": "article-words.html",
       "section": "words",
-      "tags": ["assets", "wealth", "property", "investing"],
+      "tags": [
+        "assets",
+        "wealth",
+        "property",
+        "investing"
+      ],
       "readTime": 4,
       "level": "Beginner"
     },
     {
       "id": "words-02",
       "title": "What Is a Liability?",
-      "description": "Something you owe — and why not all debt is created equal.",
+      "description": "Something you owe \u2014 and why not all debt is created equal.",
       "url": "words-liability.html",
       "section": "words",
-      "tags": ["liability", "debt", "loans", "balance sheet"],
+      "tags": [
+        "liability",
+        "debt",
+        "loans",
+        "balance sheet"
+      ],
       "readTime": 4,
       "level": "Beginner"
     },
     {
       "id": "words-03",
       "title": "What Is Net Worth?",
-      "description": "Everything you own minus everything you owe — the single best measure of financial health.",
+      "description": "Everything you own minus everything you owe \u2014 the single best measure of financial health.",
       "url": "words-net-worth.html",
       "section": "words",
-      "tags": ["net worth", "wealth", "assets", "liabilities"],
+      "tags": [
+        "net worth",
+        "wealth",
+        "assets",
+        "liabilities"
+      ],
       "readTime": 4,
       "level": "Beginner"
     },
     {
       "id": "words-04",
       "title": "What Is Cash Flow?",
-      "description": "Money in versus money out — the concept that determines whether you can pay your bills today.",
+      "description": "Money in versus money out \u2014 the concept that determines whether you can pay your bills today.",
       "url": "words-cash-flow.html",
       "section": "words",
-      "tags": ["cash flow", "income", "expenses", "budgeting"],
+      "tags": [
+        "cash flow",
+        "income",
+        "expenses",
+        "budgeting"
+      ],
       "readTime": 4,
       "level": "Beginner"
     },
     {
       "id": "words-05",
       "title": "What Is Equity?",
-      "description": "Ownership value after debt — the engine behind home wealth and stock investing.",
+      "description": "Ownership value after debt \u2014 the engine behind home wealth and stock investing.",
       "url": "words-equity.html",
       "section": "words",
-      "tags": ["equity", "ownership", "home", "stocks"],
+      "tags": [
+        "equity",
+        "ownership",
+        "home",
+        "stocks"
+      ],
       "readTime": 4,
       "level": "Beginner"
     },
     {
       "id": "words-06",
       "title": "What Is a Dividend?",
-      "description": "Getting paid just for owning shares — how dividends create regular passive income.",
+      "description": "Getting paid just for owning shares \u2014 how dividends create regular passive income.",
       "url": "words-dividend.html",
       "section": "words",
-      "tags": ["dividend", "passive income", "stocks", "investing"],
+      "tags": [
+        "dividend",
+        "passive income",
+        "stocks",
+        "investing"
+      ],
       "readTime": 4,
       "level": "Beginner"
     },
     {
       "id": "accounting-01",
       "title": "What Is Profit and Loss?",
-      "description": "The most fundamental report in business — what it shows and how to read it.",
+      "description": "The most fundamental report in business \u2014 what it shows and how to read it.",
       "url": "article-accounting.html",
       "section": "accounting",
-      "tags": ["profit", "loss", "income statement", "business"],
+      "tags": [
+        "profit",
+        "loss",
+        "income statement",
+        "business"
+      ],
       "readTime": 5,
       "level": "Beginner"
     },
     {
       "id": "accounting-02",
       "title": "What Is a Balance Sheet?",
-      "description": "Assets = Liabilities + Equity. A snapshot of financial position — readable in minutes.",
+      "description": "Assets = Liabilities + Equity. A snapshot of financial position \u2014 readable in minutes.",
       "url": "accounting-balance-sheet.html",
       "section": "accounting",
-      "tags": ["balance sheet", "assets", "liabilities", "equity"],
+      "tags": [
+        "balance sheet",
+        "assets",
+        "liabilities",
+        "equity"
+      ],
       "readTime": 5,
       "level": "Beginner"
     },
     {
       "id": "accounting-03",
       "title": "What Is Revenue?",
-      "description": "The top line of any financial statement — total income before costs.",
+      "description": "The top line of any financial statement \u2014 total income before costs.",
       "url": "accounting-revenue.html",
       "section": "accounting",
-      "tags": ["revenue", "income", "business", "sales"],
+      "tags": [
+        "revenue",
+        "income",
+        "business",
+        "sales"
+      ],
       "readTime": 5,
       "level": "Beginner"
     },
     {
       "id": "accounting-04",
       "title": "What Is a Budget?",
-      "description": "A plan that assigns every dollar a job before you spend it — and the 50/30/20 framework.",
+      "description": "A plan that assigns every dollar a job before you spend it \u2014 and the 50/30/20 framework.",
       "url": "accounting-budget.html",
       "section": "accounting",
-      "tags": ["budget", "planning", "50/30/20", "expenses"],
+      "tags": [
+        "budget",
+        "planning",
+        "50/30/20",
+        "expenses"
+      ],
       "readTime": 5,
       "level": "Beginner"
     },
     {
       "id": "accounting-05",
       "title": "What Is Depreciation?",
-      "description": "How assets lose value over time — and why your car is worth less every year.",
+      "description": "How assets lose value over time \u2014 and why your car is worth less every year.",
       "url": "accounting-depreciation.html",
       "section": "accounting",
-      "tags": ["depreciation", "assets", "accounting", "tax"],
+      "tags": [
+        "depreciation",
+        "assets",
+        "accounting",
+        "tax"
+      ],
       "readTime": 5,
       "level": "Beginner"
     },
     {
       "id": "accounting-06",
       "title": "What Is a Cash Flow Statement?",
-      "description": "The most honest financial document a business produces — tracking actual money movement.",
+      "description": "The most honest financial document a business produces \u2014 tracking actual money movement.",
       "url": "accounting-cash-flow-statement.html",
       "section": "accounting",
-      "tags": ["cash flow statement", "accounting", "business", "finance"],
+      "tags": [
+        "cash flow statement",
+        "accounting",
+        "business",
+        "finance"
+      ],
       "readTime": 5,
       "level": "Beginner"
     },
     {
       "id": "tricks-01",
       "title": "How to Save Money on a Low Income",
-      "description": "Practical strategies that work even when money is tight — no income required to start.",
+      "description": "Practical strategies that work even when money is tight \u2014 no income required to start.",
       "url": "article-tricks.html",
       "section": "tricks",
-      "tags": ["saving", "low income", "budgeting", "strategies"],
+      "tags": [
+        "saving",
+        "low income",
+        "budgeting",
+        "strategies"
+      ],
       "readTime": 5,
       "level": "All levels"
     },
     {
       "id": "tricks-02",
       "title": "Pay Yourself First",
-      "description": "Save before you spend — automatically. The habit that builds wealth without willpower.",
+      "description": "Save before you spend \u2014 automatically. The habit that builds wealth without willpower.",
       "url": "tricks-pay-yourself-first.html",
       "section": "tricks",
-      "tags": ["saving", "automation", "habits", "pay yourself first"],
+      "tags": [
+        "saving",
+        "automation",
+        "habits",
+        "pay yourself first"
+      ],
       "readTime": 6,
       "level": "All levels"
     },
     {
       "id": "tricks-03",
       "title": "How to Get Out of Debt Faster",
-      "description": "Avalanche vs Snowball — two proven methods that cut years off your debt payoff timeline.",
+      "description": "Avalanche vs Snowball \u2014 two proven methods that cut years off your debt payoff timeline.",
       "url": "tricks-debt-payoff.html",
       "section": "tricks",
-      "tags": ["debt", "avalanche", "snowball", "payoff"],
+      "tags": [
+        "debt",
+        "avalanche",
+        "snowball",
+        "payoff"
+      ],
       "readTime": 6,
       "level": "All levels"
     },
@@ -336,27 +499,122 @@
       "description": "One month of tracking that reveals hundreds in invisible spending most people never see.",
       "url": "tricks-30-day-reset.html",
       "section": "tricks",
-      "tags": ["budgeting", "spending", "tracking", "reset"],
+      "tags": [
+        "budgeting",
+        "spending",
+        "tracking",
+        "reset"
+      ],
       "readTime": 6,
       "level": "All levels"
     },
     {
       "id": "tricks-05",
       "title": "How to Build an Emergency Fund",
-      "description": "The single most impactful financial move most people can make — step by step.",
+      "description": "The single most impactful financial move most people can make \u2014 step by step.",
       "url": "tricks-emergency-fund.html",
       "section": "tricks",
-      "tags": ["emergency fund", "saving", "security", "financial safety"],
+      "tags": [
+        "emergency fund",
+        "saving",
+        "security",
+        "financial safety"
+      ],
       "readTime": 6,
       "level": "All levels"
     },
     {
       "id": "tricks-06",
       "title": "The 50/30/20 Budget Method",
-      "description": "A simple three-bucket system — needs, wants, savings — for your entire financial life.",
+      "description": "A simple three-bucket system \u2014 needs, wants, savings \u2014 for your entire financial life.",
       "url": "tricks-50-30-20.html",
       "section": "tricks",
-      "tags": ["50/30/20", "budget", "framework", "planning"],
+      "tags": [
+        "50/30/20",
+        "budget",
+        "framework",
+        "planning"
+      ],
+      "readTime": 5,
+      "level": "All levels"
+    },
+    {
+      "id": "tips-07",
+      "title": "The Weekly Money Date: 15 Minutes That Changes Everything",
+      "description": "One 15-minute weekly habit that catches financial problems before they compound \u2014 the most underrated money habit available.",
+      "url": "tips-weekly-money-date.html",
+      "section": "tips",
+      "tags": [
+        "weekly review",
+        "budgeting",
+        "habits",
+        "tracking",
+        "awareness"
+      ],
+      "readTime": 5,
+      "level": "All levels"
+    },
+    {
+      "id": "tips-08",
+      "title": "The One Number That Predicts Your Financial Future",
+      "description": "Your savings rate \u2014 not your salary \u2014 determines when you stop working. How to calculate it and raise it painlessly.",
+      "url": "tips-savings-rate.html",
+      "section": "tips",
+      "tags": [
+        "savings rate",
+        "financial independence",
+        "retirement",
+        "investing",
+        "pension"
+      ],
+      "readTime": 5,
+      "level": "All levels"
+    },
+    {
+      "id": "tips-09",
+      "title": "Stop Paying Full Price: How to Negotiate Everything",
+      "description": "Most prices are starting positions. Exact scripts for negotiating broadband, insurance, salary, and more.",
+      "url": "tips-negotiate-everything.html",
+      "section": "tips",
+      "tags": [
+        "negotiation",
+        "bills",
+        "salary",
+        "insurance",
+        "discounts"
+      ],
+      "readTime": 5,
+      "level": "All levels"
+    },
+    {
+      "id": "tips-10",
+      "title": "How Your Supermarket Is Costing You \u00a3100 a Month Extra",
+      "description": "Every supermarket aisle is engineered to make you overspend. Five strategies that fight back and save \u00a31,200+ per year.",
+      "url": "tips-supermarket-traps.html",
+      "section": "tips",
+      "tags": [
+        "supermarket",
+        "grocery",
+        "food budget",
+        "shopping list",
+        "unit price"
+      ],
+      "readTime": 5,
+      "level": "All levels"
+    },
+    {
+      "id": "tips-11",
+      "title": "The Real Cost of Your Car (And What to Do About It)",
+      "description": "Most car owners dramatically underestimate their real monthly cost. How to calculate it fully and cut it significantly.",
+      "url": "tips-real-cost-of-car.html",
+      "section": "tips",
+      "tags": [
+        "car costs",
+        "depreciation",
+        "insurance",
+        "fuel",
+        "transport"
+      ],
       "readTime": 5,
       "level": "All levels"
     }
