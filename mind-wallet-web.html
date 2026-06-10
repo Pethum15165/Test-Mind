@@ -903,10 +903,12 @@ const allTxns=()=>{
   for(const sv of(S.savings||[]))
     for(const t of(sv.transactions||[]))
       o.push({...t,type:'saving',catName:'Savings',catIcon:'💎',catColor:'#10b981',scName:sv.name,scId:sv.id,catId:'savings'});
-  // 3. Investment deposits
+  // 3. Investment deposits + withdrawals
   for(const iv of(S.investments||[]))
-    for(const t of(iv.transactions||[]))
-      o.push({...t,type:'investment',catName:'Investments',catIcon:iv.icon||'📈',catColor:'#8b5cf6',scName:iv.name,scId:iv.id,catId:'investments'});
+    for(const t of(iv.transactions||[])){
+      const isWd=t.type==='withdrawal';
+      o.push({...t,type:isWd?'inv_withdrawal':'investment',catName:'Investments',catIcon:iv.icon||'📈',catColor:isWd?'#ef4444':'#8b5cf6',scName:iv.name,scId:iv.id,catId:'investments'});
+    }
   // 4. Transfers
   for(const t of(S.transfers||[])){
     const from=getAcc(t.fromId),to=getAcc(t.toId);
@@ -1556,14 +1558,16 @@ function renderTxns(scIdFilter=null){
       const isTransfer=t.type==='transfer';
       const isSaving=t.type==='saving';
       const isInvest=t.type==='investment';
+      const isInvWd=t.type==='inv_withdrawal';
       const isInterest=t.type==='interest';
-      const amtColor=isIncome||isInterest?'var(--green)':isTransfer?'var(--blue)':isSaving?'var(--green)':isInvest?'var(--purple)':'var(--red)';
-      const amtSign=isIncome||isInterest?'+':isTransfer?'':isSaving?'-':isInvest?'-':'-';
+      const amtColor=isIncome||isInterest?'var(--green)':isTransfer?'var(--blue)':isSaving?'var(--green)':isInvest?'var(--purple)':isInvWd?'var(--red)':'var(--red)';
+      const amtSign=isIncome||isInterest?'+':isTransfer?'':isSaving?'-':isInvest?'-':isInvWd?'-':'-';
       // Type badge
       const typeBadge=isIncome?'<span style="font-size:9px;background:var(--green-dim);color:var(--green);padding:2px 6px;border-radius:99px;font-weight:700;">INCOME</span>':
                       isTransfer?'<span style="font-size:9px;background:var(--blue-dim);color:var(--blue);padding:2px 6px;border-radius:99px;font-weight:700;">TRANSFER</span>':
                       isSaving?'<span style="font-size:9px;background:var(--green-dim);color:var(--green);padding:2px 6px;border-radius:99px;font-weight:700;">SAVINGS</span>':
                       isInvest?'<span style="font-size:9px;background:var(--purple-dim);color:var(--purple);padding:2px 6px;border-radius:99px;font-weight:700;">INVEST</span>':
+                      isInvWd?'<span style="font-size:9px;background:var(--red-dim);color:var(--red);padding:2px 6px;border-radius:99px;font-weight:700;">⬇ WITHDRAW</span>':
                       isInterest?'<span style="font-size:9px;background:var(--green-dim);color:var(--green);padding:2px 6px;border-radius:99px;font-weight:700;">✨ INTEREST</span>':
                       t.overBudget?'<span style="font-size:9px;background:var(--red);color:#fff;padding:1px 5px;border-radius:99px;font-weight:700;">OVER BUDGET</span>':'';
       // Edit/delete actions per type
@@ -1577,6 +1581,8 @@ function renderTxns(scIdFilter=null){
         `<button class="btn-xs red" onclick="delSavingDeposit('${t.scId}','${t.id}')">Delete</button>`:
         t.type==='investment'?
         `<button class="btn-xs red" onclick="delInvestDeposit('${t.scId}','${t.id}')">Delete</button>`:
+        t.type==='inv_withdrawal'?
+        `<button class="btn-xs red" onclick="delInvestWithdrawal('${t.scId}','${t.id}')">Delete</button>`:
         t.type==='interest'?
         `<button class="btn-xs red" onclick="delInterest('${t.id}')">Delete</button>`:'';
       return`<tr>
@@ -1734,12 +1740,35 @@ function renderInvest(){
           <span class="badge ${TC[iv.type]||'b-p'}" style="margin-top:6px;">${esc(iv.type)}</span>
         </div>
       </div>
-      <div style="text-align:center;padding:16px 0;border-top:1px solid var(--border);">
-        <div style="font-family:'DM Serif Display',serif;font-size:30px;color:var(--purple);">${S.currency} ${fmt(iv.current)}</div>
-        <div style="font-size:12px;color:var(--t3);margin-top:4px;">Current market value</div>
-        ${(()=>{const totInt=(S.interests||[]).filter(i=>i.sourceType==='investment'&&i.sourceId===iv.id).reduce((s,i)=>s+i.amount,0);return totInt?`<div style="font-size:12px;color:var(--amber);margin-top:4px;">✨ ${S.currency} ${fmt(totInt)} interest earned</div>`:''})()}
+      <div style="border-top:1px solid var(--border);padding:14px 0;">
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;text-align:center;">
+          <div>
+            <div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:4px;">Current Value</div>
+            <div style="font-size:18px;font-weight:700;color:var(--purple);">${S.currency} ${fmt(iv.current)}</div>
+          </div>
+          <div>
+            <div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:4px;">Deposited</div>
+            <div style="font-size:15px;font-weight:700;color:var(--t1);">${S.currency} ${fmt((iv.transactions||[]).filter(t=>t.type==='deposit').reduce((s,t)=>s+t.amount,0))}</div>
+          </div>
+          <div>
+            <div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:4px;">Withdrawn</div>
+            <div style="font-size:15px;font-weight:700;color:var(--red);">${S.currency} ${fmt((iv.transactions||[]).filter(t=>t.type==='withdrawal').reduce((s,t)=>s+t.amount,0))}</div>
+          </div>
+        </div>
+        ${(()=>{const totInt=(S.interests||[]).filter(i=>i.sourceType==='investment'&&i.sourceId===iv.id).reduce((s,i)=>s+i.amount,0);return totInt?`<div style="font-size:11px;color:var(--amber);text-align:center;margin-top:8px;">✨ ${S.currency} ${fmt(totInt)} interest earned</div>`:''})()}
+        ${(()=>{
+          const recent=(iv.transactions||[]).filter(t=>t.type==='withdrawal').slice(-3).reverse();
+          if(!recent.length)return '';
+          return '<div style="margin-top:10px;border-top:1px solid var(--border);padding-top:8px;">'+
+            '<div style="font-size:10px;font-weight:700;color:var(--t3);text-transform:uppercase;margin-bottom:6px;">Recent Withdrawals</div>'+
+            recent.map(t=>'<div style="display:flex;justify-content:space-between;font-size:12px;padding:2px 0;">'+
+              '<span style="color:var(--t2);">'+fmtDateShort(t.date)+(t.note?' · '+esc(t.note):'')+'</span>'+
+              '<span style="color:var(--red);font-weight:700;">−'+S.currency+' '+fmt(t.amount)+'</span>'+
+            '</div>').join('')+'</div>';
+        })()}
       </div>
       <div class="sv-actions">
+        <button class="btn-xs green" onclick="openInvestWithdraw('${iv.id}')">⬇ Withdraw</button>
         <button class="btn-xs" style="border-color:var(--purple);color:var(--purple);" onclick="openUpdInvest('${iv.id}')">Update Value</button>
         <button class="btn-xs" style="border-color:var(--amber);color:var(--amber);" onclick="openInterestModal('investment','${iv.id}','${esc(iv.name)}')">✨ Interest</button>
         <button class="btn-xs red" onclick="delInvest('${iv.id}')">Delete</button>
@@ -2364,6 +2393,123 @@ function submitUpdInvest(id){
   iv.current=parseFloat(document.getElementById('ivAmt').value)||0;
   iv.notes=document.getElementById('ivNotes').value.trim();
   saveState();closeModal();render();
+}
+
+
+// ═══════════════════════════════════════════════════════
+//  INVESTMENT WITHDRAWAL
+// ═══════════════════════════════════════════════════════
+function openInvestWithdraw(id){
+  const iv=(S.investments||[]).find(i=>i.id===id);if(!iv)return;
+  const accOpts=(S.accounts||[]).map(a=>'<option value="'+a.id+'">'+esc(a.icon)+' '+esc(a.name)+' — '+esc(a.bank)+'</option>').join('');
+  const totalDeposited=(iv.transactions||[]).filter(t=>t.type==='deposit').reduce((s,t)=>s+t.amount,0);
+  const totalWithdrawn=(iv.transactions||[]).filter(t=>t.type==='withdrawal').reduce((s,t)=>s+t.amount,0);
+
+  openModal(
+    '⬇ Withdraw from Investment',
+    iv.icon+' '+esc(iv.name)+' · '+esc(iv.type),
+    '<div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:16px;">'+
+      '<div style="background:var(--purple-dim);border-radius:8px;padding:10px;text-align:center;">'+
+        '<div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:3px;">Current Value</div>'+
+        '<div style="font-size:15px;font-weight:700;color:var(--purple);">'+S.currency+' '+fmt(iv.current)+'</div>'+
+      '</div>'+
+      '<div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center;">'+
+        '<div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:3px;">Total Deposited</div>'+
+        '<div style="font-size:15px;font-weight:700;color:var(--t1);">'+S.currency+' '+fmt(totalDeposited)+'</div>'+
+      '</div>'+
+      '<div style="background:var(--bg3);border-radius:8px;padding:10px;text-align:center;">'+
+        '<div style="font-size:9px;color:var(--t3);text-transform:uppercase;margin-bottom:3px;">Total Withdrawn</div>'+
+        '<div style="font-size:15px;font-weight:700;color:var(--red);">'+S.currency+' '+fmt(totalWithdrawn)+'</div>'+
+      '</div>'+
+    '</div>'+
+    '<div class="fg"><div class="fl">Withdrawal Amount ('+S.currency+')</div>'+
+      '<input type="number" class="fi" id="wdAmt" placeholder="0.00" min="0.01" step="0.01" autofocus oninput="checkWdBalance(this.dataset.ivid)" data-ivid="'+id+'" /></div>'+
+    '<div id="wdBalChip" style="margin-top:-8px;margin-bottom:8px;font-size:12px;color:var(--t2);"></div>'+
+    '<div class="fr">'+
+      '<div class="fg"><div class="fl">Date</div><input type="date" class="fi" id="wdDate" value="'+today()+'" /></div>'+
+      '<div class="fg"><div class="fl">Withdrawal Type</div><select class="fi" id="wdType">'+
+        '<option value="partial">Partial Withdrawal</option>'+
+        '<option value="full">Full Withdrawal (Close)</option>'+
+        '<option value="dividend">Dividend / Return</option>'+
+        '<option value="maturity">Maturity Payout</option>'+
+        '<option value="profit">Profit Taking</option>'+
+      '</select></div>'+
+    '</div>'+
+    '<div class="fg"><div class="fl">Credit to Bank Account (optional)</div>'+
+      '<select class="fi" id="wdAccId"><option value="">— Do not credit to account —</option>'+accOpts+'</select></div>'+
+    '<div class="fg"><div class="fl">Bank Charges (optional)</div>'+
+      '<input type="number" class="fi" id="wdCharge" placeholder="0.00 — deducted from credited account" min="0" step="0.01" /></div>'+
+    '<div class="fg"><div class="fl">Note (optional)</div>'+
+      '<input type="text" class="fi" id="wdNote" placeholder="e.g. FD maturity, Profit taking, Emergency withdrawal..." /></div>'+
+    '<div class="em" id="wdErr"></div>'+
+    '<div class="modal-actions">'+
+      '<button class="btn btn-outline" onclick="closeModal()">Cancel</button>'+
+      '<button class="btn" style="background:var(--red-dim);color:var(--red);border:1px solid var(--red);" onclick="submitInvestWithdraw(this.dataset.id)" data-id="'+id+'">Record Withdrawal</button>'+
+    '</div>'
+  );
+}
+
+function checkWdBalance(ivId){
+  const iv=(S.investments||[]).find(i=>i.id===ivId);if(!iv)return;
+  const amt=parseFloat(document.getElementById('wdAmt')?.value)||0;
+  const chip=document.getElementById('wdBalChip');
+  if(!chip)return;
+  if(amt<=0){chip.innerHTML='';return;}
+  const remaining=iv.current-amt;
+  if(remaining<0){
+    chip.innerHTML='<span style="color:var(--red);">⛔ Exceeds current value by '+S.currency+' '+fmt(Math.abs(remaining))+'</span>';
+  } else {
+    chip.innerHTML='<span style="color:var(--t2);">Remaining value after withdrawal: <strong style="color:var(--purple);">'+S.currency+' '+fmt(remaining)+'</strong></span>';
+  }
+}
+
+function submitInvestWithdraw(id){
+  const err=document.getElementById('wdErr');
+  const iv=(S.investments||[]).find(i=>i.id===id);
+  if(!iv){if(err)err.textContent='Investment not found.';return;}
+  const amount=parseFloat(document.getElementById('wdAmt')?.value)||0;
+  const date=document.getElementById('wdDate')?.value||today();
+  const wdType=document.getElementById('wdType')?.value||'partial';
+  const accId=document.getElementById('wdAccId')?.value||null;
+  const charge=parseFloat(document.getElementById('wdCharge')?.value)||0;
+  const note=document.getElementById('wdNote')?.value.trim()||'';
+  if(amount<=0){if(err)err.textContent='Please enter a valid withdrawal amount.';return;}
+  if(amount>iv.current){if(err)err.textContent='⛔ Withdrawal amount exceeds current investment value of '+S.currency+' '+fmt(iv.current)+'.';return;}
+  // Deduct from investment value
+  iv.current=(iv.current||0)-amount;
+  // Credit to bank account if selected
+  if(accId){
+    const acc=getAcc(accId);
+    if(acc)acc.balance=(acc.balance||0)+amount-charge;
+  }
+  // Record transaction
+  if(!iv.transactions)iv.transactions=[];
+  iv.transactions.push({
+    id:uid(),type:'withdrawal',wdType,
+    amount,date,note,charge,
+    month:CM,accountId:accId||null,
+    createdAt:new Date().toISOString()
+  });
+  saveState();closeModal();render();
+}
+
+function delInvestWithdrawal(ivId, txnId){
+  if(!confirm('Delete this withdrawal record? Investment value and account balance will be restored.'))return;
+  const iv=(S.investments||[]).find(i=>i.id===ivId);
+  if(iv){
+    const txn=(iv.transactions||[]).find(t=>t.id===txnId);
+    if(txn){
+      // Restore investment value
+      iv.current=(iv.current||0)+txn.amount;
+      // Reverse bank account credit
+      if(txn.accountId){
+        const acc=getAcc(txn.accountId);
+        if(acc)acc.balance=Math.max(0,(acc.balance||0)-txn.amount+(txn.charge||0));
+      }
+    }
+    iv.transactions=(iv.transactions||[]).filter(t=>t.id!==txnId);
+  }
+  saveState();render();
 }
 
 // ═══════════════════════════════════════════════════════
